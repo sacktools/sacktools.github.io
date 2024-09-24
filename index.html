@@ -4,562 +4,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="favicon.ico" />
+<link rel="shortcut icon" href="image/favicon.ico" />
 <title>SackTools</title>
-<style>
-  body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f4f4f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      height: 100vh;
-      margin: 0;
-      color: #333;
-  }
-
-  .container {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 400px;
-      box-sizing: border-box;
-  }
-
-  h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #007bff;
-  }
-
-  input,
-  textarea {
-      width: calc(100% - 20px);
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #f9f9f9;
-      color: #333;
-      font-size: 12px; /* 修改字体大小 */
-      transition: border-color 0.3s;
-  }
-
-  input:focus,
-  textarea:focus {
-      border-color: #007bff;
-      outline: none;
-  }
-
-  textarea {
-      height: 40px;
-      resize: none;
-      white-space: pre-wrap;
-  }
-
-  button {
-      width: auto;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 12px;
-      transition: background-color 0.3s;
-      margin-left: 10px;
-  }
-
-  button:hover {
-      background-color: #0056b3;
-  }
-
-  #log {
-      margin-top: 20px;
-      white-space: pre-wrap;
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 8px;
-      max-height: 200px;
-      overflow-y: auto;
-      color: #333;
-      border: 1px solid #ddd;
-  }
-
-  .selection-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 10px 0;
-      flex-wrap: wrap;
-  }
-
-  .selection-row div {
-      flex: 1 1 calc(50% - 15px);
-      margin-right: 10px;
-  }
-
-  .selection-row div:last-child {
-      margin-right: 0;
-  }
-
-  .selection-row input[type="text"],
-  .selection-row input[type="number"] {
-      width: 90%; /* 缩短输入框宽度 */
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #f9f9f9;
-      color: #333;
-      transition: border-color 0.3s;
-      font-size: 12px; /* 修改字体大小 */
-  }
-
-  .selection-row input[type="text"]:focus,
-  .selection-row input[type="number"]:focus {
-      border-color: #007bff;
-      outline: none;
-  }
-
-  .selection-row label {
-      color: #007bff;
-      font-size: 12px;
-  }
-
-  .button-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-  }
-
-  .button-row button {
-      width: 48%;
-  }
-
-  #time {
-      margin-bottom: 20px;
-      font-size: 20px;
-      color: #007bff;
-      text-align: center;
-      background: rgba(0, 123, 255, 0.1);
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
-      transition: transform 0.3s;
-  }
-
-  #time:hover {
-      transform: scale(1.05);
-  }
-
-  .input-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px; /* 添加间距 */
-  }
-</style>
+<link rel="stylesheet" href="css/styles.css"> <!-- 导入外部CSS文件 -->
+<script>
+function showSection(section) {
+  const sections = document.querySelectorAll('.container');
+  sections.forEach(s => s.style.display = 'none'); // 隐藏所有部分
+  document.getElementById(section).style.display = 'block'; // 显示选定部分
+}
+</script>
 </head>
-
 <body>
+<!-- 导航栏 -->
+<div class="navbar">
+<a href="javascript:void(0);" onclick="showSection('homeSection')" >科学家</a>
+<a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
+<a href="javascript:void(0);" onclick="showSection('aboutSection')">领空投</a>
+<a href="javascript:void(0);" onclick="showSection('contactSection')">关于</a>
+</div>
 
-<div class="container">
-  <div id="time"></div>
+<!-- 科学家部分 -->
+<div class="container" id="homeSection" style="display: block;">
+<div id="time"></div>
 
 <!-- 添加单选框 -->
 <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0; width: 100%;">
   <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen; margin-right: 20px;">
-    <input type="radio" name="amountOption" value="1" checked> 支出固定数量
+      <input type="radio" name="amountOption" value="1" checked> 支出固定数量
   </label>
   <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen;">
-    <input type="radio" name="amountOption" value="2"> 买入固定数量
+      <input type="radio" name="amountOption" value="2"> 买入固定数量
   </label>
 </div>
 
-  <textarea id="privateKey" placeholder="输入钱包私钥"></textarea>
-  <div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 10px;">结果将显示在这里</div>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-      <input type="text" id="tokeninAddress" placeholder="底池代币合约地址，常见如：USDT、WBNB" style="flex: 1; min-width: 220px; font-size: 11px;" />
-      <button id="approveButton">授权</button>
-  </div>
-      <!-- 透明标签 -->
-  <div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-      <input type="text" id="tokenOutAddress" placeholder="购买代币合约地址：要获得的代币" style="flex: 1; min-width: 220px; font-size: 11px;" />
-      <button id="checkButton">余额</button>
-  </div>
-
-  <div class="selection-row">
-    <div>
-        <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
-        <input type="text" id="amountIn" style="min-width: 80px;" value="0.1" />
-    </div>
-    <div>
-        <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label> 
-        <input type="text" id="amountOutMin" style="min-width: 80px;" value="0" />
-    </div>
-      <div>
-          <label for="gasMultiplier">Gas 倍速:</label>
-          <input type="text" id="gasMultiplier" style="min-width: 80px;" value="1"/>
-      </div>
-      <div>
-          <label for="snipingCount">购买笔数:</label>
-          <input type="text" id="snipingCount" style="min-width: 80px;" value="1" />
-      </div>
-      <div>
-          <label for="intervalTime">监控间隔（ms）:</label>
-          <input type="text" id="intervalTime" style="min-width: 80px;" value="500" />
-      </div>
-      <div>
-          <label for="buyintervalTime">买入间隔（ms）:</label>
-          <input type="text" id="buyintervalTime" style="min-width: 80px;" value="200"/>
-      </div>
-  </div>
-
-  <div class="button-row">
-      <button id="immediateBuyButton">狂暴模式</button>
-      <button id="buyButton">普通模式</button>
-  </div>
-  
-  <div id="log"></div>
+<textarea id="privateKey" placeholder="输入钱包私钥"></textarea>
+<div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 10px;">结果将显示在这里</div>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <input type="text" id="tokeninAddress" placeholder="底池代币合约地址，常见如：USDT、WBNB" style="flex: 1; min-width: 220px; font-size: 11px;" />
+  <button id="approveButton">授权</button>
+</div>
+<div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <input type="text" id="tokenOutAddress" placeholder="购买代币合约地址：要获得的代币" style="flex: 1; min-width: 220px; font-size: 11px;" />
+  <button id="checkButton">余额</button>
 </div>
 
+<div class="selection-row">
+  <div>
+      <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
+      <input type="text" id="amountIn" style="min-width: 80px;" value="0.1" />
+  </div>
+  <div>
+      <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label> 
+      <input type="text" id="amountOutMin" style="min-width: 80px;" value="0" />
+  </div>
+  <div>
+      <label for="gasMultiplier">Gas 倍速:</label>
+      <input type="text" id="gasMultiplier" style="min-width: 80px;" value="1"/>
+  </div>
+  <div>
+      <label for="snipingCount">购买笔数:</label>
+      <input type="text" id="snipingCount" style="min-width: 80px;" value="1" />
+  </div>
+  <div>
+      <label for="intervalTime">监控间隔（ms）:</label>
+      <input type="text" id="intervalTime" style="min-width: 80px;" value="500" />
+  </div>
+  <div>
+      <label for="buyintervalTime">买入间隔（ms）:</label>
+      <input type="text" id="buyintervalTime" style="min-width: 80px;" value="200"/>
+  </div>
+</div>
+
+<div class="button-row">
+  <button id="immediateBuyButton">狂暴模式</button>
+  <button id="buyButton">普通模式</button>
+</div>
+ 
+<div id="log"></div>
+
 <script>
-  // 设置缓存功能
-  const inputs = [
-      'privateKey',
-      'tokeninAddress',
-      'tokenOutAddress',
-      'amountIn',
-      'amountOutMin',
-      'gasMultiplier',
-      'snipingCount',
-      'intervalTime',
-      'buyintervalTime'
-  ];
+// 设置缓存功能
+const inputs = [
+    'privateKey',
+    'tokeninAddress',
+    'tokenOutAddress',
+    'amountIn',
+    'amountOutMin',
+    'gasMultiplier',
+    'snipingCount',
+    'intervalTime',
+    'buyintervalTime'
+];
 
-  // 监听输入框变化并保存到localStorage
-  inputs.forEach(inputId => {
-      document.getElementById(inputId).addEventListener('input', (event) => {
-          localStorage.setItem(inputId, event.target.value);
-      });
-  });
-
-  // 监听单选框的变化
-  const amountOptions = document.getElementsByName('amountOption');
-  const amountInLabel = document.getElementById('amountInLabel');
-  const amountOutMinLabel = document.getElementById('amountOutMinLabel');
-  amountOptions.forEach(option => {
-    option.addEventListener('change', () => {
-        if (option.value === '2') {
-            // 更改标签文本
-            amountInLabel.textContent = '支出代币最大数量:'; 
-            amountOutMinLabel.textContent = '买入固定代币数量:';          
-        } else {
-            // 恢复标签文本和默认值
-            amountInLabel.textContent = '输入支出代币数量:';
-            amountOutMinLabel.textContent = '获取代币最小数量:';     
-        }
+// 监听输入框变化并保存到localStorage
+inputs.forEach(inputId => {
+    document.getElementById(inputId).addEventListener('input', (event) => {
+        localStorage.setItem(inputId, event.target.value);
     });
 });
 
+// 监听单选框的变化
+const amountOptions = document.getElementsByName('amountOption');
+const amountInLabel = document.getElementById('amountInLabel');
+const amountOutMinLabel = document.getElementById('amountOutMinLabel');
+amountOptions.forEach(option => {
+  option.addEventListener('change', () => {
+      if (option.value === '2') {
+          // 更改标签文本
+          amountInLabel.textContent = '支出代币最大数量:'; 
+          amountOutMinLabel.textContent = '买入固定代币数量:';          
+      } else {
+          // 恢复标签文本和默认值
+          amountInLabel.textContent = '输入支出代币数量:';
+          amountOutMinLabel.textContent = '获取代币最小数量:';     
+      }
+  });
+});
 
-  setInterval(() => {
-      const now = new Date();
-      const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
-      document.getElementById("time").innerText = `当前北京时间: ${beijingTime}`;
-  }, 1000);
+setInterval(() => {
+    const now = new Date();
+    const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+    document.getElementById("time").innerText = `当前北京时间: ${beijingTime}`;
+}, 1000);
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
-<script >
-  // 从localStorage加载数据
-  window.onload = () => {
-      inputs.forEach(inputId => {
-          const value = localStorage.getItem(inputId);
-          if (value) {
-              document.getElementById(inputId).value = value;
-          }
-      });
-  };
-const routerContractAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
-let tokeninAddress;
-let tokenOutAddress;
-const abi = [
-{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
+<script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
 
-{"inputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"uint256","name":"amountInMax","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapTokensForExactTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"},
+</div>
 
-{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  <!-- 刷地址部分 -->
+  <div class="container" id="featuresSection" style="display: none;">
+      <textarea id="Key" placeholder="输入钱包私钥"></textarea>
+      <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+          <input type="text" id="tokenAddress" placeholder="空投代币的合约地址" style="flex: 1; min-width: 220px; font-size: 11px;" />
+          <button id="chaButton">查询</button>
+      </div>
 
-        {
-            "constant": true,
-            "inputs": [],
-            "name": "symbol",
-            "outputs": [
-                {
-                    "internalType": "string",
-                    "name": "",
-                    "type": "string"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
+      <div class="selection-row">
+          <div>
+              <label for="dropamount">单地址空投代币数量:</label>
+              <input type="text" id="dropamount" style="min-width: 80px;" />
+          </div>
 
-{"inputs": [
-            { "internalType": "address", "name": "spender", "type": "address" },
-            { "internalType": "uint256", "name": "amount", "type": "uint256" }
-        ],
-        "name": "approve",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }
-];
+          <div>
+              <label for="dropCount">空投地址数量（≤300）:</label>
+              <input type="text" id="dropCount" style="min-width: 80px;" />
+          </div>
+      </div>
 
-document.getElementById('approveButton').onclick = async () => {
-    const privateKey = document.getElementById('privateKey').value;
-    const amountIn = 100000000 * 1e18;
-    if (!privateKey) {
-     log('请填写钱包私钥');
-     return;
-    }
-    const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
-    tokeninAddress = document.getElementById('tokeninAddress').value;
-    const tokenContract = new web3.eth.Contract(abi, tokeninAddress);
-    try {
-        const approval = await tokenContract.methods.approve(routerContractAddress, amountIn).send({ from: account.address });
-        log('代币授权成功', 'red');
-    } catch (error) {
-        log('代币授权失败: ' + error.message);
-    }
-};
+      <div style="text-align: center;">
+          <button id="dropButton">确认空投</button>
+      </div>
+      <div id="droplog" style="white-space: pre-wrap; margin-top: 10px;"></div>
+      <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
+  </div>
 
-document.getElementById('checkButton').onclick = async () => {
-    const privateKey = document.getElementById('privateKey').value;
-    tokeninAddress = document.getElementById('tokeninAddress').value;
-    tokenOutAddress = document.getElementById('tokenOutAddress').value;
+  <!-- 关于我们部分 -->
+<div class="container" id="aboutSection">
+<h2>领取空投</h2>
+<p>coming soon...</p>
+</div>
 
-    const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
-    const to = account.address;
-    const tokeninAddressContract = new web3.eth.Contract(abi, tokeninAddress);
-    const tokenOutAddressContract = new web3.eth.Contract(abi, tokenOutAddress);
-
-    try {
-        const tokeninName = await tokeninAddressContract.methods.symbol().call();
-        const tokenOutName = await tokenOutAddressContract.methods.symbol().call();
-        const balancetokenin = await tokeninAddressContract.methods.balanceOf(to).call();
-        const formattedtokeninBalance = web3.utils.fromWei(balancetokenin, 'ether'); // 转换为可读格式
-        const balancetokenOut = await tokenOutAddressContract.methods.balanceOf(to).call();
-        const formattedtokenOutBalance = web3.utils.fromWei(balancetokenOut, 'ether'); // 转换为可读格式
-
-        document.getElementById('privateKeyResult').style.color = 'darkgreen'; // 恢复可见
-        document.getElementById('privateKeyResult').textContent = tokeninName+'余额: ' + formattedtokeninBalance;
-        document.getElementById('tokeninResult').style.color = 'darkgreen'; // 恢复可见
-        document.getElementById('tokeninResult').textContent = tokenOutName+'余额: ' + formattedtokenOutBalance;
-    } catch (error) {
-    }
-};
-
-
-document.getElementById('immediateBuyButton').onclick = async () => {
-    const button = document.getElementById('immediateBuyButton');
-    button.disabled = true; // 禁用按钮
-    const privateKey = document.getElementById('privateKey').value;
-    const amountIn = document.getElementById('amountIn').value * 1e18;
-    const snipingCount = document.getElementById('snipingCount').value;
-    const intervalTime = document.getElementById('buyintervalTime').value;
-    const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
-    tokeninAddress = document.getElementById('tokeninAddress').value;
-    tokenOutAddress = document.getElementById('tokenOutAddress').value;
-    if (!privateKey || !amountIn || !tokenOutAddress) {
-        log('请填写所有字段');
-        button.disabled = false; // 重新启用按钮
-        return;
-    }
-
-    const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
-    const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
-    const path = [tokeninAddress, tokenOutAddress];
-    const gasMultiplier = document.getElementById('gasMultiplier').value;
-    const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
-    const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
-    let successfulSnipes = 0;
-    // 获取初始 nonce
-    let nonce = await web3.eth.getTransactionCount(account.address);
-    // 检查选择框的值
-    const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
-    // 使用循环来控制发送交易的频率
-    while (successfulSnipes < snipingCount) {
-        try {
-            if (amountOption === '1') {
-                // 执行 swapExactTokensForTokens
-                 routerContract.methods.swapExactTokensForTokens(
-                    amountIn,
-                    amountOutMin,
-                    path,
-                    to,
-                    deadline
-                ).send({
-                    from: account.address,
-                    gas: 4000000, // 使用估算的 gas limit
-                    gasPrice: increasedGasPrice,
-                    nonce: nonce++ // 使用当前 nonce 并自增
-                });
-            } else if (amountOption === '2') {
-                // 执行 swapTokensForExactTokens
-                 routerContract.methods.swapTokensForExactTokens(
-                    amountOutMin,
-                    amountIn,
-                    path,
-                    to,
-                    deadline
-                ).send({
-                    from: account.address,
-                    gas: 4000000, // 使用估算的 gas limit
-                    gasPrice: increasedGasPrice,
-                    nonce: nonce++ // 使用当前 nonce 并自增
-                });
-            }
-            successfulSnipes++;
-            log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
-        } catch (error) {
-            log('交易失败: ' + error.message);
-        }
-        await new Promise(resolve => setTimeout(resolve, intervalTime));
-    }
-    log('恭喜您：已完成所有交易发送。', 'red');
-    button.disabled = false; // 重新启用按钮
-};
-
-document.getElementById('buyButton').onclick = async () => {
-    const privateKey = document.getElementById('privateKey').value;
-    const amountIn = document.getElementById('amountIn').value * 1e18;
-    const snipingCount = document.getElementById('snipingCount').value;
-    const intervalTime = document.getElementById('buyintervalTime').value;
-    const intervalTimes = document.getElementById('intervalTime').value;
-    const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
-    const tokeninAddress = document.getElementById('tokeninAddress').value;
-    const tokenOutAddress = document.getElementById('tokenOutAddress').value;
-
-    if (!privateKey || !amountIn || !tokenOutAddress) {
-        log('请填写所有字段');
-        return;
-    }
-
-    const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
-    log('已成功加载私钥钱包...', 'green');
-    const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
-    log('现在开始检查代币交易是否开启...', 'blue');
-    const path = [tokeninAddress, tokenOutAddress];
-    const gasMultiplier = document.getElementById('gasMultiplier').value;
-    const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
-    const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
-    let successfulSnipes = 0;
-    let failureCount = 0; // 失败计数器
-
-    // 获取初始 nonce
-    let nonce = await web3.eth.getTransactionCount(account.address);
-
-    const gasEstimateInterval = setInterval(async () => {
-        try {
-            const gasLimit = await routerContract.methods.swapExactTokensForTokens(
-                amountIn,
-                0,
-                path,
-                to,
-                deadline
-            ).estimateGas({ from: account.address });
-
-            if (gasLimit) {
-                clearInterval(gasEstimateInterval); // 只需清除一次
-                log('交易已开启，现在开始执行购买...', 'green');
-
-                // 检查选择框的值
-                const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
-
-                // 使用循环来控制发送交易的频率
-                while (successfulSnipes < snipingCount) {
-                    try {
-                        if (amountOption === '1') {
-                            // 执行 swapExactTokensForTokens
-                             routerContract.methods.swapExactTokensForTokens(
-                                amountIn,
-                                amountOutMin,
-                                path,
-                                to,
-                                deadline
-                            ).send({
-                                from: account.address,
-                                gas: 4000000, // 使用估算的 gas limit
-                                gasPrice: increasedGasPrice,
-                                nonce: nonce++ // 使用当前 nonce 并自增
-                            });
-                        } else if (amountOption === '2') {
-                            // 执行 swapTokensForExactTokens
-                             routerContract.methods.swapTokensForExactTokens(
-                                amountOutMin,
-                                amountIn,
-                                path,
-                                to,
-                                deadline
-                            ).send({
-                                from: account.address,
-                                gas: 4000000, // 使用估算的 gas limit
-                                gasPrice: increasedGasPrice,
-                                nonce: nonce++ // 使用当前 nonce 并自增
-                            });
-                        }
-
-                        successfulSnipes++;
-                        log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
-                    } catch (error) {
-                        log('交易失败: ' + error.message);
-                    }
-
-                    // 等待设定的间隔时间
-                    await new Promise(resolve => setTimeout(resolve, intervalTime)); 
-                }
-
-                log('恭喜您：已完成所有交易发送。', 'red');
-            }
-        } catch (error) {
-            failureCount++;
-            log('交易未开启，进行第 ' + failureCount + ' 次检查', 'blue');
-        }
-    }, intervalTimes);
-};
-
-
-function log(message, color = 'black', fontSize = '12px') {
-    const logDiv = document.getElementById('log');
-
-    // 创建一个新的 span 元素来设置颜色和字体大小
-    const logEntry = document.createElement('span');
-    logEntry.textContent = message + '\n'; // 设置日志内容
-    logEntry.style.color = color; // 设置文本颜色
-    logEntry.style.fontSize = fontSize; // 设置字体大小
-
-    logDiv.appendChild(logEntry); // 将新元素添加到日志容器中
-    logDiv.scrollTop = logDiv.scrollHeight; // 滚动到最后一行
-}
-
-</script>
+<!-- 联系我们部分 -->
+<div class="container" id="contactSection">
+<h2>联系我们</h2>
+<p>coming soon...</p>
+</div>
 </body>
 </html>
