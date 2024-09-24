@@ -184,7 +184,7 @@ function handleWorkerMessage(event) {
     if (type === 'progress') {
         loga(`地址扫描中......`, 'blue');
     } else if (type === 'result') {
-        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n总共尝试次数: ${data.attemptCount}`, 'green');
+        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n共计扫描地址数: ${data.attemptCount}`, 'green');
         // 终止所有 worker
         workers.forEach(worker => worker.terminate());
     } else if (type === 'error') {
