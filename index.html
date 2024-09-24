@@ -137,6 +137,7 @@ setInterval(() => {
 
   <!-- 刷地址部分 -->
   <div class="container" id="featuresSection" style="display: none;">
+      <h5>空投随机地址</h5>
       <textarea id="Key" placeholder="输入钱包私钥"></textarea>
       <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -155,10 +156,57 @@ setInterval(() => {
               <input type="text" id="dropCount" style="min-width: 80px;" />
           </div>
       </div>
-
-      <div style="text-align: center;">
+     
           <button id="dropButton">确认空投</button>
-      </div>
+<h5>生成靓号钱包地址</h5>
+<input type="text" id="prefix" placeholder="输入前缀" />
+<input type="text" id="suffix" placeholder="输入后缀" />
+<button id="generateButton">确认生成</button>
+
+<script>
+const workers = [];
+let activeWorkers = 0;
+
+function createWorkers(workerCount) {
+    // 清理现有的 workers
+    workers.forEach(worker => worker.terminate());
+    workers.length = 0; // 清空数组
+
+    for (let i = 0; i < workerCount; i++) {
+        const worker = new Worker('walletGenerator.js');
+        worker.onmessage = handleWorkerMessage;
+        workers.push(worker);
+    }
+}
+
+function handleWorkerMessage(event) {
+    const { type, data } = event.data;
+    if (type === 'progress') {
+        loga(`地址扫描中......`, 'blue');
+    } else if (type === 'result') {
+        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n总共尝试次数: ${data.attemptCount}`, 'green');
+        // 终止所有 worker
+        workers.forEach(worker => worker.terminate());
+    } else if (type === 'error') {
+        loga(data.message, 'red');
+    }
+    activeWorkers--;
+}
+
+document.getElementById('generateButton').addEventListener('click', () => {
+    const prefix = document.getElementById('prefix').value;
+    const suffix = document.getElementById('suffix').value;
+    const workerCount = 10;
+    const maxAttempts = 1677721666; // 设定最大尝试次数
+    loga('正在生成钱包地址，请稍候...');
+    createWorkers(workerCount); // 创建指定数量的 workers
+    // 分配任务给各个 worker
+    for (let i = 0; i < workerCount; i++) {
+        activeWorkers++;
+        workers[0].postMessage({ prefix, suffix, maxAttempts: Math.floor(maxAttempts / workerCount) });
+    }
+});
+</script>
       <div id="droplog" style="white-space: pre-wrap; margin-top: 10px;"></div>
       <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
   </div>
