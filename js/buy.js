@@ -281,6 +281,7 @@ for (let i = 0; i < workerCount; i++) {
             tokenOutAddress,
             abi,
             routerContractAddress,
+            deadline,
         });
     }, i * intervalTimes); // 每间隔0.3秒启动一个Worker
 }
