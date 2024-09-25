@@ -2,7 +2,7 @@ importScripts('https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js');
 
 self.onmessage = async function (e) {
     const {
-        privateKey,
+        to,
         amountIn,
         tokeninAddress,
         tokenOutAddress,
@@ -11,10 +11,7 @@ self.onmessage = async function (e) {
     } = e.data;
 
     const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const to = account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     let failureCount = 0;
@@ -27,7 +24,7 @@ self.onmessage = async function (e) {
                 path,
                 to,
                 deadline
-            ).estimateGas({ from: account.address });
+            ).estimateGas({ from: to });
 
             if (gasLimit) {
                 clearInterval(gasEstimateInterval); // 只需清除一次
