@@ -113,7 +113,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
@@ -190,7 +190,7 @@ document.getElementById('buyButton').onclick = async () => {
     log('已成功加载私钥钱包...', 'green');
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     log('5秒后检查代币交易是否开启...', 'blue');
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
