@@ -15,7 +15,7 @@ self.onmessage = async function (e) {
     web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     let failureCount = 0;
 
