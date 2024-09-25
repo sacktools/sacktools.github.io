@@ -8,14 +8,13 @@ self.onmessage = async function (e) {
         tokenOutAddress,
         abi,
         routerContractAddress,
+        deadline,
     } = e.data;
 
     const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     let failureCount = 0;
-
     const gasEstimateInterval = setInterval(async () => {
         try {
             const gasLimit = await routerContract.methods.swapExactTokensForTokens(
