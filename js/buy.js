@@ -197,25 +197,27 @@ document.getElementById('buyButton').onclick = async () => {
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
     const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
     let successfulSnipes = 0;
-    let failureCount = 0; // 失败计数器
-
+    const workers = [];
+    const workerCount = 10; // 设置 Worker 数量
+    const gasEstimates = [];
     // 获取初始 nonce
     let nonce = await web3.eth.getTransactionCount(account.address);
 
-    const gasEstimateInterval = setInterval(async () => {
-        try {
-            const gasLimit = await routerContract.methods.swapExactTokensForTokens(
-                amountIn,
-                0,
-                path,
-                to,
-                deadline
-            ).estimateGas({ from: account.address });
+    // 创建多个 Worker
+for (let i = 0; i < workerCount; i++) {
+    const worker = new Worker('worker.js');
+    workers.push(worker);
 
-            if (gasLimit) {
-                clearInterval(gasEstimateInterval); // 只需清除一次
-                log('交易已开启，现在开始执行购买...', 'green');
+    worker.onmessage = (event) => {
+        const { type, message } = event.data;
 
+        if (type === 'estimateGas') {
+            gasEstimates.push(message.gasLimit);
+            if (gasEstimates.length === workerCount) {
+                // 一旦所有 Worker 返回结果，选择有效的 gasLimit
+                const validGasLimit = gasEstimates.find(gas => gas > 0);
+                if (validGasLimit) {
+                 log('交易已开启，现在开始购买...', 'black');
                 // 检查选择框的值
                 const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
 
@@ -251,31 +253,39 @@ document.getElementById('buyButton').onclick = async () => {
                                 nonce: nonce++ // 使用当前 nonce 并自增
                             });
                         }
-
                         successfulSnipes++;
                         log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
                     } catch (error) {
                         log('交易失败: ' + error.message);
                     }
-
-                    // 等待设定的间隔时间
-                    await new Promise(resolve => setTimeout(resolve, intervalTime)); 
+                    
                 }
-
-                log('恭喜您：已完成所有交易发送。', 'red');
+                log('恭喜您：已完成所有交易发送！', 'red');
                 // 购买结束后将按钮名称改回“普通模式”
                 buyButton.textContent = '普通模式'; 
                 buyButton.disabled = false; // 启用按钮
+                } else {
+                    log('没有有效的 gasLimit，重试中...', 'red');
+                }
             }
-        } catch (error) {
-            failureCount++;
-            log('交易未开启，进行第 ' + failureCount + ' 次检查', 'blue');
+        } else if (type === 'log') {
+            log(message.text, message.color);
         }
-    }, intervalTimes);
+    };
 
-};
+    // 向 Worker 发送请求
+    worker.postMessage({
+        privateKey,
+        amountIn,
+        tokeninAddress,
+        tokenOutAddress,
+        intervalTimes,
+        abi,
+        routerContractAddress,
+    });
+}
 
-
+}
 function log(message, color = 'black', fontSize = '12px') {
     const logDiv = document.getElementById('log');
 
