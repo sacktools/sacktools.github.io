@@ -20,7 +20,7 @@ function showSection(section) {
 <div class="navbar">
 <a href="javascript:void(0);" onclick="showSection('homeSection')" >科学家</a>
 <a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
-<a href="javascript:void(0);" onclick="showSection('aboutSection')">做市值</a>
+<a href="javascript:void(0);" onclick="showSection('aboutSection')">市值管理</a>
 <a href="javascript:void(0);" onclick="showSection('contactSection')">联系</a>
 </div>
 
@@ -69,7 +69,7 @@ function showSection(section) {
   </div>
   <div>
       <label for="intervalTime">监控间隔（ms）:</label>
-      <input type="text" id="intervalTime" style="min-width: 80px;" value="500" />
+      <input type="text" id="intervalTime" style="min-width: 80px;" value="300" readonly/>
   </div>
   <div>
       <label for="buyintervalTime">买入间隔（ms）:</label>
@@ -78,7 +78,7 @@ function showSection(section) {
 </div>
 
 <div class="button-row">
-  <button id="immediateBuyButton">普通模式</button>
+  <button id="immediateBuyButton">快速模式</button>
   <button id="buyButton">挂单模式</button>
 </div>
  
