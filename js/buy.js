@@ -245,7 +245,7 @@ document.getElementById('buyButton').onclick = async () => {
                                     ).send(txOptions);
                                 }
                                 successfulSnipes++;
-                                log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
+                                log('发送第 ' + successfulSnipes + ' 笔交易成功', 'green');
                             } catch (error) {
                                 log('交易失败: ' + error.message);
                             }
