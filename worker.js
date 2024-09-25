@@ -6,7 +6,6 @@ self.onmessage = async function (e) {
         amountIn,
         tokeninAddress,
         tokenOutAddress,
-        intervalTimes,
         abi,
         routerContractAddress,
     } = e.data;
@@ -40,6 +39,6 @@ self.onmessage = async function (e) {
             postMessage({ type: 'estimateGas', message: { gasLimit: 0 } }); // 返回无效 gasLimit
             failureCount++;
         }
-    }, intervalTimes);
+    }, 3000);
 
 };
