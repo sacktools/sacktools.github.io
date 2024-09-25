@@ -20,8 +20,8 @@ function showSection(section) {
 <div class="navbar">
 <a href="javascript:void(0);" onclick="showSection('homeSection')" >科学家</a>
 <a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
-<a href="javascript:void(0);" onclick="showSection('aboutSection')">做市值</a>
-<a href="javascript:void(0);" onclick="showSection('contactSection')">领空投</a>
+<a href="javascript:void(0);" onclick="showSection('aboutSection')">领空投</a>
+<a href="javascript:void(0);" onclick="showSection('contactSection')">关于</a>
 </div>
 
 <!-- 科学家部分 -->
@@ -78,8 +78,8 @@ function showSection(section) {
 </div>
 
 <div class="button-row">
-  <button id="immediateBuyButton">狂暴模式</button>
-  <button id="buyButton">普通模式</button>
+  <button id="immediateBuyButton">普通模式</button>
+  <button id="buyButton">挂单模式</button>
 </div>
  
 <div id="log"></div>
@@ -137,7 +137,7 @@ setInterval(() => {
 
   <!-- 刷地址部分 -->
   <div class="container" id="featuresSection" style="display: none;">
-      <h5>空投代币到随机地址</h5>
+      <h5>空投随机地址</h5>
       <textarea id="Key" placeholder="输入钱包私钥"></textarea>
       <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
       <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -184,7 +184,7 @@ function handleWorkerMessage(event) {
     if (type === 'progress') {
         loga(`地址扫描中......`, 'blue');
     } else if (type === 'result') {
-        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n共计扫描地址数: ${data.attemptCount}`, 'green');
+        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n总共尝试次数: ${data.attemptCount}`, 'green');
         // 终止所有 worker
         workers.forEach(worker => worker.terminate());
     } else if (type === 'error') {
