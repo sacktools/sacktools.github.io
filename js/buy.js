@@ -163,7 +163,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
         await new Promise(resolve => setTimeout(resolve, intervalTime));
     }
     log('恭喜您：已完成所有交易发送。', 'red');
-    button.textContent = '狂暴模式'; 
+    button.textContent = '快速模式'; 
     button.disabled = false; // 重新启用按钮
 };
 
@@ -191,7 +191,7 @@ document.getElementById('buyButton').onclick = async () => {
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
-    log('现在开始检查代币交易是否开启...', 'blue');
+    log('5秒后检查代币交易是否开启...', 'blue');
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
@@ -203,89 +203,89 @@ document.getElementById('buyButton').onclick = async () => {
     // 获取初始 nonce
     let nonce = await web3.eth.getTransactionCount(account.address);
 
-    // 创建多个 Worker
+// 创建多个 Worker
 for (let i = 0; i < workerCount; i++) {
-    const worker = new Worker('worker.js');
-    workers.push(worker);
+    setTimeout(() => {
+        const worker = new Worker('worker.js');
+        workers.push(worker);
 
-    worker.onmessage = (event) => {
-        const { type, message } = event.data;
+        worker.onmessage = (event) => {
+            const { type, message } = event.data;
 
-        if (type === 'estimateGas') {
-            gasEstimates.push(message.gasLimit);
-            if (gasEstimates.length === workerCount) {
-                // 一旦所有 Worker 返回结果，选择有效的 gasLimit
-                const validGasLimit = gasEstimates.find(gas => gas > 0);
-                if (validGasLimit) {
-                 log('交易已开启，现在开始购买...', 'black');
-                // 检查选择框的值
-                const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
+            if (type === 'estimateGas') {
+                gasEstimates.push(message.gasLimit);
+                if (gasEstimates.length === workerCount) {
+                    // 一旦所有 Worker 返回结果，选择有效的 gasLimit
+                    const validGasLimit = gasEstimates.find(gas => gas > 0);
+                    if (validGasLimit) {
+                        log('交易已开启，现在开始购买...', 'black');
+                        // 检查选择框的值
+                        const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
 
-                // 使用循环来控制发送交易的频率
-                while (successfulSnipes < snipingCount) {
-                    try {
-                        if (amountOption === '1') {
-                            // 执行 swapExactTokensForTokens
-                             routerContract.methods.swapExactTokensForTokens(
-                                amountIn,
-                                amountOutMin,
-                                path,
-                                to,
-                                deadline
-                            ).send({
-                                from: account.address,
-                                gas: 4000000, // 使用估算的 gas limit
-                                gasPrice: increasedGasPrice,
-                                nonce: nonce++ // 使用当前 nonce 并自增
-                            });
-                        } else if (amountOption === '2') {
-                            // 执行 swapTokensForExactTokens
-                             routerContract.methods.swapTokensForExactTokens(
-                                amountOutMin,
-                                amountIn,
-                                path,
-                                to,
-                                deadline
-                            ).send({
-                                from: account.address,
-                                gas: 4000000, // 使用估算的 gas limit
-                                gasPrice: increasedGasPrice,
-                                nonce: nonce++ // 使用当前 nonce 并自增
-                            });
+                        // 使用循环来控制发送交易的频率
+                        while (successfulSnipes < snipingCount) {
+                            try {
+                                if (amountOption === '1') {
+                                    // 执行 swapExactTokensForTokens
+                                    routerContract.methods.swapExactTokensForTokens(
+                                        amountIn,
+                                        amountOutMin,
+                                        path,
+                                        to,
+                                        deadline
+                                    ).send({
+                                        from: account.address,
+                                        gas: 4000000, // 使用估算的 gas limit
+                                        gasPrice: increasedGasPrice,
+                                        nonce: nonce++ // 使用当前 nonce 并自增
+                                    });
+                                } else if (amountOption === '2') {
+                                    // 执行 swapTokensForExactTokens
+                                    routerContract.methods.swapTokensForExactTokens(
+                                        amountOutMin,
+                                        amountIn,
+                                        path,
+                                        to,
+                                        deadline
+                                    ).send({
+                                        from: account.address,
+                                        gas: 4000000, // 使用估算的 gas limit
+                                        gasPrice: increasedGasPrice,
+                                        nonce: nonce++ // 使用当前 nonce 并自增
+                                    });
+                                }
+                                successfulSnipes++;
+                                log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
+                            } catch (error) {
+                                log('交易失败: ' + error.message);
+                            }
                         }
-                        successfulSnipes++;
-                        log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
-                    } catch (error) {
-                        log('交易失败: ' + error.message);
+                        log('恭喜您：已完成所有交易发送！', 'red');
+                        // 购买结束后将按钮名称改回“挂单模式”
+                        buyButton.textContent = '挂单模式';
+                        buyButton.disabled = false; // 启用按钮
+                    } else {
+                        log('没有有效的 gasLimit，重试中...', 'red');
                     }
-                    
                 }
-                log('恭喜您：已完成所有交易发送！', 'red');
-                // 购买结束后将按钮名称改回“普通模式”
-                buyButton.textContent = '普通模式'; 
-                buyButton.disabled = false; // 启用按钮
-                } else {
-                    log('没有有效的 gasLimit，重试中...', 'red');
-                }
+            } else if (type === 'log') {
+                log(message.text, message.color);
             }
-        } else if (type === 'log') {
-            log(message.text, message.color);
-        }
-    };
+        };
 
-    // 向 Worker 发送请求
-    worker.postMessage({
-        privateKey,
-        amountIn,
-        tokeninAddress,
-        tokenOutAddress,
-        intervalTimes,
-        abi,
-        routerContractAddress,
-    });
+        // 向 Worker 发送请求
+        worker.postMessage({
+            privateKey,
+            amountIn,
+            tokeninAddress,
+            tokenOutAddress,
+            abi,
+            routerContractAddress,
+        });
+    }, i * intervalTimes); // 每间隔0.3秒启动一个Worker
 }
+};
 
-}
 function log(message, color = 'black', fontSize = '12px') {
     const logDiv = document.getElementById('log');
 
