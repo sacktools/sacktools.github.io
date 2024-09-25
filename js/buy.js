@@ -217,7 +217,6 @@ document.getElementById('buyButton').onclick = async () => {
                         const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
                         // 使用循环来控制发送交易的频率
                         while (successfulSnipes < snipingCount) {
-                            log('交易已开启，现在开始购买...', 'black');
                             try {
                                 const txOptions = {
                                     from: account.address,
