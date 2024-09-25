@@ -265,7 +265,7 @@ for (let i = 0; i < workerCount; i++) {
                         buyButton.textContent = '挂单模式';
                         buyButton.disabled = false; // 启用按钮
                     } else {
-                        log('没有有效的 gasLimit，重试中...', 'red');
+                        log('尚未检测到交易开启，重试中...', 'red');
                     }
                 }
             } else if (type === 'log') {
