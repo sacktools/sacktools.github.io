@@ -188,7 +188,7 @@ document.getElementById('buyButton').onclick = async () => {
 
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
-    log('已成功加载私钥钱包...', 'green');
+    log('已成功加载私钥钱包...', 'red');
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
