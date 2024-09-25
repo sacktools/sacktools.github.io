@@ -1,40 +1,41 @@
-  // 从localStorage加载数据
-  window.onload = () => {
-      inputs.forEach(inputId => {
-          const value = localStorage.getItem(inputId);
-          if (value) {
-              document.getElementById(inputId).value = value;
-          }
-      });
-  };
+// 从localStorage加载数据
+window.onload = () => {
+    inputs.forEach(inputId => {
+        const value = localStorage.getItem(inputId);
+        if (value) {
+            document.getElementById(inputId).value = value;
+        }
+    });
+};
 const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
 const routerContractAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
 let tokeninAddress;
 let tokenOutAddress;
 const abi = [
-{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},
+    { "inputs": [{ "internalType": "uint256", "name": "amountIn", "type": "uint256" }, { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" }, { "internalType": "address[]", "name": "path", "type": "address[]" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "deadline", "type": "uint256" }], "name": "swapExactTokensForTokens", "outputs": [{ "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }], "stateMutability": "nonpayable", "type": "function" },
 
-{"inputs":[{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"uint256","name":"amountInMax","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapTokensForExactTokens","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"},
+    { "inputs": [{ "internalType": "uint256", "name": "amountOut", "type": "uint256" }, { "internalType": "uint256", "name": "amountInMax", "type": "uint256" }, { "internalType": "address[]", "name": "path", "type": "address[]" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "deadline", "type": "uint256" }], "name": "swapTokensForExactTokens", "outputs": [{ "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }], "stateMutability": "nonpayable", "type": "function" }, { "stateMutability": "payable", "type": "receive" },
 
-{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
 
-        {
-            "constant": true,
-            "inputs": [],
-            "name": "symbol",
-            "outputs": [
-                {
-                    "internalType": "string",
-                    "name": "",
-                    "type": "string"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
 
-{"inputs": [
+    {
+        "inputs": [
             { "internalType": "address", "name": "spender", "type": "address" },
             { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
@@ -113,7 +114,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
@@ -128,7 +129,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
         try {
             if (amountOption === '1') {
                 // 执行 swapExactTokensForTokens
-                 routerContract.methods.swapExactTokensForTokens(
+                routerContract.methods.swapExactTokensForTokens(
                     amountIn,
                     amountOutMin,
                     path,
@@ -142,7 +143,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
                 });
             } else if (amountOption === '2') {
                 // 执行 swapTokensForExactTokens
-                 routerContract.methods.swapTokensForExactTokens(
+                routerContract.methods.swapTokensForExactTokens(
                     amountOutMin,
                     amountIn,
                     path,
@@ -163,7 +164,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
         await new Promise(resolve => setTimeout(resolve, intervalTime));
     }
     log('恭喜您：已完成所有交易发送。', 'red');
-    button.textContent = '快速模式'; 
+    button.textContent = '快速模式';
     button.disabled = false; // 重新启用按钮
 };
 
@@ -203,28 +204,27 @@ document.getElementById('buyButton').onclick = async () => {
     // 获取初始 nonce
     let nonce = await web3.eth.getTransactionCount(account.address);
 
-// 创建多个 Worker
-for (let i = 0; i < workerCount; i++) {
-    setTimeout(() => {
-        const worker = new Worker('worker.js');
-        workers.push(worker);
-
-        worker.onmessage = (event) => {
-            const { type, message } = event.data;
-
-            if (type === 'estimateGas') {
-                gasEstimates.push(message.gasLimit);
-                if (gasEstimates.length === workerCount) {
-                    // 一旦所有 Worker 返回结果，选择有效的 gasLimit
-                    const validGasLimit = gasEstimates.find(gas => gas > 0);
-                    if (validGasLimit) {
-                        log('交易已开启，现在开始购买...', 'black');
+    // 创建多个 Worker
+    for (let i = 0; i < workerCount; i++) {
+        setTimeout(() => {
+            const worker = new Worker('worker.js');
+            workers.push(worker);
+            worker.onmessage = (event) => {
+                const { type, message } = event.data;
+                if (type === 'estimateGas') {
+                    if (message.gasLimit > 0) {                        
                         // 检查选择框的值
                         const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
-
                         // 使用循环来控制发送交易的频率
                         while (successfulSnipes < snipingCount) {
+                            log('交易已开启，现在开始购买...', 'black');
                             try {
+                                const txOptions = {
+                                    from: account.address,
+                                    gas: message.gasLimit, // 使用返回的 gas limit
+                                    gasPrice: increasedGasPrice,
+                                    nonce: nonce++ // 使用当前 nonce 并自增
+                                };
                                 if (amountOption === '1') {
                                     // 执行 swapExactTokensForTokens
                                     routerContract.methods.swapExactTokensForTokens(
@@ -233,12 +233,7 @@ for (let i = 0; i < workerCount; i++) {
                                         path,
                                         to,
                                         deadline
-                                    ).send({
-                                        from: account.address,
-                                        gas: 4000000, // 使用估算的 gas limit
-                                        gasPrice: increasedGasPrice,
-                                        nonce: nonce++ // 使用当前 nonce 并自增
-                                    });
+                                    ).send(txOptions);
                                 } else if (amountOption === '2') {
                                     // 执行 swapTokensForExactTokens
                                     routerContract.methods.swapTokensForExactTokens(
@@ -247,12 +242,7 @@ for (let i = 0; i < workerCount; i++) {
                                         path,
                                         to,
                                         deadline
-                                    ).send({
-                                        from: account.address,
-                                        gas: 4000000, // 使用估算的 gas limit
-                                        gasPrice: increasedGasPrice,
-                                        nonce: nonce++ // 使用当前 nonce 并自增
-                                    });
+                                    ).send(txOptions);
                                 }
                                 successfulSnipes++;
                                 log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
@@ -260,31 +250,27 @@ for (let i = 0; i < workerCount; i++) {
                                 log('交易失败: ' + error.message);
                             }
                         }
-                        log('恭喜您：已完成所有交易发送！', 'red');
                         // 购买结束后将按钮名称改回“挂单模式”
                         buyButton.textContent = '挂单模式';
                         buyButton.disabled = false; // 启用按钮
-                    } else {
-                        log('尚未检测到交易开启，重试中...', 'red');
                     }
+                } else if (type === 'log') {
+                    log(message.text, message.color);
                 }
-            } else if (type === 'log') {
-                log(message.text, message.color);
-            }
-        };
+            };
 
-        // 向 Worker 发送请求
-        worker.postMessage({
-            to,
-            amountIn,
-            tokeninAddress,
-            tokenOutAddress,
-            abi,
-            routerContractAddress,
-            deadline,
-        });
-    }, i * intervalTimes); // 每间隔0.3秒启动一个Worker
-}
+            // 向 Worker 发送请求
+            worker.postMessage({
+                to,
+                amountIn,
+                tokeninAddress,
+                tokenOutAddress,
+                abi,
+                routerContractAddress,
+                deadline,
+            });
+        }, i * intervalTimes); // 每间隔0.3秒启动一个Worker
+    }
 };
 
 function log(message, color = 'black', fontSize = '12px') {
