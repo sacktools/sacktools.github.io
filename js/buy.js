@@ -114,7 +114,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
@@ -179,7 +179,7 @@ document.getElementById('buyButton').onclick = async () => {
     const tokeninAddress = document.getElementById('tokeninAddress').value;
     const tokenOutAddress = document.getElementById('tokenOutAddress').value;
     const intervalTimes = document.getElementById('intervalTime').value;
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 20;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     if (!privateKey || !amountIn || !tokenOutAddress) {
         log('请填写所有字段');
         return;
