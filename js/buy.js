@@ -207,8 +207,6 @@ worker.onmessage = async (event) => {
             clearAllWorkers()
             const currentTimes = new Date().toLocaleString(); // 获取当前时间
             log(`${currentTimes}，检测到交易已开启...`, 'blue');
-            // 停止发送命令
-            clearInterval(sharedTimer);
             buyButton.textContent = '挂单模式';
             buyButton.disabled = false; // 启用按钮
             // 这里可以添加后续交易逻辑
