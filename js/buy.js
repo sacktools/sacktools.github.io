@@ -244,7 +244,6 @@ async function clearAllWorkers() {
     workers.forEach(worker => {
         worker.terminate();
     });
-    log('All workers terminated successfully.');
 }
 // 执行交易的函数
 async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
