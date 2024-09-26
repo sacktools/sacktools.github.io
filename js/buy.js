@@ -204,7 +204,7 @@ document.getElementById('buyButton').onclick = async () => {
                 if (message.gasLimit > 0) {
                     gasLimitFound = true; // 找到有效的 gas limit
                     log(`检测到交易已开启...`, 'blue');
-                    await executeTrades(message.gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress);
+                    await executeTrades(account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress);
                     clearAllWorkers()
                     // 停止发送命令
                     clearInterval(sharedTimer);
@@ -246,7 +246,7 @@ async function clearAllWorkers() {
     });
 }
 // 执行交易的函数
-async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
+async function executeTrades( account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const to = account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
@@ -267,7 +267,7 @@ async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenO
         try {
             const txOptions = {
                 from: account.address,
-                gas: gasLimit, // 使用返回的 gas limit
+                gas: 4000000, // 使用返回的 gas limit
                 gasPrice: increasedGasPrice,
                 nonce: nonce++ // 使用当前 nonce 并自增
             };
@@ -301,9 +301,6 @@ async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenO
         }
     }
 }
-
-
-
 
 function log(message, color = 'black', fontSize = '12px') {
     const logDiv = document.getElementById('log');
