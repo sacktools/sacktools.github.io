@@ -198,28 +198,27 @@ document.getElementById('buyButton').onclick = async () => {
     for (let i = 0; i < workerCount; i++) {
         const worker = new Worker('worker.js');
         workers.push(worker);
+        worker.onmessage = async (event) => {
+            const { type, message } = event.data;
+            if (type === 'estimateGas') {
+                if (message.gasLimit > 0) {
+                    gasLimitFound = true; // 找到有效的 gas limit
+                    log(`检测到交易已开启...`, 'blue');
+                    await executeTrades(message.gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress);
+                    clearAllWorkers()
+                    // 停止发送命令
+                    clearInterval(sharedTimer);
+                    buyButton.textContent = '挂单模式';
+                    buyButton.disabled = false; // 启用按钮
 
-worker.onmessage = async (event) => {
-    const { type, message } = event.data;
-    if (type === 'estimateGas') {
-        if (message.gasLimit > 0) {
-            gasLimitFound = true; // 找到有效的 gas limit
-            clearAllWorkers()
-            const currentTimes = new Date().toLocaleString(); // 获取当前时间
-            log(`${currentTimes}，检测到交易已开启...`, 'blue');
-            clearInterval(sharedTimer);
-            buyButton.textContent = '挂单模式';
-            buyButton.disabled = false; // 启用按钮
-            // 这里可以添加后续交易逻辑
-            await executeTrades(message.gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress);
-        } else if (message.gasLimit === 0) {
-            const currentTime = new Date().toLocaleString(); // 获取当前时间
-            log(` ${currentTime}，交易未开启.....`, 'orange'); // 打印当前时间
-        }
-    } else if (type === 'log') {
-        log(message.text, message.color);
-    }
-};
+                } else if (message.gasLimit === 0) {
+                    const currentTime = new Date().toLocaleString(); // 获取当前时间
+                    log(` ${currentTime}，交易未开启.....`, 'orange'); // 打印当前时间
+                }
+            } else if (type === 'log') {
+                log(message.text, message.color);
+            }
+        };
 
         // 向 Worker 发送请求
         worker.postMessage({
@@ -245,6 +244,7 @@ async function clearAllWorkers() {
     workers.forEach(worker => {
         worker.terminate();
     });
+    log('All workers terminated successfully.');
 }
 // 执行交易的函数
 async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
@@ -268,14 +268,14 @@ async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenO
         try {
             const txOptions = {
                 from: account.address,
-                gas: 4000000, // 使用固定的 gas limit
+                gas: gasLimit, // 使用返回的 gas limit
                 gasPrice: increasedGasPrice,
                 nonce: nonce++ // 使用当前 nonce 并自增
             };
 
             // 根据选择的交易类型执行相应的交易
             if (amountOption === '1') {
-                 routerContract.methods.swapExactTokensForTokens(
+                routerContract.methods.swapExactTokensForTokens(
                     amountIn,
                     amountOutMin,
                     [tokeninAddress, tokenOutAddress],
@@ -283,7 +283,7 @@ async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenO
                     deadline
                 ).send(txOptions);
             } else if (amountOption === '2') {
-                 routerContract.methods.swapTokensForExactTokens(
+                routerContract.methods.swapTokensForExactTokens(
                     amountOutMin,
                     amountIn,
                     [tokeninAddress, tokenOutAddress],
