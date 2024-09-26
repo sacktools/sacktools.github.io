@@ -267,7 +267,7 @@ async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenO
         try {
             const txOptions = {
                 from: account.address,
-                gas: gasLimit, // 使用返回的 gas limit
+                gas: 4000000, // 使用固定的 gas limit
                 gasPrice: increasedGasPrice,
                 nonce: nonce++ // 使用当前 nonce 并自增
             };
