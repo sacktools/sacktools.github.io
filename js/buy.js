@@ -204,13 +204,13 @@ worker.onmessage = async (event) => {
     if (type === 'estimateGas') {
         if (message.gasLimit > 0) {
             gasLimitFound = true; // 找到有效的 gas limit
+            clearAllWorkers()
             const currentTimes = new Date().toLocaleString(); // 获取当前时间
             log(`${currentTimes}，检测到交易已开启...`, 'blue');
             // 停止发送命令
             clearInterval(sharedTimer);
             buyButton.textContent = '挂单模式';
             buyButton.disabled = false; // 启用按钮
-
             // 这里可以添加后续交易逻辑
             await executeTrades(message.gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress);
         } else if (message.gasLimit === 0) {
@@ -242,7 +242,11 @@ worker.onmessage = async (event) => {
         }
     }, intervalTimes); // 每0.3秒执行一次
 };
-
+async function clearAllWorkers() {
+    workers.forEach(worker => {
+        worker.terminate();
+    });
+}
 // 执行交易的函数
 async function executeTrades(gasLimit, account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
