@@ -2,90 +2,100 @@
 <html lang="zh-CN">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="shortcut icon" href="image/favicon.ico" />
-<title>SackTools</title>
-<link rel="stylesheet" href="css/styles.css"> <!-- 导入外部CSS文件 -->
-<script>
-function showSection(section) {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/favicon.ico" />
+    <title>SackTools</title>
+    <link rel="stylesheet" href="css/styles.css"> <!-- 导入外部CSS文件 -->
+    <script>
+        function showSection(section) {
   const sections = document.querySelectorAll('.container');
   sections.forEach(s => s.style.display = 'none'); // 隐藏所有部分
   document.getElementById(section).style.display = 'block'; // 显示选定部分
 }
-</script>
+    </script>
 </head>
+
 <body>
-<!-- 导航栏 -->
-<div class="navbar">
-<a href="javascript:void(0);" onclick="showSection('homeSection')" >科学家</a>
-<a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
-<a href="javascript:void(0);" onclick="showSection('aboutSection')">市值管理</a>
-<a href="javascript:void(0);" onclick="showSection('contactSection')">联系</a>
-</div>
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <a href="javascript:void(0);" onclick="showSection('homeSection')">科学家</a>
+        <a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
+        <a href="javascript:void(0);" onclick="showSection('aboutSection')">市值管理</a>
+        <a href="javascript:void(0);" onclick="showSection('contactSection')">联系</a>
+    </div>
 
-<!-- 科学家部分 -->
-<div class="container" id="homeSection" style="display: block;">
-<div id="time"></div>
+    <!-- 科学家部分 -->
+    <div class="container" id="homeSection" style="display: block;">
+        <div id="time"></div>
 
-<!-- 添加单选框 -->
-<div style="display: flex; justify-content: center; align-items: center; margin: 10px 0; width: 100%;">
-  <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen; margin-right: 20px;">
+        <!-- 添加单选框 -->
+        <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0; width: 100%;">
+            <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen; margin-right: 20px;">
       <input type="radio" name="amountOption" value="1" checked> 支出固定数量
   </label>
-  <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen;">
+            <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen;">
       <input type="radio" name="amountOption" value="2"> 买入固定数量
   </label>
-</div>
+        </div>
 
-<textarea id="privateKey" placeholder="输入钱包私钥"></textarea>
-<div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 10px;">结果将显示在这里</div>
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <input type="text" id="tokeninAddress" placeholder="底池代币合约地址，常见如：USDT、WBNB" style="flex: 1; min-width: 220px; font-size: 11px;" />
-  <button id="approveButton">授权</button>
-</div>
-<div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <input type="text" id="tokenOutAddress" placeholder="购买代币合约地址：要获得的代币" style="flex: 1; min-width: 220px; font-size: 11px;" />
-  <button id="checkButton">余额</button>
-</div>
+        <textarea id="privateKey" placeholder="输入钱包私钥" style="margin-bottom: 5px;"></textarea>
+        <div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 12px;">结果将显示在这里</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="text" id="tokeninAddress" placeholder="底池代币合约地址，常见如：USDT、WBNB" style="flex: 1; min-width: 220px; font-size: 11px; padding: 5px; height: 20px;" />
+            <button id="approveButton" style="font-size: 11px; padding: 5px 10px; height: 30px;">授权</button>
+        </div>
 
-<div class="selection-row">
-  <div>
-      <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
-      <input type="text" id="amountIn" style="min-width: 80px;" value="0.1" />
-  </div>
-  <div>
-      <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label> 
-      <input type="text" id="amountOutMin" style="min-width: 80px;" value="0" />
-  </div>
-  <div>
-      <label for="gasMultiplier">Gas 倍速:</label>
-      <input type="text" id="gasMultiplier" style="min-width: 80px;" value="1"/>
-  </div>
-  <div>
-      <label for="snipingCount">购买笔数:</label>
-      <input type="text" id="snipingCount" style="min-width: 80px;" value="1" />
-  </div>
-  <div>
-      <label for="intervalTime">监控间隔（ms）:</label>
-      <input type="text" id="intervalTime" style="min-width: 80px;" value="300" />
-  </div>
-  <div>
-      <label for="buyintervalTime">买入间隔（ms）:</label>
-      <input type="text" id="buyintervalTime" style="min-width: 80px;" value="200"/>
-  </div>
-</div>
+        <div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 12px;">结果将显示在这里</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="text" id="tokenOutAddress" placeholder="购买代币合约地址：要获得的代币" style="flex: 1; min-width: 220px; font-size: 11px;padding: 5px; height: 20px;" />
+            <button id="checkButton"style="font-size: 11px; padding: 5px 10px; height: 30px;">余额</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="text" id="reciveAddress" placeholder="指定接收地址，不填则默认私钥钱包地址" style="flex: 1; min-width: 220px; font-size: 11px;padding: 5px; height: 20px;" />
+        </div>
 
-<div class="button-row">
-  <button id="immediateBuyButton">快速模式</button>
-  <button id="buyButton">挂单模式</button>
-</div>
- 
-<div id="log"></div>
+        <div class="selection-row">
+            <div>
+                <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
+                <input type="text" id="amountIn" style="min-width: 80px;" value="0.1" />
+            </div>
+            <div>
+                <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label>
+                <input type="text" id="amountOutMin" style="min-width: 80px;" value="0" />
+            </div>
+            <div>
+                <label for="gasMultiplier">Gas 倍速:</label>
+                <input type="text" id="gasMultiplier" style="min-width: 80px;" value="1"/>
+            </div>
+            <div>
+                <label for="snipingCount">购买笔数:</label>
+                <input type="text" id="snipingCount" style="min-width: 80px;" value="1" />
+            </div>
+            <div style="display: flex; align-items: center;">
+                <div style="margin-right: 0px;">
+                    <label for="intervalTime">监控间隔（ms）+ 监控线程:</label>
+                    <input type="text" id="intervalTime" style="width: 65px;" value="300" />
+                    <input type="text" id="worker" style="width: 60px;" value="5" />
+                </div>
 
-<script>
-// 设置缓存功能
+                <div>
+                    <label for="buyintervalTime">买入间隔（ms）:</label>
+                    <input type="text" id="buyintervalTime" style="width: 145px;" value="200"/>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="button-row">
+            <button id="immediateBuyButton">快速模式</button>
+            <button id="buyButton">挂单模式</button>
+        </div>
+
+        <div id="log"></div>
+
+        <script>
+            // 设置缓存功能
 const inputs = [
     'privateKey',
     'tokeninAddress',
@@ -129,42 +139,42 @@ setInterval(() => {
     document.getElementById("time").innerText = `当前北京时间: ${beijingTime}`;
 }, 1000);
 
-</script>
-<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
-<script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+        <script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
 
-</div>
+    </div>
 
-  <!-- 刷地址部分 -->
-  <div class="container" id="featuresSection" style="display: none;">
-      <h5>空投随机地址</h5>
-      <textarea id="Key" placeholder="输入钱包私钥"></textarea>
-      <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-          <input type="text" id="tokenAddress" placeholder="空投代币的合约地址" style="flex: 1; min-width: 220px; font-size: 11px;" />
-          <button id="chaButton">查询</button>
-      </div>
+    <!-- 刷地址部分 -->
+    <div class="container" id="featuresSection" style="display: none;">
+        <h5>空投随机地址</h5>
+        <textarea id="Key" placeholder="输入钱包私钥"></textarea>
+        <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="text" id="tokenAddress" placeholder="空投代币的合约地址" style="flex: 1; min-width: 220px; font-size: 11px;" />
+            <button id="chaButton">查询</button>
+        </div>
 
-      <div class="selection-row">
-          <div>
-              <label for="dropamount">单地址空投代币数量:</label>
-              <input type="text" id="dropamount" style="min-width: 80px;" />
-          </div>
+        <div class="selection-row">
+            <div>
+                <label for="dropamount">单地址空投代币数量:</label>
+                <input type="text" id="dropamount" style="min-width: 80px;" />
+            </div>
 
-          <div>
-              <label for="dropCount">空投地址数量（≤300）:</label>
-              <input type="text" id="dropCount" style="min-width: 80px;" />
-          </div>
-      </div>
-     
-          <button id="dropButton">确认空投</button>
-<h5>生成靓号钱包地址</h5>
-<input type="text" id="prefix" placeholder="输入前缀" />
-<input type="text" id="suffix" placeholder="输入后缀" />
-<button id="generateButton">确认生成</button>
+            <div>
+                <label for="dropCount">空投地址数量（≤300）:</label>
+                <input type="text" id="dropCount" style="min-width: 80px;" />
+            </div>
+        </div>
 
-<script>
-const workers = [];
+        <button id="dropButton">确认空投</button>
+        <h5>生成靓号钱包地址</h5>
+        <input type="text" id="prefix" placeholder="输入前缀" />
+        <input type="text" id="suffix" placeholder="输入后缀" />
+        <button id="generateButton">确认生成</button>
+
+        <script>
+            const workers = [];
 let activeWorkers = 0;
 
 function createWorkers(workerCount) {
@@ -206,21 +216,22 @@ document.getElementById('generateButton').addEventListener('click', () => {
         workers[0].postMessage({ prefix, suffix, maxAttempts: Math.floor(maxAttempts / workerCount) });
     }
 });
-</script>
-      <div id="droplog" style="white-space: pre-wrap; margin-top: 10px;"></div>
-      <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-  </div>
+        </script>
+        <div id="droplog" style="white-space: pre-wrap; margin-top: 10px;"></div>
+        <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
+    </div>
 
-  <!-- 关于我们部分 -->
-<div class="container" id="aboutSection">
-<h2>市值机器人</h2>
-<p>coming soon...</p>
-</div>
+    <!-- 关于我们部分 -->
+    <div class="container" id="aboutSection">
+        <h2>市值机器人</h2>
+        <p>coming soon...</p>
+    </div>
 
-<!-- 联系我们部分 -->
-<div class="container" id="contactSection">
-<h2>联系我们领取空投</h2>
-<p>coming soon...</p>
-</div>
+    <!-- 联系我们部分 -->
+    <div class="container" id="contactSection">
+        <h2>联系我们领取空投</h2>
+        <p>coming soon...</p>
+    </div>
 </body>
+
 </html>
