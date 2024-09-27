@@ -83,9 +83,9 @@ document.getElementById('checkButton').onclick = async () => {
         const formattedtokeninBalance = web3.utils.fromWei(balancetokenin, 'ether'); // 转换为可读格式
         const formattedtokenOutBalance = web3.utils.fromWei(balancetokenOut, 'ether'); // 转换为可读格式
 
-        document.getElementById('privateKeyResult').style.color = 'darkgreen'; // 恢复可见
+        document.getElementById('privateKeyResult').style.color = 'blue'; // 恢复可见
         document.getElementById('privateKeyResult').textContent = tokeninName + '余额: ' + formattedtokeninBalance;
-        document.getElementById('tokeninResult').style.color = 'darkgreen'; // 恢复可见
+        document.getElementById('tokeninResult').style.color = 'blue'; // 恢复可见
         document.getElementById('tokeninResult').textContent = tokenOutName + '余额: ' + formattedtokenOutBalance;
     } catch (error) {
         console.error(error); // 打印错误信息
@@ -113,7 +113,8 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const to = account.address;
+    const reciveAddress = document.getElementById('reciveAddress').value;
+    const to = reciveAddress ? reciveAddress : account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
     const gasMultiplier = document.getElementById('gasMultiplier').value;
@@ -190,7 +191,7 @@ document.getElementById('buyButton').onclick = async () => {
     log('已成功加载私钥钱包...', 'red');
 
     const workers = [];
-    const workerCount = 10; // 设置 Worker 数量
+    const workerCount = document.getElementById('worker').value;
     let currentWorkerIndex = 0;
     let gasLimitFound = false;
 
@@ -248,7 +249,8 @@ async function clearAllWorkers() {
 // 执行交易的函数
 async function executeTrades( account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
-    const to = account.address;
+    const reciveAddress = document.getElementById('reciveAddress').value;
+    const to = reciveAddress ? reciveAddress : account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const gasMultiplier = document.getElementById('gasMultiplier').value;
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
