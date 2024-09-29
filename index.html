@@ -14,6 +14,35 @@
   document.getElementById(section).style.display = 'block'; // 显示选定部分
 }
     </script>
+    <script>
+        // 设置缓存功能
+        const inputs = [
+            'privateKey',
+            'tokeninAddress',
+            'customAddress',
+            'tokenOutAddress',
+            'customBddress',
+            'amountIn',
+            'amountOutMin',
+            'gasMultiplier',
+            'snipingCount',
+            'intervalTime',
+            'buyintervalTime'
+        ];
+
+        // 加载缓存
+        window.onload = function() {
+            inputs.forEach(input => {
+                const element = document.getElementById(input);
+                if (element) {
+                    element.value = localStorage.getItem(input) || '';
+                    element.addEventListener('input', () => {
+                        localStorage.setItem(input, element.value);
+                    });
+                }
+            });
+        };
+    </script>
 </head>
 
 <body>
@@ -21,8 +50,7 @@
     <div class="navbar">
         <a href="javascript:void(0);" onclick="showSection('homeSection')">科学家</a>
         <a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
-        <a href="javascript:void(0);" onclick="showSection('aboutSection')">市值管理</a>
-        <a href="javascript:void(0);" onclick="showSection('contactSection')">联系</a>
+        <a href="javascript:void(0);" onclick="showSection('contactSection')">联系我们</a>
     </div>
 
     <!-- 科学家部分 -->
@@ -42,15 +70,45 @@
         <textarea id="privateKey" placeholder="输入钱包私钥" style="margin-bottom: 5px;"></textarea>
         <div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 12px;">结果将显示在这里</div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <input type="text" id="tokeninAddress" placeholder="底池代币合约地址，常见如：USDT、WBNB" style="flex: 1; min-width: 220px; font-size: 11px; padding: 5px; height: 20px;" />
+            <select id="tokeninAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
+        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
+        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
+        <option value="自定义">其他</option>
+    </select>
+            <input type="text" id="customAddress" placeholder="输入自定义地址" style="flex: 1; min-width: 170px; font-size: 11px; padding: 5px; height: 20px; display: none;" />
             <button id="approveButton" style="font-size: 11px; padding: 5px 10px; height: 30px;">授权</button>
         </div>
 
         <div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 12px;">结果将显示在这里</div>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <input type="text" id="tokenOutAddress" placeholder="购买代币合约地址：要获得的代币" style="flex: 1; min-width: 220px; font-size: 11px;padding: 5px; height: 20px;" />
-            <button id="checkButton"style="font-size: 11px; padding: 5px 10px; height: 30px;">余额</button>
+            <select id="tokenOutAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
+        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
+        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
+        <option value="自定义">其他</option>
+    </select>
+            <input type="text" id="customBddress" placeholder="输入自定义地址" style="flex: 1; min-width: 170px; font-size: 11px; padding: 5px; height: 20px; display: none;" />
+            <button id="sellButton"style="font-size: 11px; padding: 5px 10px; height: 30px;">SWAP</button>
         </div>
+        <script>
+            tokeninAddress.addEventListener('change', function() {
+        if (this.value === '自定义') {
+            customAddress.style.display = 'block'; // 显示自定义地址输入框
+            customAddress.value = ''; // 清空输入框
+        } else {
+            customAddress.style.display = 'none'; // 隐藏自定义地址输入框
+            customAddress.value = this.value; // 设置为选择的地       
+        }
+    });
+    tokenOutAddress.addEventListener('change', function() {
+        if (this.value === '自定义') {
+            customBddress.style.display = 'block'; // 显示自定义地址输入框
+            customBddress.value = ''; // 清空输入框
+        } else {
+            customBddress.style.display = 'none'; // 隐藏自定义地址输入框
+            customBddress.value = this.value; // 设置为选择的地址
+        }
+    });
+        </script>
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <input type="text" id="reciveAddress" placeholder="指定接收地址，不填则默认私钥钱包地址" style="flex: 1; min-width: 220px; font-size: 11px;padding: 5px; height: 20px;" />
         </div>
@@ -95,27 +153,7 @@
         <div id="log"></div>
 
         <script>
-            // 设置缓存功能
-const inputs = [
-    'privateKey',
-    'tokeninAddress',
-    'tokenOutAddress',
-    'amountIn',
-    'amountOutMin',
-    'gasMultiplier',
-    'snipingCount',
-    'intervalTime',
-    'buyintervalTime'
-];
-
-// 监听输入框变化并保存到localStorage
-inputs.forEach(inputId => {
-    document.getElementById(inputId).addEventListener('input', (event) => {
-        localStorage.setItem(inputId, event.target.value);
-    });
-});
-
-// 监听单选框的变化
+            // 监听单选框的变化
 const amountOptions = document.getElementsByName('amountOption');
 const amountInLabel = document.getElementById('amountInLabel');
 const amountOutMinLabel = document.getElementById('amountOutMinLabel');
@@ -221,16 +259,9 @@ document.getElementById('generateButton').addEventListener('click', () => {
         <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
     </div>
 
-    <!-- 关于我们部分 -->
-    <div class="container" id="aboutSection">
-        <h2>市值机器人</h2>
-        <p>coming soon...</p>
-    </div>
-
     <!-- 联系我们部分 -->
     <div class="container" id="contactSection">
-        <h2>联系我们领取空投</h2>
-        <p>coming soon...</p>
+        <h2><a href="https://t.me/tokenpushcn" target="_blank">Telegram</a></h2>
     </div>
 </body>
 
