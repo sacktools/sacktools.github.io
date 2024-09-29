@@ -1,12 +1,3 @@
-// 从localStorage加载数据
-window.onload = () => {
-    inputs.forEach(inputId => {
-        const value = localStorage.getItem(inputId);
-        if (value) {
-            document.getElementById(inputId).value = value;
-        }
-    });
-};
 const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
 const routerContractAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
 let tokeninAddress;
@@ -15,6 +6,19 @@ const abi = [
     { "inputs": [{ "internalType": "uint256", "name": "amountIn", "type": "uint256" }, { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" }, { "internalType": "address[]", "name": "path", "type": "address[]" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "deadline", "type": "uint256" }], "name": "swapExactTokensForTokens", "outputs": [{ "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }], "stateMutability": "nonpayable", "type": "function" },
 
     { "inputs": [{ "internalType": "uint256", "name": "amountOut", "type": "uint256" }, { "internalType": "uint256", "name": "amountInMax", "type": "uint256" }, { "internalType": "address[]", "name": "path", "type": "address[]" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "deadline", "type": "uint256" }], "name": "swapTokensForExactTokens", "outputs": [{ "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" }], "stateMutability": "nonpayable", "type": "function" }, { "stateMutability": "payable", "type": "receive" },
+    {
+        "inputs": [
+            { "internalType": "uint256", "name": "amountIn", "type": "uint256" },
+            { "internalType": "uint256", "name": "amountOutMin", "type": "uint256" },
+            { "internalType": "address[]", "name": "path", "type": "address[]" },
+            { "internalType": "address", "name": "to", "type": "address" },
+            { "internalType": "uint256", "name": "deadline", "type": "uint256" }
+        ],
+        "name": "swapExactTokensForTokensSupportingFeeOnTransferTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
 
     { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
 
@@ -51,44 +55,21 @@ document.getElementById('approveButton').onclick = async () => {
     const amountIn = 100000000000000000000000000000 * 1e18;
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
-    tokeninAddress = document.getElementById('tokeninAddress').value;
+
+    // 获取 tokeninAddress
+    const customAddress = document.getElementById('customAddress');
+    if (document.getElementById('tokeninAddress').value === '自定义') {
+        tokeninAddress = customAddress.value; // 使用自定义地址
+    } else {
+        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+    }
+
     const tokenContract = new web3.eth.Contract(abi, tokeninAddress);
     try {
         const approval = await tokenContract.methods.approve(routerContractAddress, amountIn).send({ from: account.address });
         log('代币授权成功', 'red');
     } catch (error) {
         log('代币授权失败: ' + error.message);
-    }
-};
-
-document.getElementById('checkButton').onclick = async () => {
-    const privateKey = document.getElementById('privateKey').value;
-    const tokeninAddress = document.getElementById('tokeninAddress').value;
-    const tokenOutAddress = document.getElementById('tokenOutAddress').value;
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
-    const to = account.address;
-    const tokeninAddressContract = new web3.eth.Contract(abi, tokeninAddress);
-    const tokenOutAddressContract = new web3.eth.Contract(abi, tokenOutAddress);
-
-    try {
-        // 使用 Promise.all 并行处理
-        const [tokeninName, tokenOutName, balancetokenin, balancetokenOut] = await Promise.all([
-            tokeninAddressContract.methods.symbol().call(),
-            tokenOutAddressContract.methods.symbol().call(),
-            tokeninAddressContract.methods.balanceOf(to).call(),
-            tokenOutAddressContract.methods.balanceOf(to).call()
-        ]);
-
-        const formattedtokeninBalance = web3.utils.fromWei(balancetokenin, 'ether'); // 转换为可读格式
-        const formattedtokenOutBalance = web3.utils.fromWei(balancetokenOut, 'ether'); // 转换为可读格式
-
-        document.getElementById('privateKeyResult').style.color = 'blue'; // 恢复可见
-        document.getElementById('privateKeyResult').textContent = tokeninName + '余额: ' + formattedtokeninBalance;
-        document.getElementById('tokeninResult').style.color = 'blue'; // 恢复可见
-        document.getElementById('tokeninResult').textContent = tokenOutName + '余额: ' + formattedtokenOutBalance;
-    } catch (error) {
-        console.error(error); // 打印错误信息
     }
 };
 
@@ -102,8 +83,19 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     const snipingCount = document.getElementById('snipingCount').value;
     const intervalTime = document.getElementById('buyintervalTime').value;
     const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
-    tokeninAddress = document.getElementById('tokeninAddress').value;
-    tokenOutAddress = document.getElementById('tokenOutAddress').value;
+    const customAddress = document.getElementById('customAddress');
+    if (document.getElementById('tokeninAddress').value === '自定义') {
+        tokeninAddress = customAddress.value; // 使用自定义地址
+    } else {
+        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+    }
+
+    const customBddress = document.getElementById('customBddress');
+    if (document.getElementById('tokenOutAddress').value === '自定义') {
+        tokenOutAddress = customBddress.value; // 使用自定义地址
+    } else {
+        tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
+    }
     if (!privateKey || !amountIn || !tokenOutAddress) {
         log('请填写所有字段');
         button.disabled = false; // 重新启用按钮
@@ -169,6 +161,80 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     button.disabled = false; // 重新启用按钮
 };
 
+document.getElementById('sellButton').onclick = async () => {
+    const button = document.getElementById('sellButton');
+    button.textContent = 'wait';
+    button.disabled = true; // 禁用按钮
+    const privateKey = document.getElementById('privateKey').value;
+    const amountIn = document.getElementById('amountIn').value * 1e18;
+    const snipingCount = document.getElementById('snipingCount').value;
+    const intervalTime = document.getElementById('buyintervalTime').value;
+    const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
+    const customAddress = document.getElementById('customAddress');
+    if (document.getElementById('tokeninAddress').value === '自定义') {
+        tokeninAddress = customAddress.value; // 使用自定义地址
+    } else {
+        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+    }
+
+    const customBddress = document.getElementById('customBddress');
+    if (document.getElementById('tokenOutAddress').value === '自定义') {
+        tokenOutAddress = customBddress.value; // 使用自定义地址
+    } else {
+        tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
+    }
+    if (!privateKey || !amountIn || !tokenOutAddress) {
+        log('请填写所有字段');
+        button.disabled = false; // 重新启用按钮
+        return;
+    }
+
+    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+    web3.eth.accounts.wallet.add(account);
+    const routerContract = new web3.eth.Contract(abi, routerContractAddress);
+    const reciveAddress = document.getElementById('reciveAddress').value;
+    const to = reciveAddress ? reciveAddress : account.address;
+    const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
+    const path = [tokeninAddress, tokenOutAddress];
+    const gasMultiplier = document.getElementById('gasMultiplier').value;
+    const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
+    const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
+    let successfulSnipes = 0;
+    // 获取初始 nonce
+    let nonce = await web3.eth.getTransactionCount(account.address);
+    // 检查选择框的值
+    const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
+    // 使用循环来控制发送交易的频率
+    while (successfulSnipes < snipingCount) {
+        try {
+            if (amountOption === '1') {
+                // 执行 swapExactTokensForTokens
+                routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn,
+                    amountOutMin,
+                    path,
+                    to,
+                    deadline
+                ).send({
+                    from: account.address,
+                    gas: 4000000, // 使用估算的 gas limit
+                    gasPrice: increasedGasPrice,
+                    nonce: nonce++ // 使用当前 nonce 并自增
+                });
+            } else if (amountOption === '2') {
+                log('暂不支持 ');
+            }
+            successfulSnipes++;
+            log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
+        } catch (error) {
+            log('交易失败: ' + error.message);
+        }
+        await new Promise(resolve => setTimeout(resolve, intervalTime));
+    }
+    log('恭喜您：已完成所有交易发送。', 'red');
+    button.textContent = 'SWAP';
+    button.disabled = false; // 重新启用按钮
+};
 
 document.getElementById('buyButton').onclick = async () => {
     const buyButton = document.getElementById('buyButton');
@@ -177,8 +243,19 @@ document.getElementById('buyButton').onclick = async () => {
 
     const privateKey = document.getElementById('privateKey').value;
     const amountIn = document.getElementById('amountIn').value * 1e18;
-    const tokeninAddress = document.getElementById('tokeninAddress').value;
-    const tokenOutAddress = document.getElementById('tokenOutAddress').value;
+    const customAddress = document.getElementById('customAddress');
+    if (document.getElementById('tokeninAddress').value === '自定义') {
+        tokeninAddress = customAddress.value; // 使用自定义地址
+    } else {
+        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+    }
+
+    const customBddress = document.getElementById('customBddress');
+    if (document.getElementById('tokenOutAddress').value === '自定义') {
+        tokenOutAddress = customBddress.value; // 使用自定义地址
+    } else {
+        tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
+    }
     const intervalTimes = document.getElementById('intervalTime').value;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     if (!privateKey || !amountIn || !tokenOutAddress) {
@@ -247,7 +324,7 @@ async function clearAllWorkers() {
     });
 }
 // 执行交易的函数
-async function executeTrades( account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
+async function executeTrades(account, amountIn, tokeninAddress, tokenOutAddress, abi, routerContractAddress) {
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const reciveAddress = document.getElementById('reciveAddress').value;
     const to = reciveAddress ? reciveAddress : account.address;
@@ -303,7 +380,67 @@ async function executeTrades( account, amountIn, tokeninAddress, tokenOutAddress
         }
     }
 }
+const checkBalances = async () => {
+    const privateKey = document.getElementById('privateKey').value;
+    const customAddress = document.getElementById('customAddress');
+    if (document.getElementById('tokeninAddress').value === '自定义') {
+        tokeninAddress = customAddress.value; // 使用自定义地址
+    } else {
+        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+    }
 
+    const customBddress = document.getElementById('customBddress');
+    if (document.getElementById('tokenOutAddress').value === '自定义') {
+        tokenOutAddress = customBddress.value; // 使用自定义地址
+    } else {
+        tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
+    }
+
+    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+    web3.eth.accounts.wallet.add(account);
+    const to = account.address;
+    const tokeninAddressContract = new web3.eth.Contract(abi, tokeninAddress);
+    const tokenOutAddressContract = new web3.eth.Contract(abi, tokenOutAddress);
+
+    try {
+        // 使用 Promise.all 并行处理
+        const [tokeninName, tokenOutName, balancetokenin, balancetokenOut] = await Promise.all([
+            tokeninAddressContract.methods.symbol().call(),
+            tokenOutAddressContract.methods.symbol().call(),
+            tokeninAddressContract.methods.balanceOf(to).call(),
+            tokenOutAddressContract.methods.balanceOf(to).call()
+        ]);
+
+        const formattedtokeninBalance = web3.utils.fromWei(balancetokenin, 'ether'); // 转换为可读格式
+        const formattedtokenOutBalance = web3.utils.fromWei(balancetokenOut, 'ether'); // 转换为可读格式
+
+        // 更新 tokeninAddress 下拉选项
+        const tokeninSelect = document.getElementById('tokeninAddress');
+        const customTokeninOption = tokeninSelect.querySelector('option[value="自定义"]');
+        
+        if (tokeninSelect.value === '自定义' && customTokeninOption) {
+            customTokeninOption.textContent = tokeninName + '‌ ↺ '; // 将文本更改为 tokeninName
+        }
+
+        // 更新 tokenOutAddress 下拉选项
+        const tokenOutSelect = document.getElementById('tokenOutAddress');
+        const customTokenOutOption = tokenOutSelect.querySelector('option[value="自定义"]');
+        
+        if (tokenOutSelect.value === '自定义' && customTokenOutOption) {
+            customTokenOutOption.textContent = tokenOutName + '‌ ↺ '; // 将文本更改为 tokenOutName
+        }
+
+        document.getElementById('privateKeyResult').style.color = 'blue'; // 恢复可见
+        document.getElementById('privateKeyResult').textContent = tokeninName + '余额: ' + formattedtokeninBalance;
+        document.getElementById('tokeninResult').style.color = 'blue'; // 恢复可见
+        document.getElementById('tokeninResult').textContent = tokenOutName + '余额: ' + formattedtokenOutBalance;
+    } catch (error) {
+        console.error(error); // 打印错误信息
+    }
+};
+
+// 每3秒自动执行一次
+setInterval(checkBalances, 3000);
 function log(message, color = 'black', fontSize = '12px') {
     const logDiv = document.getElementById('log');
 
