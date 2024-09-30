@@ -6,14 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="image/favicon.ico" />
     <title>SackTools</title>
+
+    <!-- 引入Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css"> <!-- 导入外部CSS文件 -->
-    <script>
-        function showSection(section) {
-  const sections = document.querySelectorAll('.container');
-  sections.forEach(s => s.style.display = 'none'); // 隐藏所有部分
-  document.getElementById(section).style.display = 'block'; // 显示选定部分
-}
-    </script>
+
     <script>
         // 设置缓存功能
         const inputs = [
@@ -42,75 +39,84 @@
                 }
             });
         };
+
     </script>
 </head>
 
 <body>
-    <!-- 导航栏 -->
-    <div class="navbar">
-        <a href="javascript:void(0);" onclick="showSection('homeSection')">科学家</a>
-        <a href="javascript:void(0);" onclick="showSection('featuresSection')">刷地址</a>
-        <a href="javascript:void(0);" onclick="showSection('contactSection')">联系我们</a>
-    </div>
-
     <!-- 科学家部分 -->
     <div class="container" id="homeSection" style="display: block;">
         <div id="time"></div>
-
         <!-- 添加单选框 -->
         <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0; width: 100%;">
             <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen; margin-right: 20px;">
-      <input type="radio" name="amountOption" value="1" checked> 支出固定数量
-  </label>
+    <input type="radio" name="amountOption" value="1" checked> 支出固定数量
+    </label>
             <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen;">
-      <input type="radio" name="amountOption" value="2"> 买入固定数量
-  </label>
+    <input type="radio" name="amountOption" value="2"> 买入固定数量
+    </label>
         </div>
-
-        <textarea id="privateKey" placeholder="输入钱包私钥" style="margin-bottom: 5px;"></textarea>
-        <div id="privateKeyResult" style="color: transparent; margin-top: 5px;font-size: 12px;">结果将显示在这里</div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <select id="tokeninAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
+        <textarea id="privateKey" class="form-control" placeholder="输入钱包私钥"></textarea>
+        <div class="card mb-0"
+            style="background-color: #f1f1f1; border-radius: 10px; margin-bottom: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="form-row align-items-center">
+                        <div class="col">
+                            <select id="tokeninAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
         <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
         <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
         <option value="自定义">其他</option>
-    </select>
-            <input type="text" id="customAddress" placeholder="输入自定义地址" style="flex: 1; min-width: 170px; font-size: 11px; padding: 5px; height: 20px; display: none;" />
-            <button id="approveButton" style="font-size: 11px; padding: 5px 10px; height: 30px;">授权</button>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="privateKeyResult" class="text-muted mb-2">结果将显示在这里</div>
+                </div>
+            </div>
         </div>
 
-        <div id="tokeninResult" style="color: transparent; margin-top: 5px; font-size: 12px;">结果将显示在这里</div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <select id="tokenOutAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
+        <div class="text-center" style="margin: 0;">
+            <button id="toggleButton" style="width: 40px; height: 40px; border-radius: 50%; background-color: #f1f1f1; color: blue; border: none; cursor: pointer;">⇅</button>
+        </div>
+
+        <div class="card mb-0"
+            style="background-color: #f1f1f1; border-radius: 10px; margin-top: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="form-row align-items-center">
+                        <div class="col">
+                            <select id="tokenOutAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
         <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
         <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
         <option value="自定义">其他</option>
-    </select>
-            <input type="text" id="customBddress" placeholder="输入自定义地址" style="flex: 1; min-width: 170px; font-size: 11px; padding: 5px; height: 20px; display: none;" />
-            <button id="sellButton"style="font-size: 11px; padding: 5px 10px; height: 30px;">SWAP</button>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tokeninResult" class="text-muted mb-2">结果将显示在这里</div>
+                </div>
+
+            </div>
         </div>
-        <script>
-            tokeninAddress.addEventListener('change', function() {
-        if (this.value === '自定义') {
-            customAddress.style.display = 'block'; // 显示自定义地址输入框
-            customAddress.value = ''; // 清空输入框
-        } else {
-            customAddress.style.display = 'none'; // 隐藏自定义地址输入框
-            customAddress.value = this.value; // 设置为选择的地       
-        }
-    });
-    tokenOutAddress.addEventListener('change', function() {
-        if (this.value === '自定义') {
-            customBddress.style.display = 'block'; // 显示自定义地址输入框
-            customBddress.value = ''; // 清空输入框
-        } else {
-            customBddress.style.display = 'none'; // 隐藏自定义地址输入框
-            customBddress.value = this.value; // 设置为选择的地址
-        }
-    });
-        </script>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <input type="text" id="reciveAddress" placeholder="指定接收地址，不填则默认私钥钱包地址" style="flex: 1; min-width: 220px; font-size: 11px;padding: 5px; height: 20px;" />
+
+        <div id="addressModal" style="display: none;">
+            <h3>From（从）地址</h3>
+            <input type="text" id="customAddress" placeholder="输入地址" />
+            <button onclick="confirmAddress()">确认</button>
+            <button onclick="closeModal()">取消</button>
+        </div>
+        <div id="addressModalB" style="display: none;">
+            <h3>To（到）地址</h3>
+            <input type="text" id="customBddress" placeholder="输入地址" />
+            <button onclick="confirmAddressB()">确认</button>
+            <button onclick="closeModalB()">取消</button>
+        </div>
+
+        <div>
+            <input class="text-center" type="text" id="reciveAddress" style="min-width: 80px ;" placeholder="指定接收地址，不填则默认私钥钱包地址" />
+        </div>
+        <div class="button-row mb-4">
+            <button id="approveButton" class="btn btn-success">授权</button>
+            <button id="sellButton" class="btn btn-warning">SWAP</button>
         </div>
 
         <div class="selection-row">
@@ -145,9 +151,9 @@
 
         </div>
 
-        <div class="button-row">
-            <button id="immediateBuyButton">快速模式</button>
-            <button id="buyButton">挂单模式</button>
+        <div class="button-row mb-4">
+            <button id="immediateBuyButton" class="btn btn-success">快速模式</button>
+            <button id="buyButton" class="btn btn-warning">挂单模式</button>
         </div>
 
         <div id="log"></div>
@@ -170,99 +176,61 @@ amountOptions.forEach(option => {
       }
   });
 });
+    function showModal() {
+        document.getElementById('addressModal').style.display = 'block';
+    }
+    function showModalB() {
+        document.getElementById('addressModalB').style.display = 'block';
+    }
+    function closeModal() {
+        document.getElementById('addressModal').style.display = 'none';
+    }
+    function closeModalB() {
+        document.getElementById('addressModalB').style.display = 'none';
+    }
+    function confirmAddress() {
+        const address = document.getElementById('customAddress').value;
+        if (address) {
+            document.getElementById('customAddress').value = address; // 
+            closeModal();
+        } else {
+            alert('请输入有效的地址');
+        }
+    }
+    function confirmAddressB() {
+        const address = document.getElementById('customBddress').value;
+        if (address) {
+            document.getElementById('customBddress').value = address; // 
+            closeModalB();
+        } else {
+            alert('请输入有效的地址');
+        }
+    }
+    tokeninAddress.addEventListener('change', function() {
+        if (this.value === '自定义') {
+            showModal()
+        } else {    
+        }
+    });
+    tokenOutAddress.addEventListener('change', function() {
+        if (this.value === '自定义') {
+            showModalB()
+        } else {
 
+        }
+    });
 setInterval(() => {
     const now = new Date();
     const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
     document.getElementById("time").innerText = `当前北京时间: ${beijingTime}`;
 }, 1000);
-
         </script>
         <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
         <script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-
-    </div>
-
-    <!-- 刷地址部分 -->
-    <div class="container" id="featuresSection" style="display: none;">
-        <h5>空投随机地址</h5>
-        <textarea id="Key" placeholder="输入钱包私钥"></textarea>
-        <div id="KeyResult" style="color: transparent; margin-top: 5px; font-size: 10px;">结果将显示在这里</div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <input type="text" id="tokenAddress" placeholder="空投代币的合约地址" style="flex: 1; min-width: 220px; font-size: 11px;" />
-            <button id="chaButton">查询</button>
-        </div>
-
-        <div class="selection-row">
-            <div>
-                <label for="dropamount">单地址空投代币数量:</label>
-                <input type="text" id="dropamount" style="min-width: 80px;" />
-            </div>
-
-            <div>
-                <label for="dropCount">空投地址数量（≤300）:</label>
-                <input type="text" id="dropCount" style="min-width: 80px;" />
-            </div>
-        </div>
-
-        <button id="dropButton">确认空投</button>
-        <h5>生成靓号钱包地址</h5>
-        <input type="text" id="prefix" placeholder="输入前缀" />
-        <input type="text" id="suffix" placeholder="输入后缀" />
-        <button id="generateButton">确认生成</button>
-
-        <script>
-            const workers = [];
-let activeWorkers = 0;
-
-function createWorkers(workerCount) {
-    // 清理现有的 workers
-    workers.forEach(worker => worker.terminate());
-    workers.length = 0; // 清空数组
-
-    for (let i = 0; i < workerCount; i++) {
-        const worker = new Worker('walletGenerator.js');
-        worker.onmessage = handleWorkerMessage;
-        workers.push(worker);
-    }
-}
-
-function handleWorkerMessage(event) {
-    const { type, data } = event.data;
-    if (type === 'progress') {
-        loga(`地址扫描中......`, 'blue');
-    } else if (type === 'result') {
-        loga(`生成的钱包地址: ${data.walletAddress}\n私钥: ${data.privateKey}\n总共尝试次数: ${data.attemptCount}`, 'green');
-        // 终止所有 worker
-        workers.forEach(worker => worker.terminate());
-    } else if (type === 'error') {
-        loga(data.message, 'red');
-    }
-    activeWorkers--;
-}
-
-document.getElementById('generateButton').addEventListener('click', () => {
-    const prefix = document.getElementById('prefix').value;
-    const suffix = document.getElementById('suffix').value;
-    const workerCount = 10;
-    const maxAttempts = 1677721666; // 设定最大尝试次数
-    loga('正在生成钱包地址，请稍候...');
-    createWorkers(workerCount); // 创建指定数量的 workers
-    // 分配任务给各个 worker
-    for (let i = 0; i < workerCount; i++) {
-        activeWorkers++;
-        workers[0].postMessage({ prefix, suffix, maxAttempts: Math.floor(maxAttempts / workerCount) });
-    }
-});
-        </script>
-        <div id="droplog" style="white-space: pre-wrap; margin-top: 10px;"></div>
-        <script src="js/airdrop.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-    </div>
-
-    <!-- 联系我们部分 -->
-    <div class="container" id="contactSection">
-        <h2><a href="https://t.me/tokenpushcn" target="_blank">Telegram</a></h2>
-    </div>
+        <!-- 引入Bootstrap JS和依赖 -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>
