@@ -411,8 +411,8 @@ const checkBalances = async () => {
             tokenOutAddressContract.methods.balanceOf(to).call()
         ]);
 
-        const formattedtokeninBalance = web3.utils.fromWei(balancetokenin, 'ether'); // 转换为可读格式
-        const formattedtokenOutBalance = web3.utils.fromWei(balancetokenOut, 'ether'); // 转换为可读格式
+        const formattedtokeninBalance = parseFloat(web3.utils.fromWei(balancetokenin, 'ether')).toFixed(9);
+        const formattedtokenOutBalance = parseFloat(web3.utils.fromWei(balancetokenOut, 'ether')).toFixed(9);
 
         // 更新 tokeninAddress 下拉选项
         const tokeninSelect = document.getElementById('tokeninAddress');
@@ -430,10 +430,10 @@ const checkBalances = async () => {
             customTokenOutOption.textContent = tokenOutName + '‌ ↺ '; // 将文本更改为 tokenOutName
         }
 
-        document.getElementById('privateKeyResult').style.color = 'blue'; // 恢复可见
-        document.getElementById('privateKeyResult').textContent = tokeninName + '余额: ' + formattedtokeninBalance;
+        document.getElementById('privateKeyResult').style.color = 'white'; // 恢复可见
+        document.getElementById('privateKeyResult').textContent =  '余额: ' + formattedtokeninBalance;
         document.getElementById('tokeninResult').style.color = 'blue'; // 恢复可见
-        document.getElementById('tokeninResult').textContent = tokenOutName + '余额: ' + formattedtokenOutBalance;
+        document.getElementById('tokeninResult').textContent =  '余额: ' + formattedtokenOutBalance;
     } catch (error) {
         console.error(error); // 打印错误信息
     }
