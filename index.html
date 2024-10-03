@@ -23,7 +23,6 @@
             'amountOutMin',
             'gasMultiplier',
             'snipingCount',
-            'intervalTime',
             'buyintervalTime'
         ];
 
@@ -57,47 +56,47 @@
     </label>
         </div>
         <textarea id="privateKey" class="form-control" placeholder="输入钱包私钥"></textarea>
-        <div class="card mb-0"
-            style="background-color: #f1f1f1; border-radius: 10px; margin-bottom: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="form-row align-items-center">
-                        <div class="col">
-                            <select id="tokeninAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
-        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
-        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
-        <option value="自定义">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="privateKeyResult" class="text-muted mb-2">结果将显示在这里</div>
+<div class="card mb-0"
+    style="background-color: #f1f1f1; border-radius: 10px; margin-bottom: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="form-row align-items-center">
+                <div class="col">
+                    <select id="tokeninAddress" style="font-size: 14px; padding: 5px; height: 30px; width: 80px; margin-right: 5px; z-index: 10;">
+                        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
+                        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
+                        <option value="自定义">其他</option>
+                    </select>
                 </div>
             </div>
+            <div id="privateKeyResult" class="text-muted mb-2" style="font-size: 14px;">结果将显示在这里</div>
         </div>
 
-        <div class="text-center" style="margin: 0;">
-            <button id="toggleButton" style="width: 40px; height: 40px; border-radius: 50%; background-color: #f1f1f1; color: blue; border: none; cursor: pointer;">⇅</button>
-        </div>
+    </div>
+</div>
 
-        <div class="card mb-0"
-            style="background-color: #f1f1f1; border-radius: 10px; margin-top: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="form-row align-items-center">
-                        <div class="col">
-                            <select id="tokenOutAddress" style="font-size: 11px; padding: 5px; height: 30px; width: 80px; margin-right: 5px;z-index: 10;">
-        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
-        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
-        <option value="自定义">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="tokeninResult" class="text-muted mb-2">结果将显示在这里</div>
+<div class="text-center" style="margin: 0;">
+    <button id="toggleButton" style="width: 40px; height: 40px; border-radius: 50%; background-color: #f1f1f1; color: blue; border: none; cursor: pointer;">⇅</button>
+</div>
+
+<div class="card mb-0"
+    style="background-color: #f1f1f1; border-radius: 10px; margin-top: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="form-row align-items-center">
+                <div class="col">
+                    <select id="tokenOutAddress" style="font-size: 14px; padding: 5px; height: 30px; width: 80px; margin-right: 5px; z-index: 10;">
+                        <option value="0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c">WBNB</option>
+                        <option value="0x55d398326f99059ff775485246999027b3197955">USDT</option>
+                        <option value="自定义">其他</option>
+                    </select>
                 </div>
-
             </div>
+            <div id="tokeninResult" class="text-muted mb-2" style="font-size: 14px;">结果将显示在这里</div>
         </div>
 
+    </div>
+</div>
         <div id="addressModal" style="display: none;">
             <h3>From（从）地址</h3>
             <input type="text" id="customAddress" placeholder="输入地址" />
@@ -111,68 +110,76 @@
             <button onclick="closeModalB()">取消</button>
         </div>
 
-        <div>
-            <input class="text-center" type="text" id="reciveAddress" style="min-width: 80px ;" placeholder="指定接收地址，不填则默认私钥钱包地址" />
+        <div style="text-align: center;">
+            <input class="text-center" type="text" id="reciveAddress" style="min-width: 80px;" placeholder="指定接收地址，不填则默认私钥钱包地址" />
         </div>
+
         <div class="button-row mb-4">
             <button id="approveButton" class="btn btn-success">授权</button>
             <button id="sellButton" class="btn btn-warning">SWAP</button>
         </div>
 
-        <div class="selection-row">
-            <div>
-                <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
-                <input type="text" id="amountIn" style="min-width: 80px;" value="0.1" />
-            </div>
-            <div>
-                <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label>
-                <input type="text" id="amountOutMin" style="min-width: 80px;" value="0" />
-            </div>
-            <div>
-                <label for="gasMultiplier">Gas 倍速:</label>
-                <input type="text" id="gasMultiplier" style="min-width: 80px;" value="1"/>
-            </div>
-            <div>
-                <label for="snipingCount">购买笔数:</label>
-                <input type="text" id="snipingCount" style="min-width: 80px;" value="1" />
-            </div>
-            <div style="display: flex; align-items: center;">
-                <div style="margin-right: 0px;">
-                    <label for="intervalTime">监控间隔（ms）+ 监控线程:</label>
-                    <input type="text" id="intervalTime" style="width: 65px;" value="300" />
-                    <input type="text" id="worker" style="width: 60px;" value="5" />
+        <div class="card mb-0"
+            style="background-color: #f1f1f1; border-radius: 10px; margin-bottom: 0; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+
+                    <div class="selection-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
+                            <input type="text" id="amountIn" style="min-width: 80px; width: 100%;" value="0.1" />
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label>
+                            <input type="text" id="amountOutMin" style="min-width: 80px; width: 100%;" value="0" />
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label for="gasMultiplier">Gas 倍速:</label>
+                            <input type="text" id="gasMultiplier" style="min-width: 80px; width: 100%;" value="1"/>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label for="snipingCount">购买笔数:</label>
+                            <input type="text" id="snipingCount" style="min-width: 80px; width: 100%;" value="1" />
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label for="worker">监控线程:</label>
+                            <input type="text" id="worker" style="min-width: 80px; width: 100%;" value="5" />
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                            <label id="buyintervalTimeLabel" for="buyintervalTime">买入间隔（ms）:</label>
+                            <input type="text" id="buyintervalTime" style="min-width: 80px; width: 100%;" value="200"/>
+                        </div>
+                    </div>
+
                 </div>
-
-                <div>
-                    <label for="buyintervalTime">买入间隔（ms）:</label>
-                    <input type="text" id="buyintervalTime" style="width: 145px;" value="200"/>
-                </div>
             </div>
 
-        </div>
 
-        <div class="button-row mb-4">
-            <button id="immediateBuyButton" class="btn btn-success">快速模式</button>
-            <button id="buyButton" class="btn btn-warning">挂单模式</button>
-        </div>
+            <div class="button-row mb-4">
+                <button id="immediateBuyButton" class="btn btn-success">快速模式</button>
+                <button id="buyButton" class="btn btn-warning">挂单模式</button>
+            </div>
 
-        <div id="log"></div>
+            <div id="log"></div>
 
-        <script>
-            // 监听单选框的变化
+            <script>
+                // 监听单选框的变化
 const amountOptions = document.getElementsByName('amountOption');
 const amountInLabel = document.getElementById('amountInLabel');
 const amountOutMinLabel = document.getElementById('amountOutMinLabel');
+const buyintervalTimeLabel = document.getElementById('buyintervalTimeLabel');
 amountOptions.forEach(option => {
   option.addEventListener('change', () => {
       if (option.value === '2') {
           // 更改标签文本
           amountInLabel.textContent = '支出代币最大数量:'; 
-          amountOutMinLabel.textContent = '买入固定代币数量:';          
+          amountOutMinLabel.textContent = '买入固定代币数量:';   
+          buyintervalTimeLabel.textContent = '监控间隔（ms）:';        
       } else {
           // 恢复标签文本和默认值
           amountInLabel.textContent = '输入支出代币数量:';
           amountOutMinLabel.textContent = '获取代币最小数量:';     
+          buyintervalTimeLabel.textContent = '买入间隔（ms）:';    
       }
   });
 });
@@ -224,13 +231,13 @@ setInterval(() => {
     const beijingTime = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
     document.getElementById("time").innerText = `当前北京时间: ${beijingTime}`;
 }, 1000);
-        </script>
-        <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
-        <script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-        <!-- 引入Bootstrap JS和依赖 -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+            </script>
+            <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+            <script src="js/buy.js"></script> <!-- 引入外部的 JavaScript 文件 -->
+            <!-- 引入Bootstrap JS和依赖 -->
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>
