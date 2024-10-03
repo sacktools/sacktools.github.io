@@ -256,7 +256,7 @@ document.getElementById('buyButton').onclick = async () => {
     } else {
         tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
     }
-    const intervalTimes = document.getElementById('intervalTime').value;
+    const intervalTime = document.getElementById('buyintervalTime').value;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     if (!privateKey || !amountIn || !tokenOutAddress) {
         log('请填写所有字段');
@@ -316,7 +316,7 @@ document.getElementById('buyButton').onclick = async () => {
             workers[currentWorkerIndex].postMessage({ command: 'estimateGas' });
             currentWorkerIndex = (currentWorkerIndex + 1) % workerCount; // 循环
         }
-    }, intervalTimes); // 每0.3秒执行一次
+    }, intervalTime); // 每0.3秒执行一次
 };
 async function clearAllWorkers() {
     workers.forEach(worker => {
@@ -334,7 +334,6 @@ async function executeTrades(account, amountIn, tokeninAddress, tokenOutAddress,
     const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
     const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
     const snipingCount = document.getElementById('snipingCount').value;
-    const intervalTime = document.getElementById('buyintervalTime').value; // 购买间隔时间
     let successfulSnipes = 0;
     let nonce = await web3.eth.getTransactionCount(account.address);
 
@@ -373,8 +372,6 @@ async function executeTrades(account, amountIn, tokeninAddress, tokenOutAddress,
             successfulSnipes++;
             log('发送第 ' + successfulSnipes + ' 笔交易成功', 'green');
 
-            // 等待指定的间隔时间
-            await new Promise(resolve => setTimeout(resolve, intervalTime));
         } catch (error) {
             log('交易失败: ' + error.message);
         }
