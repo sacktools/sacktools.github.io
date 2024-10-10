@@ -47,6 +47,29 @@ const abi = [
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "amountIn",
+                "type": "uint256"
+            },
+            {
+                "name": "path",
+                "type": "address[]"
+            }
+        ],
+        "name": "getAmountsOut",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256[]"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
     }
 ];
 
@@ -166,28 +189,21 @@ document.getElementById('sellButton').onclick = async () => {
     button.textContent = 'wait';
     button.disabled = true; // 禁用按钮
     const privateKey = document.getElementById('privateKey').value;
-    const amountIn = document.getElementById('amountIn').value * 1e18;
-    const snipingCount = document.getElementById('snipingCount').value;
-    const intervalTime = document.getElementById('buyintervalTime').value;
-    const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
+
+    // 将输入的金额转换为 Wei，并验证
+    const amountIn = parseFloat(document.getElementById('from_amount').value) * 1e18;
+    const amountOutInput = parseFloat(document.getElementById('from_amount_out').value);
+    const slippageInput = document.getElementById('slippage').textContent; // 获取滑点值
+    const slippage = parseFloat(slippageInput) / 100; // 将滑点从百分比转换为小数
+
+    // 计算最小输出金额并确保是整数
+    const amountOutMin = Math.floor(amountOutInput * (1 - slippage) * 1e18);
+
     const customAddress = document.getElementById('customAddress');
-    if (document.getElementById('tokeninAddress').value === '自定义') {
-        tokeninAddress = customAddress.value; // 使用自定义地址
-    } else {
-        tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
-    }
+    const tokeninAddress = document.getElementById('tokeninAddress').value === '自定义' ? customAddress.value : document.getElementById('tokeninAddress').value;
 
     const customBddress = document.getElementById('customBddress');
-    if (document.getElementById('tokenOutAddress').value === '自定义') {
-        tokenOutAddress = customBddress.value; // 使用自定义地址
-    } else {
-        tokenOutAddress = document.getElementById('tokenOutAddress').value; // 使用选择的地址
-    }
-    if (!privateKey || !amountIn || !tokenOutAddress) {
-        log('请填写所有字段');
-        button.disabled = false; // 重新启用按钮
-        return;
-    }
+    const tokenOutAddress = document.getElementById('tokenOutAddress').value === '自定义' ? customBddress.value : document.getElementById('tokenOutAddress').value;
 
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
@@ -196,45 +212,44 @@ document.getElementById('sellButton').onclick = async () => {
     const to = reciveAddress ? reciveAddress : account.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
     const path = [tokeninAddress, tokenOutAddress];
-    const gasMultiplier = document.getElementById('gasMultiplier').value;
+    const gasMultiplier = parseFloat(document.getElementById('gasMultiplier').value);
     const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
     const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
-    let successfulSnipes = 0;
+
     // 获取初始 nonce
     let nonce = await web3.eth.getTransactionCount(account.address);
     // 检查选择框的值
     const amountOption = document.querySelector('input[name="amountOption"]:checked').value;
-    // 使用循环来控制发送交易的频率
-    while (successfulSnipes < snipingCount) {
-        try {
-            if (amountOption === '1') {
-                // 执行 swapExactTokensForTokens
-                routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                    amountIn,
-                    amountOutMin,
-                    path,
-                    to,
-                    deadline
-                ).send({
-                    from: account.address,
-                    gas: 4000000, // 使用估算的 gas limit
-                    gasPrice: increasedGasPrice,
-                    nonce: nonce++ // 使用当前 nonce 并自增
-                });
-            } else if (amountOption === '2') {
-                log('暂不支持 ');
-            }
-            successfulSnipes++;
-            log('发送第 ' + successfulSnipes + ' 笔成功', 'green');
-        } catch (error) {
-            log('交易失败: ' + error.message);
+
+    try {
+        if (amountOption === '1') {
+            // 执行 swapExactTokensForTokens
+             routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                amountIn,
+                amountOutMin,
+                path,
+                to,
+                deadline
+            ).send({
+                from: account.address,
+                gas: 4000000, // 使用估算的 gas limit
+                gasPrice: increasedGasPrice,
+                nonce: nonce // 使用当前 nonce
+            });
+            log('交易成功', 'green');
+        } else if (amountOption === '2') {
+            log('暂不支持 ');
         }
-        await new Promise(resolve => setTimeout(resolve, intervalTime));
+    } catch (error) {
+        log('交易失败，请检查滑点等设置是否正确', 'red' );
     }
-    alert('恭喜您，购买成功！');
+
+    alert('恭喜您，交易已成功发送！');
     button.textContent = 'SWAP';
     button.disabled = false; // 重新启用按钮
 };
+
+
 
 document.getElementById('buyButton').onclick = async () => {
     const buyButton = document.getElementById('buyButton');
@@ -380,6 +395,8 @@ async function executeTrades(account, amountIn, tokeninAddress, tokenOutAddress,
 const checkBalances = async () => {
     const privateKey = document.getElementById('privateKey').value;
     const customAddress = document.getElementById('customAddress');
+    let tokeninAddress, tokenOutAddress;
+
     if (document.getElementById('tokeninAddress').value === '自定义') {
         tokeninAddress = customAddress.value; // 使用自定义地址
     } else {
@@ -396,6 +413,7 @@ const checkBalances = async () => {
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
     web3.eth.accounts.wallet.add(account);
     const to = account.address;
+    const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const tokeninAddressContract = new web3.eth.Contract(abi, tokeninAddress);
     const tokenOutAddressContract = new web3.eth.Contract(abi, tokenOutAddress);
 
@@ -414,7 +432,7 @@ const checkBalances = async () => {
         // 更新 tokeninAddress 下拉选项
         const tokeninSelect = document.getElementById('tokeninAddress');
         const customTokeninOption = tokeninSelect.querySelector('option[value="自定义"]');
-        
+
         if (tokeninSelect.value === '自定义' && customTokeninOption) {
             customTokeninOption.textContent = tokeninName + '‌ ↺ '; // 将文本更改为 tokeninName
         }
@@ -422,19 +440,32 @@ const checkBalances = async () => {
         // 更新 tokenOutAddress 下拉选项
         const tokenOutSelect = document.getElementById('tokenOutAddress');
         const customTokenOutOption = tokenOutSelect.querySelector('option[value="自定义"]');
-        
+
         if (tokenOutSelect.value === '自定义' && customTokenOutOption) {
             customTokenOutOption.textContent = tokenOutName + '‌ ↺ '; // 将文本更改为 tokenOutName
         }
 
         document.getElementById('privateKeyResult').style.color = 'white'; // 恢复可见
-        document.getElementById('privateKeyResult').textContent =  '余额: ' + formattedtokeninBalance;
+        document.getElementById('privateKeyResult').textContent = '余额: ' + formattedtokeninBalance;
         document.getElementById('tokeninResult').style.color = 'blue'; // 恢复可见
-        document.getElementById('tokeninResult').textContent =  '余额: ' + formattedtokenOutBalance;
+        document.getElementById('tokeninResult').textContent = '余额: ' + formattedtokenOutBalance;
+
+        // 获取可输出的代币数量
+        const fromAmount = parseFloat(document.getElementById('from_amount').value) || 0;
+        if (fromAmount > 0) {
+            const amountsOut = await routerContract.methods.getAmountsOut(
+                web3.utils.toWei(fromAmount.toString(), 'ether'),
+                [tokeninAddress, tokenOutAddress]
+            ).call();
+
+            const outputAmount = web3.utils.fromWei(amountsOut[1], 'ether');
+            document.getElementById('from_amount_out').value = outputAmount; // 更新输出数量
+        }
     } catch (error) {
         console.error(error); // 打印错误信息
     }
 };
+
 
 // 每3秒自动执行一次
 setInterval(checkBalances, 3000);
