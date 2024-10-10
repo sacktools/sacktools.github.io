@@ -458,7 +458,7 @@ const checkBalances = async () => {
                 [tokeninAddress, tokenOutAddress]
             ).call();
 
-            const outputAmount = web3.utils.fromWei(amountsOut[1], 'ether');
+            const outputAmount = parseFloat(web3.utils.fromWei(amountsOut[1], 'ether')).toFixed(9);
             document.getElementById('from_amount_out').value = outputAmount; // 更新输出数量
         }
     } catch (error) {
