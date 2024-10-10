@@ -104,17 +104,6 @@ button {
 button:hover {
     background-color: #0056b3;
 }
-#droplog {
-    margin-top: 20px;
-    white-space: pre-wrap;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    color: #333;
-    border: 1px solid #ddd;
-}
 
 #log {
     margin-top: 20px;
