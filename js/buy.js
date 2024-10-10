@@ -224,7 +224,7 @@ document.getElementById('sellButton').onclick = async () => {
     try {
         if (amountOption === '1') {
             // 执行 swapExactTokensForTokens
-             routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+             await routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 amountIn,
                 amountOutMin,
                 path,
