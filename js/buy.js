@@ -465,6 +465,25 @@ const checkBalances = async () => {
         console.error(error); // 打印错误信息
     }
 };
+    document.getElementById('toggleButton').addEventListener('click', function() {
+        const tokenInSelect = document.getElementById('tokeninAddress');
+        const tokenOutSelect = document.getElementById('tokenOutAddress');
+
+        // 获取当前选中的值和文本
+        const tokenInValue = tokenInSelect.value;
+        const tokenOutValue = tokenOutSelect.value;
+
+        // 互换值和文本
+        tokenInSelect.value = tokenOutValue;
+        tokenOutSelect.value = tokenInValue;
+
+        // 互换 customAddress 和 customBddress
+        const customAddress = document.getElementById('customAddress').value;
+        const customBddress = document.getElementById('customBddress').value;
+
+        document.getElementById('customAddress').value = customBddress;
+        document.getElementById('customBddress').value = customAddress;
+    });
 
 
 // 每3秒自动执行一次
