@@ -14,7 +14,7 @@ const abi = [
 ];
 
 document.getElementById('approveButton').onclick = async () => {
-    const privateKeys = document.getElementById('privateKey').value.split('\n').map(key => key.trim()).filter(key => key !== '');
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
     const amountIn = 100000000000000000000000000000 * 1e18;
 
     const approvalPromises = privateKeys.map(async (privateKey) => {
@@ -45,7 +45,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
     const button = document.getElementById('immediateBuyButton');
     button.textContent = '执行中';
     button.disabled = true; // 禁用按钮
-    const privateKeys = document.getElementById('privateKey').value.split('\n').map(key => key.trim()).filter(key => key !== '');
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
     const amountIn = document.getElementById('amountIn').value * 1e18;
     const snipingCount = document.getElementById('snipingCount').value;
     const intervalTime = document.getElementById('buyintervalTime').value;
@@ -125,7 +125,7 @@ document.getElementById('sellButton').onclick = async () => {
     const button = document.getElementById('sellButton');
     button.textContent = 'wait';
     button.disabled = true; // 禁用按钮
-    const privateKeys = document.getElementById('privateKey').value.split('\n').map(key => key.trim()).filter(key => key !== '');
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
 
     const amountIn = parseFloat(document.getElementById('from_amount').value) * 1e18;
     const amountOutInput = parseFloat(document.getElementById('from_amount_out').value);
@@ -181,7 +181,7 @@ document.getElementById('buyButton').onclick = async () => {
     buyButton.textContent = '执行中';
     buyButton.disabled = true; // 禁用按钮以防重复点击
 
-    const privateKeys = document.getElementById('privateKey').value.split('\n').map(key => key.trim()).filter(key => key !== '');
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
     const amountIn = document.getElementById('amountIn').value * 1e18;
     const customAddress = document.getElementById('customAddress');
 
@@ -322,7 +322,7 @@ async function executeTrades(privateKeys, amountIn, tokeninAddress, tokenOutAddr
 
 
 const checkBalances = async () => {
-    const privateKeys = document.getElementById('privateKey').value.split('\n').map(key => key.trim()).filter(key => key !== ''); // 支持多个私钥
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== ''); // 支持多个私钥
     if (privateKeys.length === 0) {
         console.log('没有提供有效的私钥。');
         return;
