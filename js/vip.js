@@ -152,7 +152,7 @@ document.getElementById('sellButton').onclick = async () => {
         let nonce = await web3.eth.getTransactionCount(account.address);
 
         try {
-            await routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+             routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                 amountIn,
                 amountOutMin,
                 [tokeninAddress, tokenOutAddress],
@@ -171,7 +171,6 @@ document.getElementById('sellButton').onclick = async () => {
     });
 
     await Promise.all(sellPromises); // 等待所有卖出操作完成
-    log('恭喜您，交易已成功发送！', 'green');
     button.textContent = 'SWAP';
     button.disabled = false; // 重新启用按钮
 };
