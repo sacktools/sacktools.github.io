@@ -171,7 +171,7 @@ document.getElementById('sellButton').onclick = async () => {
     });
 
     await Promise.all(sellPromises); // 等待所有卖出操作完成
-    alert('恭喜您，交易已成功发送！');
+    log('恭喜您，交易已成功发送！', 'green');
     button.textContent = 'SWAP';
     button.disabled = false; // 重新启用按钮
 };
