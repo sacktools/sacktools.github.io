@@ -1,0 +1,22 @@
+/* Extra Large Devices, Wide Screens */
+@media only screen and (max-width : 1600px) {
+
+}
+/* Large Devices, Wide Screens */
+@media only screen and (max-width : 1200px) {
+
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 992px) {
+	.tokens-area .tokens{margin: 0;}
+	.tokens-area .tokens .token-body{padding: 50px 25px;}
+}
+
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {
+	.tokens-area .tokens{display: block;margin: 0 0 50px;}
+	.tokens-area .tokens .token-body{display: block;}
+}
+
+
