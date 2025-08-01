@@ -71,7 +71,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
         const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
         const path = [tokeninAddress, tokenOutAddress];
         const gasMultiplier = document.getElementById('gasMultiplier').value;
-        const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
+        const gasPrice = web3.utils.toWei('0.1', 'gwei'); // 直接赋值为 1.1 Gwei
         const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
         let successfulSnipes = 0;
         let nonce = await web3.eth.getTransactionCount(account.address);
@@ -147,7 +147,7 @@ document.getElementById('sellButton').onclick = async () => {
         const to = reciveAddress ? reciveAddress : account.address;
         const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
         const gasMultiplier = parseFloat(document.getElementById('gasMultiplier').value);
-        const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
+        const gasPrice = web3.utils.toWei('0.1', 'gwei'); // 直接赋值为 1.1 Gwei
         const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
         let nonce = await web3.eth.getTransactionCount(account.address);
 
@@ -269,7 +269,7 @@ async function executeTrades(privateKeys, amountIn, tokeninAddress, tokenOutAddr
         const to = reciveAddress ? reciveAddress : account.address;
         const deadline = Math.floor(Date.now() / 1000) + 60 * 60;
         const gasMultiplier = document.getElementById('gasMultiplier').value;
-        const gasPrice = web3.utils.toWei('1.1', 'gwei'); // 直接赋值为 1.1 Gwei
+        const gasPrice = web3.utils.toWei('0.1', 'gwei'); // 直接赋值为 1.1 Gwei
         const increasedGasPrice = (BigInt(gasPrice) * BigInt(gasMultiplier)).toString();
         const amountOutMin = document.getElementById('amountOutMin').value * 1e18;
         const snipingCount = document.getElementById('snipingCount').value;
