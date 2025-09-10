@@ -11,7 +11,7 @@ self.onmessage = async function (e) {
         deadline,
     } = e.data;
 
-    const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
+    const web3 = new Web3(Web3.givenProvider || "https://xlayerrpc.okx.com");
     const routerContract = new web3.eth.Contract(abi, routerContractAddress);
     const path = [tokeninAddress, tokenOutAddress];
 
