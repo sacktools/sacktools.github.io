@@ -441,8 +441,6 @@ document.getElementById('toggleButton').addEventListener('click', function () {
     document.getElementById('customBddress').value = customAddress;
 });
 
-// 每3秒自动执行一次
-setInterval(checkBalances, 3000);
 
 function log(message, color = 'black') {
     const logContainer = document.getElementById('log');
