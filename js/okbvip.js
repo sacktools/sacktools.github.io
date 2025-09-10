@@ -207,7 +207,7 @@ document.getElementById('buyButton').onclick = async () => {
 
     // 创建多个 Worker
     for (let i = 0; i < workerCount; i++) {
-        const worker = new Worker('worker.js');
+        const worker = new Worker('okbworker.js');
         workers.push(worker);
         worker.onmessage = async (event) => {
             const { type, message } = event.data;
