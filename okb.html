@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="image/favicon.ico" />
-    <title>SackTools</title>
+    <title>OKB</title>
 
     <!-- 引入Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -67,14 +67,12 @@
                                 <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
                                 <option value="自定义">其他</option>
                             </select>
-                                                </div>
+                        </div>
                     </div>
                     <div id="privateKeyResult" class="text-muted mb-2" style="font-size: 14px;">余额显示</div>
                 </div>
                 <div class="input-group mb-2">
                     <input type="number" class="number form-control text-right" placeholder="0" id="from_amount" min="0">
-                </div>
-                   
                 </div>
             </div>
         </div>
@@ -93,13 +91,26 @@
                                 <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
                                 <option value="自定义">其他</option>
                             </select>
-                                                    </div>
+                        </div>
                     </div>
-                    <div id="privateKeyResult" class="text-muted mb-2" style="font-size: 14px;">余额显示</div>
+                    <div id="tokeninResult" class="text-muted mb-2" style="font-size: 14px;">余额显示</div>
                 </div>
                 <div class="input-group mb-2">
-                    <input type="number" class="number form-control text-right" placeholder="0" id="from_amount" min="0">
+                    <input type="number" class="number form-control text-right" placeholder="0" id="from_amount_out" min="0">
                 </div>
+
+                <div class="row mb-0 justify-content-center align-items-center">
+                    <div class="col-3 text-center">
+                        <div style="font-size: 16px;">
+                            滑点：
+                        </div>
+                    </div>
+                    <div class="col-6 range-container">
+                        <input type="range" class="form-control-range" value="0.5" min="0.1" max="99.9" step="0.1" onInput="$('#slippage').text($(this).val())">
+                    </div>
+                    <div class="col-3 text-center">
+                        <div style="font-size: 16px; display: flex; align-items: center; justify-content: center;">
+                            <span id="slippage">5</span>%
                         </div>
                     </div>
                 </div>
@@ -123,10 +134,6 @@
             <input class="text-center" type="text" id="reciveAddress" style="min-width: 80px;" placeholder="指定接收地址，不填则默认私钥钱包地址" />
         </div>
 
-        <div class="button-row mb-4">
-            <button id="approveButton" class="btn btn-success">授权</button>
-            <button id="sellButton" class="btn btn-warning">SWAP</button>
-        </div>
 
         <div class="card-body">
             <div id="time"></div>
