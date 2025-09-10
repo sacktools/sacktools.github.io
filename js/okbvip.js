@@ -17,29 +17,38 @@ document.getElementById('approveButton').onclick = async () => {
     const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
     const amountIn = 10000000000000000 * 1e6;
 
+    // 新增：获取当前网络gas价格
+    const gasPrice = await web3.eth.getGasPrice();
+
     const approvalPromises = privateKeys.map(async (privateKey) => {
         const account = web3.eth.accounts.privateKeyToAccount(privateKey.trim());
         web3.eth.accounts.wallet.add(account);
 
-        // 获取 tokeninAddress
-        const customAddress = document.getElementById('customAddress');
+        // 获取tokeninAddress
+        let tokeninAddress;
         if (document.getElementById('tokeninAddress').value === '自定义') {
-            tokeninAddress = customAddress.value; // 使用自定义地址
+            tokeninAddress = document.getElementById('customAddress').value;
         } else {
-            tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
+            tokeninAddress = document.getElementById('tokeninAddress').value;
         }
 
         const tokenContract = new web3.eth.Contract(abi, tokeninAddress);
         try {
-            const approval = await tokenContract.methods.approve(routerContractAddress, amountIn).send({ from: account.address });
-            log(`代币授权成功: ${account.address}`, 'red');
+            // 修改交易参数：添加gasPrice并指定交易类型
+            const approval = await tokenContract.methods.approve(routerContractAddress, amountIn).send({
+                from: account.address,
+                gasPrice: gasPrice,  // 显式设置gas价格
+                type: 0  // 强制使用传统交易类型
+            });
+            log(`代币授权成功: ${account.address}`, 'green');
         } catch (error) {
             log(`代币授权失败: ${account.address} - ${error.message}`);
         }
     });
 
-    await Promise.all(approvalPromises); // 等待所有授权操作完成
+    await Promise.all(approvalPromises);
 };
+
 
 document.getElementById('immediateBuyButton').onclick = async () => {
     const button = document.getElementById('immediateBuyButton');
