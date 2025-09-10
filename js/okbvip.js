@@ -1,5 +1,5 @@
-const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
-const routerContractAddress = '0x10ED43C718714eb63d5aA57B78B54704E256024E';
+const web3 = new Web3(Web3.givenProvider || "https://xlayerrpc.okx.com");
+const routerContractAddress = '0x881fB2f98c13d521009464e7D1CBf16E1b394e8E';
 let tokeninAddress;
 let tokenOutAddress;
 const abi = [
