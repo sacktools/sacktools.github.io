@@ -19,7 +19,7 @@ self.onmessage = async function (e) {
         const { command } = e.data;
         if (command === 'estimateGas') {
             try {
-                const gasLimit = await routerContract.methods.swapExactTokensForTokens(
+                const gasLimit = await routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                     amountIn,
                     0,
                     path,
