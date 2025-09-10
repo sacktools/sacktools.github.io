@@ -15,7 +15,7 @@ const abi = [
 
 document.getElementById('approveButton').onclick = async () => {
     const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
-    const amountIn = 10000000000000000 * 1e6;
+    const amountIn = 10000000000000000 * 1e18;
 
     // 新增：获取当前网络gas价格
     const gasPrice = await web3.eth.getGasPrice();
