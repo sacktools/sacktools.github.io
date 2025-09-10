@@ -14,32 +14,53 @@ const abi = [
 ];
 
 document.getElementById('approveButton').onclick = async () => {
-    const privateKeys = document.getElementById('privateKeyD').value.split('\n').map(key => key.trim()).filter(key => key !== '');
-    const amountIn = 100000000000000000000000000000 * 1e18;
+    const privateKeys = document.getElementById('privateKeyD').value.split('\n')
+        .map(key => key.trim())
+        .filter(key => key !== '');
+
+    // 修正金额精度问题（原值可能超出JS安全整数范围）
+    const amountIn = web3.utils.toBN('100000000000000000000000000000')
+        .mul(web3.utils.toBN(1e18.toString()));
 
     const approvalPromises = privateKeys.map(async (privateKey) => {
-        const account = web3.eth.accounts.privateKeyToAccount(privateKey.trim());
-        web3.eth.accounts.wallet.add(account);
-
-        // 获取 tokeninAddress
-        const customAddress = document.getElementById('customAddress');
-        if (document.getElementById('tokeninAddress').value === '自定义') {
-            tokeninAddress = customAddress.value; // 使用自定义地址
-        } else {
-            tokeninAddress = document.getElementById('tokeninAddress').value; // 使用选择的地址
-        }
-
-        const tokenContract = new web3.eth.Contract(abi, tokeninAddress);
         try {
-            const approval = await tokenContract.methods.approve(routerContractAddress, amountIn).send({ from: account.address });
-            log(`代币授权成功: ${account.address}`, 'red');
+            const account = web3.eth.accounts.privateKeyToAccount(privateKey.trim());
+            web3.eth.accounts.wallet.add(account);
+
+            // 获取代币地址（优化逻辑）
+            const tokenSelector = document.getElementById('tokeninAddress');
+            const tokeninAddress = tokenSelector.value === '自定义' 
+                ? document.getElementById('customAddress').value.trim()
+                : tokenSelector.value;
+
+            if(!web3.utils.isAddress(tokeninAddress)) {
+                throw new Error('无效的代币合约地址');
+            }
+
+            const tokenContract = new web3.eth.Contract(abi, tokeninAddress);
+            
+            // 关键修改：强制使用 Legacy 交易类型
+            const gasPrice = await web3.eth.getGasPrice(); // 获取实时 Gas 价格
+            const txData = {
+                from: account.address,
+                gasPrice: gasPrice,  // 显式设置 gasPrice
+                type: '0x0'          // 强制 Legacy 交易类型
+            };
+
+            const approval = await tokenContract.methods
+                .approve(routerContractAddress, amountIn)
+                .send(txData);
+
+            log(`✅ 代币授权成功: ${account.address}`, 'green');
         } catch (error) {
-            log(`代币授权失败: ${account.address} - ${error.message}`);
+            log(`❌ 授权失败: ${account.address} - ${error.message || error}`, 'red');
+            console.error(`Error details:`, error);
         }
     });
 
-    await Promise.all(approvalPromises); // 等待所有授权操作完成
+    await Promise.allSettled(approvalPromises); // 更安全的 Promise 处理
 };
+
 
 document.getElementById('immediateBuyButton').onclick = async () => {
     const button = document.getElementById('immediateBuyButton');
