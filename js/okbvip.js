@@ -109,7 +109,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
                 };
 
                 if (amountOption === '1') {
-                     routerContract.methods.swapExactTokensForTokens(
+                     routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                         amountIn,
                         amountOutMin,
                         path,
@@ -117,7 +117,7 @@ document.getElementById('immediateBuyButton').onclick = async () => {
                         deadline
                     ).send(txOptions);
                 } else if (amountOption === '2') {
-                     routerContract.methods.swapTokensForExactTokens(
+                     routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                         amountOutMin,
                         amountIn,
                         path,
@@ -312,7 +312,7 @@ async function executeTrades(privateKeys, amountIn, tokeninAddress, tokenOutAddr
 
                 // 根据选择的交易类型执行相应的交易
                 if (amountOption === '1') {
-                     routerContract.methods.swapExactTokensForTokens(
+                     routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                         amountIn,
                         amountOutMin,
                         [tokeninAddress, tokenOutAddress],
@@ -320,7 +320,7 @@ async function executeTrades(privateKeys, amountIn, tokeninAddress, tokenOutAddr
                         deadline
                     ).send(txOptions);
                 } else if (amountOption === '2') {
-                    routerContract.methods.swapTokensForExactTokens(
+                    routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
                         amountOutMin,
                         amountIn,
                         [tokeninAddress, tokenOutAddress],
