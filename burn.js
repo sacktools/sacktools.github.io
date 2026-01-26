@@ -264,7 +264,7 @@ document.getElementById('burn-button').addEventListener('click', async () => {
       const transaction = await tokenBContract.methods.burnTokens(burnAmountInWei).send({ from: walletAddress });
 
       console.log('燃烧成功:', transaction);
-      alert(`燃烧成功！您已燃烧 ${burnAmount} 个 tokenA 代币。`);
+      alert(`燃烧成功！您已燃烧 ${burnAmount} 个 calorie`);
 
       // 更新用户余额和其他相关数据
       getTokenData(); // 重新获取代币数据并更新页面
