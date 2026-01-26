@@ -3,7 +3,7 @@ const web3 = new Web3(Web3.givenProvider || "https://bsc-dataseed1.defibit.io");
 
 // 合约地址
 const tokenAAddress = '0x3e1dE025843971f36C136b53208982Dd98487777'; // tokenA 合约地址
-const tokenBAddress = '0x0D2A890EeC6B5aC2c20975DeE48FcA912f9bd732'; // tokenB 合约地址
+const tokenBAddress = '0x2a6F358EA3B8F4294aeFfc26A86B613B420A3505'; // tokenB 合约地址
 const deadAddress = '0x000000000000000000000000000000000000dEaD'; // 销毁地址
 
 // 定义合约 ABI
