@@ -164,20 +164,127 @@ No tokens found. Try another search.
 </div>
 <script>const ROUTER ='0x10ED43C718714eb63d5aA57B78B54704E256024E';const TOKENS =[{symbol:'BNB',address:'0xBNB',decimals:18,name:'BNB (Native)'},{symbol:'WBNB',address:'0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',decimals:18,name:'Wrapped BNB' },{symbol:'BUSD',address:'0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56',decimals:18,name:'Binance USD' },{symbol:'USDT',address:'0x55d398326f99059fF775485246999027B3197955',decimals:18,name:'Tether USD' },{symbol:'USDC',address:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',decimals:18,name:'USD Coin' }
 ];const ERC20_ABI =['function balanceOf(address owner) view returns (uint256)','function decimals() view returns (uint8)','function approve(address spender, uint256 amount) returns (bool)','function allowance(address owner, address spender) view returns (uint256)'];const ROUTER_ABI =['function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)','function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external','function swapExactETHForTokensSupportingFeeOnTransferTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable','function swapExactTokensForETHSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'];let state ={account:null,provider:null,signer:null,tokenIn:null,tokenOut:null,amountIn:'0',amountOut:'0',outSlippage:1,outDeadline:20,tokenInType:'in',balances:{},customTokens:[],allTokens:[],gasPrice:null,rpcUrl:null,isProcessing:false,needsApproval:false
-};function isTokenDuplicate(tokenAddr){return TOKENS.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase())||state.customTokens.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase());
-}function addCustomToken(tokenObj){if (!tokenObj ||!tokenObj.address) return false;if (isTokenDuplicate(tokenObj.address)){showError('Token already exists in your list');return false;}
-state.customTokens.push(tokenObj);saveCustomTokensToStorage();showSuccess('Token added to your collection!');return true;}
-function deleteCustomToken(tokenAddr){state.customTokens =state.customTokens.filter(t =>t.address.toLowerCase() !==tokenAddr.toLowerCase());saveCustomTokensToStorage();renderTokenList(state.allTokens);refreshCustomTokensUI();showSuccess('Token removed from collection');}
-function clearAllCustomTokens(){if (state.customTokens.length ===0){showError('No custom tokens to clear');return;}
-if (confirm('Are you sure you want to delete all custom tokens?')){state.customTokens =[];saveCustomTokensToStorage();refreshCustomTokensUI();showSuccess('All custom tokens cleared');}}
-function saveCustomTokensToStorage(){const settings =JSON.parse(localStorage.getItem('pancakeswapSettings') ||'{}');settings.customTokens =state.customTokens;localStorage.setItem('pancakeswapSettings',JSON.stringify(settings));}
-function loadCustomTokensFromStorage(){const settings =JSON.parse(localStorage.getItem('pancakeswapSettings') ||'{}');state.customTokens =settings.customTokens ||[];}
+};function isTokenDuplicate(tokenAddr){return TOKENS.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase())||state.customTokens.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase());}function addCustomToken(tokenObj){
+  if (!tokenObj || !tokenObj.address) return false;
+  if (isTokenDuplicate(tokenObj.address)){
+    showError('Token already exists in your list');
+    return false;
+  }
+  state.customTokens.push(tokenObj);
+  saveAllSettings();
+  renderTokenList(state.allTokens);
+  refreshCustomTokensUI();
+  showSuccess('Token added to your collection!');
+  console.log('Custom token saved and persisted:', tokenObj);
+  return true;
+}
+function deleteCustomToken(tokenAddr){
+  state.customTokens = state.customTokens.filter(t => 
+    t.address.toLowerCase() !== tokenAddr.toLowerCase()
+  );
+  saveAllSettings();
+  renderTokenList(state.allTokens);
+  refreshCustomTokensUI();
+  showSuccess('Token removed from collection');
+  console.log('Custom token deleted and persisted');
+}
+function clearAllCustomTokens(){
+  if (state.customTokens.length === 0){
+    showError('No custom tokens to clear');
+    return;
+  }
+  if (confirm('Are you sure you want to delete all custom tokens?')){
+    state.customTokens = [];
+    saveAllSettings();
+    refreshCustomTokensUI();
+    showSuccess('All custom tokens cleared');
+    console.log('All custom tokens cleared and persisted');
+  }
+}
+function saveAllSettings(){
+  const settings = {
+    gasPrice: state.gasPrice,
+    rpcUrl: state.rpcUrl,
+    outSlippage: state.outSlippage,
+    outDeadline: state.outDeadline,
+    customTokens: state.customTokens
+  };
+  const jsonString = JSON.stringify(settings, (key, value) => {
+    if (typeof value === 'bigint') {
+      console.warn(`Converting BigInt to Number for key: ${key}`);
+      return Number(value);
+    }
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+    return value;
+  });
+  localStorage.setItem('pancakeswapSettings', jsonString);
+  console.log('All settings saved to localStorage:', settings);
+}
+
+function saveCustomTokensToStorage(){
+  saveAllSettings();
+}
+function loadCustomTokensFromStorage(){
+  try {
+    const saved = localStorage.getItem('pancakeswapSettings');
+    if (saved) {
+      const settings = JSON.parse(saved);
+      state.customTokens = settings.customTokens || [];
+      console.log('Custom tokens loaded from localStorage:', state.customTokens);
+    } else {
+      state.customTokens = [];
+      console.log('No saved settings found, initializing empty custom tokens');
+    }
+  } catch(e) {
+    console.error('Error loading custom tokens:', e);
+    state.customTokens = [];
+  }
+}
 function refreshCustomTokensUI(){const container =document.getElementById('customTokensList');container.innerHTML ='';if (state.customTokens.length ===0){container.innerHTML ='<li style="text-align:center;color:var(--text-secondary);padding:10px;">No custom tokens saved yet</li>';}else{state.customTokens.forEach(token =>{const li =document.createElement('li');li.className ='custom-token-item';li.innerHTML =`<div class="custom-token-info"><div class="custom-token-name">${token.symbol}</div><div class="custom-token-address">${token.address}</div></div><button class="delete-token-btn" onclick="deleteCustomToken('${token.address}')">Delete</button>`;container.appendChild(li);});}
 document.getElementById('customTokensCount').textContent =state.customTokens.length;}
-function loadSettings() {loadCustomTokensFromStorage();refreshCustomTokensUI();const saved =localStorage.getItem('pancakeswapSettings');if (saved) {const settings =JSON.parse(saved);state.gasPrice =settings.gasPrice ||null;state.rpcUrl =settings.rpcUrl ||null;state.outSlippage =settings.outSlippage ||1;state.outDeadline =settings.outDeadline ||20;document.getElementById('outGasPrice').value =state.gasPrice ||'';document.getElementById('outRpcUrl').value =state.rpcUrl ||'';document.getElementById('outSlippageDisplay').textContent =state.outSlippage + '%';document.getElementById('outDeadlineDisplay').textContent =(state.outDeadline >=60 ?(state.outDeadline / 60) + 'h' :state.outDeadline + 'm');document.getElementById('outSlippageSlider').value =state.outSlippage;}
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('pancakeswapSettings');
+    if (saved) {
+      const settings = JSON.parse(saved);
+      state.gasPrice = settings.gasPrice || null;
+      state.rpcUrl = settings.rpcUrl || null;
+      state.outSlippage = settings.outSlippage || 1;
+      state.outDeadline = settings.outDeadline || 20;
+      state.customTokens = Array.isArray(settings.customTokens) ? settings.customTokens : [];
+      state.customTokens = state.customTokens.map(token => ({
+        ...token,
+        decimals: Number(token.decimals) || 18
+      }));
+      
+      document.getElementById('outGasPrice').value = state.gasPrice || '';
+      document.getElementById('outRpcUrl').value = state.rpcUrl || '';
+      document.getElementById('outSlippageDisplay').textContent = state.outSlippage + '%';
+      document.getElementById('outDeadlineDisplay').textContent = 
+        (state.outDeadline >= 60 ? (state.outDeadline / 60) + 'h' : state.outDeadline + 'm');
+      document.getElementById('outSlippageSlider').value = state.outSlippage;
+      
+      console.log('All settings loaded from localStorage:', settings);
+    } else {
+      console.log('No saved settings found, using defaults');
+    }
+  } catch(e) {
+    console.error('Error loading settings:', e);
+  }
+  refreshCustomTokensUI();
 }
-function saveOutSettings() {const gasPrice =document.getElementById('outGasPrice').value;const rpcUrl =document.getElementById('outRpcUrl').value;state.gasPrice =gasPrice ?parseFloat(gasPrice) :null;state.rpcUrl =rpcUrl ||null;const settings ={gasPrice:state.gasPrice,rpcUrl:state.rpcUrl,outSlippage:state.outSlippage,outDeadline:state.outDeadline,customTokens:state.customTokens
-};localStorage.setItem('pancakeswapSettings',JSON.stringify(settings));showSuccess('Settings saved successfully!');closeOutSettings();}
+function saveOutSettings() {
+  const gasPrice = document.getElementById('outGasPrice').value;
+  const rpcUrl = document.getElementById('outRpcUrl').value;
+  state.gasPrice = gasPrice ? parseFloat(gasPrice) : null;
+  state.rpcUrl = rpcUrl || null;
+  
+  saveAllSettings();
+  showSuccess('Settings saved successfully!');
+  closeOutSettings();
+}
 async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateUI();showSuccess('Wallet connected successfully!');} catch (e) {showError('Connection failed: ' + e.message);}
 }
 function updateUI() {if (state.account) {document.getElementById('accountSection').innerHTML =`
@@ -204,11 +311,31 @@ list.innerHTML ='';tokens.forEach(t =>{const li =document.createElement('li');li
                         <div class="token-item-name">${t.symbol} - ${t.name}</div>
                         <div class="token-item-address">${t.address}</div>
                     </div>
-                `;const isCustom =state.customTokens.some(ct =>ct.address.toLowerCase() ===t.address.toLowerCase());const isDefault =TOKENS.some(dt =>dt.address.toLowerCase() ===t.address.toLowerCase());if (!isDefault &&!isCustom){const saveBtn =document.createElement('button');saveBtn.className ='token-item-action-btn';saveBtn.textContent ='Save';saveBtn.onclick =function(e) {e.stopPropagation();addCustomToken(t);};li.appendChild(saveBtn);}
+                `;
+                const isCustom = state.customTokens.some(ct => 
+                  ct.address.toLowerCase() === t.address.toLowerCase()
+                );
+                const isDefault = TOKENS.some(dt => 
+                  dt.address.toLowerCase() === t.address.toLowerCase()
+                );
+                if (!isDefault && !isCustom){
+                  const saveBtn = document.createElement('button');
+                  saveBtn.className = 'token-item-action-btn';
+                  saveBtn.textContent = 'Save';
+                  saveBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    if (addCustomToken(t)) {
+                      setTimeout(() => {
+                        closeTokenModal();
+                      }, 500);
+                    }
+                  };
+                  li.appendChild(saveBtn);
+                }
 li.onclick =function(e) {e.stopPropagation();if (!e.target.classList.contains('token-item-action-btn')){selectToken(t);return false;}};list.appendChild(li);});document.getElementById('noResults').style.display ='none';}
 function isValidAddress(addr) {return /^0x[a-fA-F0-9]{40}$/.test(addr);}
 async function fetchTokenMetadata(addr) {try {if (!isValidAddress(addr)) {return null;}
-const c =new ethers.Contract(addr,['function symbol() view returns (string)','function name() view returns (string)','function decimals() view returns (uint8)'],state.provider);const symbol =await c.symbol();const name =await c.name();const decimals =await c.decimals();return {symbol,name,decimals };} catch (e) {console.error('Error fetching token metadata:',e);return null;}
+const c =new ethers.Contract(addr,['function symbol() view returns (string)','function name() view returns (string)','function decimals() view returns (uint8)'],state.provider);const symbol =await c.symbol();const name =await c.name();const decimalsRaw =await c.decimals();return {symbol,name,decimals: Number(decimalsRaw)};} catch (e) {console.error('Error fetching token metadata:',e);return null;}
 }
 async function filterTokens() {const search =document.getElementById('tokenSearch').value.toLowerCase().trim();if (!search) {state.allTokens =[...TOKENS,...state.customTokens];renderTokenList(state.allTokens);return;}
 let filtered =TOKENS.filter(t =>t.symbol.toLowerCase().includes(search) ||t.name.toLowerCase().includes(search) ||t.address.toLowerCase().includes(search)
@@ -232,7 +359,7 @@ try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =e
 let bestPath =null;let bestOutput ='0';for (const path of possiblePaths) {try {const amounts =await r.getAmountsOut(amountInWei,path);const output =ethers.formatUnits(amounts[amounts.length - 1],state.tokenOut.decimals);if (parseFloat(output) >parseFloat(bestOutput)) {bestOutput =output;bestPath =path;}
 } catch (e) {console.error('Error calculating path:',path,e.message);}
 }
- if (bestPath) {state.bestPath =bestPath;state.amountOut =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(state.amountOut).toFixed(6);const minRec =truncateDecimals((parseFloat(state.amountOut) *(1 - state.outSlippage / 100)).toString(),6);document.getElementById('minReceived').textContent =minRec + ' ' + state.tokenOut.symbol;const price =parseFloat(state.amountOut) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent ='1 ' + state.tokenIn.symbol + ' = ' + priceTruncated + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').classList.add('show');} else {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');}
+if (bestPath) {state.bestPath =bestPath;state.amountOut =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(state.amountOut).toFixed(6);const minRec =truncateDecimals((parseFloat(state.amountOut) *(1 - state.outSlippage / 100)).toString(),6);document.getElementById('minReceived').textContent =minRec + ' ' + state.tokenOut.symbol;const price =parseFloat(state.amountOut) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent ='1 ' + state.tokenIn.symbol + ' = ' + priceTruncated + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').classList.add('show');} else {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');}
 updateSwapBtn();} catch (e) {console.error('Price calc error:',e);document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');showError('Error calculating price: ' + e.message.substring(0,50));}
 }
 function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';updateOutput();state.needsApproval =true;}
