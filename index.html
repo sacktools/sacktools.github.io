@@ -355,8 +355,66 @@ const balanceText =document.getElementById('balanceInLabel').textContent.split('
 handleAmountInChange();}
 function truncateDecimals(str,maxDecimals) {if (!str ||typeof str !=='string') return '0';const parts =str.split('.');if (parts.length ===1) return str;const intPart =parts[0];const decPart =parts[1].substring(0,maxDecimals);return intPart + '.' + decPart;}
 async function updateOutput() {if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||state.amountIn ==='0') {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');return;}
-try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.provider);let possiblePaths =[];if (state.tokenIn.address ==='0xBNB' ||state.tokenOut.address ==='0xBNB'){if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address !=='0xBNB'){possiblePaths =[[TOKENS.find(t =>t.symbol ==='WBNB').address,state.tokenOut.address],[TOKENS.find(t =>t.symbol ==='WBNB').address,TOKENS.find(t =>t.symbol ==='USDT').address,state.tokenOut.address]];} else if (state.tokenOut.address ==='0xBNB' &&state.tokenIn.address !=='0xBNB'){possiblePaths =[[state.tokenIn.address,TOKENS.find(t =>t.symbol ==='WBNB').address],[state.tokenIn.address,TOKENS.find(t =>t.symbol ==='USDT').address,TOKENS.find(t =>t.symbol ==='WBNB').address]];} else if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address ==='0xBNB'){showError('Cannot swap BNB to BNB');return;}
-} else {possiblePaths =[[state.tokenIn.address,state.tokenOut.address],[state.tokenIn.address,TOKENS.find(t =>t.symbol ==='USDT').address,state.tokenOut.address],[state.tokenIn.address,TOKENS.find(t =>t.symbol ==='WBNB').address,state.tokenOut.address]];}
+try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.provider);let possiblePaths =[];const getWNBAddr = () => TOKENS.find(t => t.symbol === 'WBNB').address;
+const getUSDTAddr = () => TOKENS.find(t => t.symbol === 'USDT').address;
+const getBUSDAddr = () => TOKENS.find(t => t.symbol === 'BUSD').address;
+const getUSDCAddr = () => TOKENS.find(t => t.symbol === 'USDC').address;
+
+// 生成所有可能的中间枢纽（包括自定义代币）
+const generatePossiblePaths = (tokenIn, tokenOut) => {
+  let paths = [];
+  
+  // 1. 直接路径
+  paths.push([tokenIn, tokenOut]);
+  
+  // 2. 通过基础稳定币的路径
+  const baseHubs = [
+    { addr: getUSDTAddr(), name: 'USDT' },
+    { addr: getWNBAddr(), name: 'WBNB' },
+    { addr: getBUSDAddr(), name: 'BUSD' },
+    { addr: getUSDCAddr(), name: 'USDC' }
+  ];
+  
+  for (const hub of baseHubs) {
+    if (hub.addr !== tokenIn && hub.addr !== tokenOut) {
+      paths.push([tokenIn, hub.addr, tokenOut]);
+    }
+  }
+  
+  // 3. 通过自定义代币的路径（作为中间枢纽）
+  for (const customToken of state.customTokens) {
+    if (customToken.address !== tokenIn && customToken.address !== tokenOut) {
+      paths.push([tokenIn, customToken.address, tokenOut]);
+    }
+  }
+  
+  // 4. 两个中间代币的路径（支持用户建议的多步路径）
+  // 例如：A → USDT → CustomTokenA → B
+  if (state.customTokens.length > 0) {
+    for (let i = 0; i < Math.min(state.customTokens.length, 2); i++) {
+      const customToken = state.customTokens[i];
+      if (customToken.address !== tokenIn && customToken.address !== tokenOut) {
+        // A → USDT → CustomToken → B
+        paths.push([tokenIn, getUSDTAddr(), customToken.address, tokenOut]);
+      }
+    }
+  }
+  
+  return paths;
+};
+
+if (state.tokenIn.address === '0xBNB' || state.tokenOut.address === '0xBNB') {
+  if (state.tokenIn.address === '0xBNB' && state.tokenOut.address !== '0xBNB') {
+    possiblePaths = generatePossiblePaths(getWNBAddr(), state.tokenOut.address);
+  } else if (state.tokenOut.address === '0xBNB' && state.tokenIn.address !== '0xBNB') {
+    possiblePaths = generatePossiblePaths(state.tokenIn.address, getWNBAddr());
+  } else if (state.tokenIn.address === '0xBNB' && state.tokenOut.address === '0xBNB') {
+    showError('Cannot swap BNB to BNB');
+    return;
+  }
+} else {
+  possiblePaths = generatePossiblePaths(state.tokenIn.address, state.tokenOut.address);
+}
 let bestPath =null;let bestOutput ='0';for (const path of possiblePaths) {try {const amounts =await r.getAmountsOut(amountInWei,path);const output =ethers.formatUnits(amounts[amounts.length - 1],state.tokenOut.decimals);if (parseFloat(output) >parseFloat(bestOutput)) {bestOutput =output;bestPath =path;}
 } catch (e) {console.error('Error calculating path:',path,e.message);}
 }
