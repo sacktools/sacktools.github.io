@@ -147,18 +147,7 @@ No tokens found. Try another search.
 <input type="text" class="form-input" id="outRpcUrl" placeholder="e.g., https://bsc-dataseed1.binance.org:443">
 <div class="form-hint">Custom RPC for faster transactions</div>
 </div>
-<div class="setting-item">
-<div class="setting-label">
-<span>📋 Custom Tokens Management</span>
-</div>
-<div style="max-height:200px;overflow-y:auto;margin-bottom:12px;">
-<ul class="custom-tokens-list" id="customTokensList"></ul>
-</div>
-<div style="font-size:12px;color:var(--text-secondary);text-align:center;padding:10px;background:var(--bg-light);border-radius:8px;">
-<span id="customTokensCount">0</span> custom tokens saved
-</div>
-<button class="delete-token-btn" onclick="clearAllCustomTokens()" style="width:100%;margin-top:8px;">🗑️ Clear All Custom Tokens</button>
-</div>
+
 <button class="save-btn" onclick="saveOutSettings()">💾 Save Settings</button>
 </div>
 </div>
@@ -183,6 +172,9 @@ function deleteCustomToken(tokenAddr){
     t.address.toLowerCase() !== tokenAddr.toLowerCase()
   );
   saveAllSettings();
+  state.allTokens = state.allTokens.filter(t => 
+    t.address.toLowerCase() !== tokenAddr.toLowerCase()
+  );
   renderTokenList(state.allTokens);
   refreshCustomTokensUI();
   showSuccess('Token removed from collection');
@@ -331,6 +323,15 @@ list.innerHTML ='';tokens.forEach(t =>{const li =document.createElement('li');li
                     }
                   };
                   li.appendChild(saveBtn);
+                } else if (isCustom) {
+                  const deleteBtn = document.createElement('button');
+                  deleteBtn.className = 'token-item-action-btn token-item-delete';
+                  deleteBtn.textContent = 'Delete';
+                  deleteBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    deleteCustomToken(t.address);
+                  };
+                  li.appendChild(deleteBtn);
                 }
 li.onclick =function(e) {e.stopPropagation();if (!e.target.classList.contains('token-item-action-btn')){selectToken(t);return false;}};list.appendChild(li);});document.getElementById('noResults').style.display ='none';}
 function isValidAddress(addr) {return /^0x[a-fA-F0-9]{40}$/.test(addr);}
