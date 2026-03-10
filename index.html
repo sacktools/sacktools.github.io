@@ -76,7 +76,7 @@
 <span class="price-label">📈 Min. Received</span>
 <span class="price-value" id="minReceived">0</span>
 </div>
-<div class="price-row">
+<div class="price-row" style="display:none;">
 <span class="price-label">📉 Price Impact</span>
 <span class="price-value" id="priceImpact">0%</span>
 </div>
@@ -143,10 +143,7 @@ No tokens found. Try another search.
 </div>
 <script>const ROUTER ='0x10ED43C718714eb63d5aA57B78B54704E256024E';const TOKENS =[{symbol:'BNB',address:'0xBNB',decimals:18,name:'BNB (Native)'},{symbol:'WBNB',address:'0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',decimals:18,name:'Wrapped BNB' },{symbol:'USDT',address:'0x55d398326f99059fF775485246999027B3197955',decimals:18,name:'Tether USD' },{symbol:'USDC',address:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',decimals:18,name:'USD Coin' }
 ];const ERC20_ABI =['function balanceOf(address owner) view returns (uint256)','function decimals() view returns (uint8)','function approve(address spender, uint256 amount) returns (bool)','function allowance(address owner, address spender) view returns (uint256)'];const ROUTER_ABI =['function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)','function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external','function swapExactETHForTokensSupportingFeeOnTransferTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable','function swapExactTokensForETHSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'];let state ={account:null,provider:null,signer:null,tokenIn:null,tokenOut:null,amountIn:'0',amountOut:'0',outSlippage:1,outDeadline:20,tokenInType:'in',balances:{},customTokens:[],allTokens:[],gasPrice:null,rpcUrl:null,isProcessing:false,needsApproval:false
-};function truncateAddress(address) {
-  if (!address || address === '0xBNB') return address;
-  return address.substring(0, 4) + '...' + address.substring(address.length - 6);
-}
+};function truncateAddress(address) {if (!address ||address ==='0xBNB') return address;return address.substring(0,4) + '...' + address.substring(address.length - 6);}
 function getTokenLogo(address) {if (address ==='0xBNB') {return 'https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png';}
 try {return `https://tokens.pancakeswap.finance/images/${ethers.getAddress(address)}.png`;} catch (e) {return '';}}
 function isTokenDuplicate(tokenAddr){return TOKENS.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase())||state.customTokens.some(t =>t.address.toLowerCase() ===tokenAddr.toLowerCase());}function addCustomToken(tokenObj){if (!tokenObj ||!tokenObj.address) return false;if (isTokenDuplicate(tokenObj.address)){showError('Token already exists in your list');return false;}
@@ -192,23 +189,22 @@ async function getBalance(addr) {try {const c =new ethers.Contract(addr,ERC20_AB
 }
 function openTokenModal(t) {if (!state.account) return showError('Connect wallet first');state.tokenInType =t;document.getElementById('tokenSearch').value ='';state.allTokens =[...TOKENS,...state.customTokens];renderTokenList(state.allTokens);document.getElementById('tokenModal').classList.add('show');document.getElementById('noResults').style.display ='none';}
 function closeTokenModal() {document.getElementById('tokenModal').classList.remove('show');}
-async function getTokenBalanceForItem(tokenAddress) {if (!state.account || !state.provider) return '0';
-try {if (tokenAddress === '0xBNB') {const balWei = await state.provider.getBalance(state.account);return ethers.formatEther(balWei);} else {const contract = new ethers.Contract(tokenAddress, ERC20_ABI, state.provider);const balance = await contract.balanceOf(state.account);const decimals = await contract.decimals();return ethers.formatUnits(balance, decimals);}} catch (e) {console.error('Error fetching balance:', e);return '0';}}
+async function getTokenBalanceForItem(tokenAddress) {if (!state.account ||!state.provider) return '0';try {if (tokenAddress ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);return ethers.formatEther(balWei);} else {const contract =new ethers.Contract(tokenAddress,ERC20_ABI,state.provider);const balance =await contract.balanceOf(state.account);const decimals =await contract.decimals();return ethers.formatUnits(balance,decimals);}} catch (e) {console.error('Error fetching balance:',e);return '0';}}
 function renderTokenList(tokens) {const list =document.getElementById('tokenList');if (!tokens ||tokens.length ===0) {list.innerHTML ='';document.getElementById('noResults').style.display ='block';return;}
 list.innerHTML ='';tokens.forEach(t =>{const li =document.createElement('li');li.className ='token-item';const logoUrl =getTokenLogo(t.address);const iconHTML =logoUrl ?`<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>` :t.symbol.slice(0,3).toUpperCase();li.innerHTML =`
                     <div class="token-item-icon">${iconHTML}</div>
                     <div class="token-item-info">
                         <div class="token-item-name">${t.symbol}</div>
                         <div class="token-item-address-balance">
-                            <span>${truncateAddress(t.address)}</span>
+                            <span style="display:flex;align-items:center;gap:4px;">${truncateAddress(t.address)}</span>
                             <span class="token-item-balance-container"><span class="token-balance-value" data-address="${t.address}">Loading...</span></span>
                         </div>
                     </div>
                 `;const isCustom =state.customTokens.some(ct =>ct.address.toLowerCase() ===t.address.toLowerCase()
 );const isDefault =TOKENS.some(dt =>dt.address.toLowerCase() ===t.address.toLowerCase()
 );if (!isDefault &&!isCustom){const saveBtn =document.createElement('button');saveBtn.className ='token-item-action-btn';saveBtn.textContent ='Save';saveBtn.onclick =function(e) {e.stopPropagation();if (addCustomToken(t)) {setTimeout(() =>{closeTokenModal();},500);}
-};li.appendChild(saveBtn);} else if (isCustom) {const deleteBtn =document.createElement('button');deleteBtn.className ='token-item-delete-icon';deleteBtn.textContent ='🗑️';deleteBtn.title ='Delete token';deleteBtn.onclick =function(e) {e.stopPropagation();deleteCustomToken(t.address);};const balanceContainer =li.querySelector('.token-item-balance-container');if (balanceContainer) {balanceContainer.insertBefore(deleteBtn, balanceContainer.firstChild);}}
-li.onclick =function(e) {e.stopPropagation();if (!e.target.classList.contains('token-item-delete-icon')){selectToken(t);return false;}};list.appendChild(li);const balanceElement =li.querySelector('[data-address="' + t.address + '"]');if (balanceElement) {getTokenBalanceForItem(t.address).then(balance =>{balanceElement.textContent =balance;});}});document.getElementById('noResults').style.display ='none';}
+};li.appendChild(saveBtn);} else if (isCustom) {const deleteBtn =document.createElement('button');deleteBtn.className ='token-item-delete-icon';deleteBtn.textContent ='🗑️';deleteBtn.title ='Delete token';deleteBtn.onclick =function(e) {e.stopPropagation();deleteCustomToken(t.address);};const addressSpan =li.querySelector('.token-item-address-balance > span:first-child');if (addressSpan) {addressSpan.appendChild(deleteBtn);}}
+li.onclick =function(e) {e.stopPropagation();if (!e.target.classList.contains('token-item-delete-icon')){selectToken(t);return false;}};list.appendChild(li);const balanceElement =li.querySelector('[data-address="' + t.address + '"]');if (balanceElement) {getTokenBalanceForItem(t.address).then(balance =>{const truncatedBalance = parseFloat(balance).toFixed(6);balanceElement.textContent =truncatedBalance;});}});document.getElementById('noResults').style.display ='none';}
 function isValidAddress(addr) {return /^0x[a-fA-F0-9]{40}$/.test(addr);}
 async function fetchTokenMetadata(addr) {try {if (!isValidAddress(addr)) {return null;}
 const c =new ethers.Contract(addr,['function symbol() view returns (string)','function name() view returns (string)','function decimals() view returns (uint8)'],state.provider);const symbol =await c.symbol();const name =await c.name();const decimalsRaw =await c.decimals();return {symbol,name,decimals:Number(decimalsRaw)};} catch (e) {console.error('Error fetching token metadata:',e);return null;}
@@ -246,7 +242,7 @@ let bestPath =null;let bestOutput ='0';for (const path of possiblePaths) {try {c
 if (bestPath) {state.bestPath =bestPath;state.amountOut =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(state.amountOut).toFixed(6);const minRec =truncateDecimals((parseFloat(state.amountOut) *(1 - state.outSlippage / 100)).toString(),6);document.getElementById('minReceived').textContent =minRec + ' ' + state.tokenOut.symbol;const price =parseFloat(state.amountOut) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent ='1 ' + state.tokenIn.symbol + ' = ' + priceTruncated + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').classList.add('show');} else {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');}
 updateSwapBtn();} catch (e) {console.error('Price calc error:',e);document.getElementById('amountOut').value ='0';document.getElementById('priceSection').classList.remove('show');showError('Error calculating price: ' + e.message.substring(0,50));}
 }
-function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';updateOutput();state.needsApproval =true;}
+function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';if (val &&parseFloat(val) >0) {startPriceAutoRefresh();} else {stopPriceAutoRefresh();}updateOutput();state.needsApproval =true;}
 async function checkAndApproveToken() {try {if (!state.account ||!state.tokenIn) {showError('Please connect wallet and select token');return false;}
 if (state.tokenIn.address ==='0xBNB'){showInfo('BNB does not require approval');return true;}
 const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);const tc =new ethers.Contract(state.tokenIn.address,ERC20_ABI,state.provider);const currentAllowance =await tc.allowance(state.account,ROUTER);console.log('Current allowance:',ethers.formatUnits(currentAllowance,state.tokenIn.decimals));console.log('Required amount:',state.amountIn);if (currentAllowance < amountInWei) {console.log('Approval needed');showInfo('Requesting approval for token...');const approveTx =await state.signer.sendTransaction({to:state.tokenIn.address,data:new ethers.Interface(ERC20_ABI).encodeFunctionData('approve',[ROUTER,'0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'])
@@ -272,10 +268,26 @@ function openOutSettings() {document.getElementById('outSettingsPanel').classLis
 function closeOutSettings() {document.getElementById('outSettingsPanel').classList.remove('show');}
 function updateSwapBtn() {const btn =document.getElementById('swapBtn');if (state.isProcessing) {btn.disabled =true;} else if (!state.account) {btn.disabled =true;btn.textContent ='Connect wallet';} else if (!state.tokenIn ||!state.tokenOut) {btn.disabled =true;btn.textContent ='Select tokens';} else if (!state.amountIn ||parseFloat(state.amountIn) <=0) {btn.disabled =true;btn.textContent ='Enter amount';} else {btn.disabled =false;if (state.tokenIn.address !=='0xBNB' &&state.needsApproval) {btn.textContent ='Approve & Swap';} else {btn.textContent ='Swap Now';}}
 }
+let priceRefreshInterval = null;
+function startPriceAutoRefresh() {
+  if (priceRefreshInterval) clearInterval(priceRefreshInterval);
+  priceRefreshInterval = setInterval(() => {
+    if (state.amountIn && parseFloat(state.amountIn) > 0) {
+      updateOutput();
+    }
+  }, 2000);
+}
+function stopPriceAutoRefresh() {
+  if (priceRefreshInterval) {
+    clearInterval(priceRefreshInterval);
+    priceRefreshInterval = null;
+  }
+}
 function refreshPrices() {updateOutput();}
 function showError(msg) {console.error('Error:',msg);const a =document.getElementById('alertError');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 function showSuccess(msg) {console.log('Success:',msg);const a =document.getElementById('alertSuccess');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 function showInfo(msg) {console.log('Info:',msg);const a =document.getElementById('alertInfo');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
-loadSettings();updateUI();</script>
+loadSettings();updateUI();
+window.addEventListener('beforeunload',() => {stopPriceAutoRefresh();});</script>
 </body>
 </html>
