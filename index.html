@@ -26,7 +26,10 @@
 <div class="main-card">
 <div class="card-header">
 <div class="card-title">💱 Swap</div>
+<div style="display:flex;gap:8px;align-items:center;">
 <button class="refresh-btn" onclick="refreshPrices()">🔄</button>
+<button class="settings-btn-small" onclick="openOutSettings()">⚙️ Settings</button>
+</div>
 </div>
 <div class="alerts">
 <div class="alert alert-error" id="alertError"></div>
@@ -71,9 +74,7 @@
 <div class="token-icon">SEL</div><span class="token-symbol">Select</span>
 </button>
 </div>
-<div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
-<button class="settings-btn-small" onclick="openOutSettings()">⚙️ Settings</button>
-</div>
+
 </div>
 </div>
 <div class="price-section" id="priceSection">
