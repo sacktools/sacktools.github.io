@@ -190,7 +190,7 @@ function updateTopNavigation() {if (state.account) {const displayAddress =trunca
 }
 function copyAddress() {if (state.account) {navigator.clipboard.writeText(state.account).then(() =>{showSuccess('Address copied to clipboard!');}).catch(() =>{showError('Failed to copy address');});}
 }
-async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();showSuccess('Wallet connected successfully!');} catch (e) {showError('Connection failed: ' + e.message);
+async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);
 }
 }
 function updateUI() {if (state.account) {loadBalances();}
