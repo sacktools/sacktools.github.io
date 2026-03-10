@@ -265,7 +265,7 @@
     color: white;
     font-size: 16px;
     transition: all var(--transition-base);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     will-change: transform;
@@ -429,9 +429,9 @@
   .quick-select-buttons {
     display: flex;
     gap: 0;
-    margin: 10px -16px 0 -16px;
+    margin: 16px -16px 0 -16px;
     padding: 0 16px;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
     flex-wrap: nowrap;
     width: calc(100% + 32px);
   }
@@ -1272,18 +1272,15 @@
     <div class="alert alert-info" id="alertInfo"></div>
   </div>
 
-  <div class="header">
-    <h1 class="h1">TokenFree</h1>
-    <div class="header-buttons">
-      <button class="header-btn" id="refreshBtn" onclick="refreshPrices()">🔄</button>
-      <button class="header-btn" onclick="openOutSettings()">⚙️</button>
-    </div>
-  </div>
+
 
   <div class="main-card">
     <div class="card-header">
       <span class="card-title">Swap Tokens</span>
-      <button class="refresh-btn" onclick="refreshPrices()">🔄</button>
+      <div class="header-buttons">
+        <button class="header-btn" id="refreshBtn" onclick="refreshPrices()">🔄</button>
+        <button class="header-btn" onclick="openOutSettings()">⚙️</button>
+      </div>
     </div>
 
     <div class="swap-section">
