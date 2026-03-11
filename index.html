@@ -194,6 +194,24 @@ function copyAddress() {if (state.account) {navigator.clipboard.writeText(state.
 }
 async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
 }
+// 尝试自动连接（静默连接）
+async function tryAutoConnect() {
+    if (window.ethereum) {
+        try {
+            // 获取已授权的账户，这不会弹出 MetaMask 窗口
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            
+            // 如果数组不为空，说明用户之前已连接过，可以直接恢复连接
+            if (accounts.length > 0) {
+                console.log('Found authorized account, auto-connecting...');
+                connectWallet(); // 复用现有的连接逻辑
+            }
+        } catch (e) {
+            console.error("Auto connect check failed:", e);
+        }
+    }
+}
+
 function updateUI() {if (state.account) {loadBalances();}
 }
 async function loadBalances() {if (!state.account ||!state.provider) return;try {if (state.tokenIn) {let bal;if (state.tokenIn.address ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);bal =ethers.formatEther(balWei);} else {bal =await getBalance(state.tokenIn.address);}
@@ -313,7 +331,8 @@ function refreshPrices() {updateOutput();}
 function showError(msg) {console.error('Error:',msg);const a =document.getElementById('alertError');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 function showSuccess(msg) {console.log('Success:',msg);const a =document.getElementById('alertSuccess');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 function showInfo(msg) {console.log('Info:',msg);const a =document.getElementById('alertInfo');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
-loadSettings();updateUI();updateTopNavigation();updateSlippageDisplay();if(state.tokenIn){const inLogoUrl=getTokenLogo(state.tokenIn.address);const inIconHTML=inLogoUrl?`<img src="${inLogoUrl}" alt="${state.tokenIn.symbol}" onerror="this.style.display='none'"/>`:state.tokenIn.symbol.slice(0,3).toUpperCase();document.getElementById('tokenInBtn').innerHTML=`<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${state.tokenIn.symbol}</span>`;}if(state.tokenOut){const outLogoUrl=getTokenLogo(state.tokenOut.address);const outIconHTML=outLogoUrl?`<img src="${outLogoUrl}" alt="${state.tokenOut.symbol}" onerror="this.style.display='none'"/>`:state.tokenOut.symbol.slice(0,3).toUpperCase();document.getElementById('tokenOutBtn').innerHTML=`<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${state.tokenOut.symbol}</span>`;}window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();});function navigateTo(page){document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active'));event.target.closest('.nav-item').classList.add('active');console.log('Navigate to:',page);}</script>
+loadSettings();updateUI();updateTopNavigation();updateSlippageDisplay();if(state.tokenIn){const inLogoUrl=getTokenLogo(state.tokenIn.address);const inIconHTML=inLogoUrl?`<img src="${inLogoUrl}" alt="${state.tokenIn.symbol}" onerror="this.style.display='none'"/>`:state.tokenIn.symbol.slice(0,3).toUpperCase();document.getElementById('tokenInBtn').innerHTML=`<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${state.tokenIn.symbol}</span>`;}if(state.tokenOut){const outLogoUrl=getTokenLogo(state.tokenOut.address);const outIconHTML=outLogoUrl?`<img src="${outLogoUrl}" alt="${state.tokenOut.symbol}" onerror="this.style.display='none'"/>`:state.tokenOut.symbol.slice(0,3).toUpperCase();document.getElementById('tokenOutBtn').innerHTML=`<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${state.tokenOut.symbol}</span>`;}window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();});function navigateTo(page){document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active'));event.target.closest('.nav-item').classList.add('active');console.log('Navigate to:',page);}
+tryAutoConnect(); </script>
 <div class="bottom-nav">
 <a href="#" class="nav-item active" onclick="navigateTo('swap');return false;">
 <div class="nav-icon">💱</div>
