@@ -229,12 +229,60 @@ if(state.securityCache[tokenAddress]){return state.securityCache[tokenAddress];}
 try{const chainId=56;const response=await fetch(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${tokenAddress}`);if(!response.ok){console.error('API response error:',response.status);return null;}
 const data=await response.json();if(data.code!==1||!data.result||!data.result[tokenAddress.toLowerCase()]){console.error('Invalid API response:',data);return null;}
 const securityData=data.result[tokenAddress.toLowerCase()];state.securityCache[tokenAddress]=securityData;return securityData;}catch(e){console.error('Error fetching token security:',e);return null;}}
-function renderSecurityInfo(securityData,tokenAddress){if(!securityData){return '';}
-let html='<div class="security-section">';const buyTax=parseFloat(securityData.buy_tax||0)*100;const sellTax=parseFloat(securityData.sell_tax||0)*100;const lpHolders=securityData.lp_holders||[];const lockedPercent=lpHolders.reduce((sum,h)=>{if(parseInt(h.is_locked)===1){return sum+parseFloat(h.percent||0);}
-return sum;},0)*100;html+='<div class="security-row">';html+='<span class="security-label">税收 (✓):</span>';html+='<div class="security-value">';if(buyTax>0){html+=`<span class="security-badge safe">买: ${buyTax.toFixed(2)}%</span>`;}
-if(sellTax>0){html+=`<span class="security-badge danger">卖: ${sellTax.toFixed(2)}%</span>`;}
-html+='</div></div>';html+='<div class="security-row">';html+='<span class="security-label">监控:</span>';html+='<div class="security-value">';html+=`<span class="security-badge safe">已弃权</span>`;if(lockedPercent>0){html+=`<span class="security-badge warning">锁池:${lockedPercent.toFixed(0)}%</span>`;}
-html+='</div></div>';html+='</div>';return html;}
+function renderSecurityInfo(securityData, tokenAddress) {
+    if (!securityData) {
+        return '';
+    }
+    let html = '<div class="security-section">';
+    
+    // 获取各项税率
+    const buyTax = parseFloat(securityData.buy_tax || 0) * 100;
+    const sellTax = parseFloat(securityData.sell_tax || 0) * 100;
+    // --- 新增：获取转移税 ---
+    const transferTax = parseFloat(securityData.transfer_tax || 0) * 100; 
+
+    const lpHolders = securityData.lp_holders || [];
+    const lockedPercent = lpHolders.reduce((sum, h) => {
+        if (parseInt(h.is_locked) === 1) {
+            return sum + parseFloat(h.percent || 0);
+        }
+        return sum;
+    }, 0) * 100;
+
+    html += '<div class="security-row">';
+    html += '<span class="security-label">税收 (✓):</span>';
+    html += '<div class="security-value">';
+    
+    // 显示买税
+    if (buyTax >= 0) {
+        html += `<span class="security-badge safe">买: ${buyTax.toFixed(2)}%</span>`;
+    }
+    // 显示卖税
+    if (sellTax >= 0) {
+        html += `<span class="security-badge danger">卖: ${sellTax.toFixed(2)}%</span>`;
+    }
+    // --- 新增：显示转移税 ---
+    if (transferTax >= 0) {
+        // 使用 warning (黄色) 样式来区分
+        html += `<span class="security-badge warning">转: ${transferTax.toFixed(2)}%</span>`;
+    }
+
+    html += '</div></div>';
+    
+    // 下面是原有的 LP 锁池检测逻辑
+    html += '<div class="security-row">';
+    html += '<span class="security-label">监控:</span>';
+    html += '<div class="security-value">';
+    html += `<span class="security-badge safe">已弃权</span>`;
+    if (lockedPercent > 0) {
+        html += `<span class="security-badge warning">锁池:${lockedPercent.toFixed(0)}%</span>`;
+    }
+    html += '</div></div>';
+    html += '</div>';
+    
+    return html;
+}
+
 async function updateSecurityCheck(){const container=document.getElementById('securityCheckContainer');if(!container){return;}
 container.innerHTML='';const checkTokens=[];if(state.tokenOut&&!isBuiltInToken(state.tokenOut.address)){checkTokens.push({token:state.tokenOut,label:'输出'});}
 if(state.tokenIn&&!isBuiltInToken(state.tokenIn.address)){checkTokens.push({token:state.tokenIn,label:'输入'});}
