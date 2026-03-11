@@ -192,7 +192,7 @@ function updateTopNavigation() {if (state.account) {const displayAddress =trunca
 }
 function copyAddress() {if (state.account) {navigator.clipboard.writeText(state.account).then(() =>{showSuccess('Address copied to clipboard!');}).catch(() =>{showError('Failed to copy address');});}
 }
-async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];if (state.rpcUrl) {console.log('Using custom RPC URL:',state.rpcUrl);state.provider =new ethers.JsonRpcProvider(state.rpcUrl);} else {console.log('Using wallet RPC from MetaMask');state.provider =new ethers.BrowserProvider(window.ethereum);}state.signer =state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
+async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
 }
 async function tryAutoConnect() {if (window.ethereum) {try {const accounts =await window.ethereum.request({method:'eth_accounts' });if (accounts.length >0) {console.log('Found authorized account, auto-connecting...');connectWallet();}
 } catch (e) {console.error("Auto connect check failed:",e);}
