@@ -192,7 +192,7 @@ function updateTopNavigation() {if (state.account) {const displayAddress =trunca
 }
 function copyAddress() {if (state.account) {navigator.clipboard.writeText(state.account).then(() =>{showSuccess('Address copied to clipboard!');}).catch(() =>{showError('Failed to copy address');});}
 }
-async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
+async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];if (state.rpcUrl) {console.log('Using custom RPC URL:',state.rpcUrl);state.provider =new ethers.JsonRpcProvider(state.rpcUrl);} else {console.log('Using wallet RPC from MetaMask');state.provider =new ethers.BrowserProvider(window.ethereum);}state.signer =state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
 }
 async function tryAutoConnect() {if (window.ethereum) {try {const accounts =await window.ethereum.request({method:'eth_accounts' });if (accounts.length >0) {console.log('Found authorized account, auto-connecting...');connectWallet();}
 } catch (e) {console.error("Auto connect check failed:",e);}
@@ -218,8 +218,8 @@ const securityData=data.result[tokenAddress.toLowerCase()];state.securityCache[t
 function renderSecurityInfo(securityData,tokenAddress) {if (!securityData) {return '';}
 let html ='<div class="security-section">';const buyTax =parseFloat(securityData.buy_tax ||0) *100;const sellTax =parseFloat(securityData.sell_tax ||0) *100;const transferTax =parseFloat(securityData.transfer_tax ||0) *100;const lpHolders =securityData.lp_holders ||[];const lockedPercent =lpHolders.reduce((sum,h) =>{if (parseInt(h.is_locked) ===1) {return sum + parseFloat(h.percent ||0);}
 return sum;},0) *100;html +='<div class="security-row">';html +='<span class="security-label">税收 (✓):</span>';html +='<div class="security-value">';if (buyTax >=0) {html +=`<span class="security-badge safe">买: ${buyTax.toFixed(2)}%</span>`;}
- if (sellTax >=0) {html +=`<span class="security-badge danger">卖: ${sellTax.toFixed(2)}%</span>`;}
- if (transferTax >=0) {html +=`<span class="security-badge warning">转: ${transferTax.toFixed(2)}%</span>`;}
+if (sellTax >=0) {html +=`<span class="security-badge danger">卖: ${sellTax.toFixed(2)}%</span>`;}
+if (transferTax >=0) {html +=`<span class="security-badge warning">转: ${transferTax.toFixed(2)}%</span>`;}
 html +='</div></div>';html +='<div class="security-row">';html +='<span class="security-label">监控:</span>';html +='<div class="security-value">';html +=`<span class="security-badge safe">已弃权</span>`;if (lockedPercent >0) {html +=`<span class="security-badge warning">锁池:${lockedPercent.toFixed(0)}%</span>`;}
 html +='</div></div>';html +='</div>';return html;}
 async function updateSecurityCheck(){const container=document.getElementById('securityCheckContainer');if(!container){return;}
@@ -289,132 +289,21 @@ const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);cons
 });console.log('Approval tx hash:',approveTx.hash);showInfo('Waiting for approval confirmation...');await approveTx.wait();console.log('Approval confirmed');showSuccess('Token approved successfully!');state.needsApproval =false;return true;} else {console.log('Already approved');state.needsApproval =false;return true;}
 } catch (e) {console.error('Approval error:',e);showError('Approval failed: ' + e.message.substring(0,100));return false;}
 }
-async function executeSwap() {
-  if (!state.account) {
-    connectWallet();
-    return;
-  }
-  
-  if (!state.tokenIn || !state.tokenOut || !state.amountIn || !state.bestPath) {
-    showError('Invalid input or path');
-    return;
-  }
-  
-  if (state.tokenIn.address === state.tokenOut.address) {
-    showError('Cannot swap same token');
-    return;
-  }
-  
-  if (state.isProcessing) {
-    showError('Transaction is already processing');
-    return;
-  }
-  
-  state.isProcessing = true;
-  const swapBtn = document.getElementById('swapBtn');
-  
-  try {
-    if (state.needsApproval && state.tokenIn.address !== '0xBNB') {
-      swapBtn.disabled = true;
-      swapBtn.textContent = 'Approving...';
-      const approved = await checkAndApproveToken();
-      if (!approved) {
-        state.isProcessing = false;
-        await updateSwapBtn();
-        return;
-      }
-      state.needsApproval = false;
-      await updateSwapBtn();
-      state.isProcessing = false;
-      return;
-    }
-    
-    state.isProcessing = true;
-    swapBtn.disabled = true;
-    swapBtn.textContent = 'Executing Swap...';
-    showInfo('Processing swap transaction...');
-    
-    const amountInWei = ethers.parseUnits(state.amountIn, state.tokenIn.decimals);
-    const minAmount = parseFloat(state.amountOut) * (1 - state.outSlippage / 100);
-    const minAmountStr = truncateDecimals(minAmount.toString(), state.tokenOut.decimals);
-    const amountOutMin = ethers.parseUnits(minAmountStr, state.tokenOut.decimals);
-    const r = new ethers.Contract(ROUTER, ROUTER_ABI, state.signer);
-    const deadline = Math.floor(Date.now() / 1000) + (state.outDeadline * 60);
-    
-    // ✅ 构建交易选项 - 关键修复
-    const txOptions = {};
-    if (state.gasPrice && state.gasPrice > 0) {
-      try {
-        txOptions.gasPrice = ethers.parseUnits(state.gasPrice.toString(), 'gwei');
-        console.log('Gas price set to:', state.gasPrice, 'Gwei');
-      } catch (e) {
-        console.error('Invalid gas price:', e);
-      }
-    }
-    
-    try {
-      let tx;
-      
-      if (state.tokenIn.address === '0xBNB') {
-        console.log('Executing ETH -> Token swap with gas price:', state.gasPrice || 'auto');
-        txOptions.value = amountInWei;
-        tx = await r.swapExactETHForTokensSupportingFeeOnTransferTokens(
-          amountOutMin,
-          state.bestPath,
-          state.account,
-          deadline,
-          txOptions
-        );
-      } else if (state.tokenOut.address === '0xBNB') {
-        console.log('Executing Token -> ETH swap with gas price:', state.gasPrice || 'auto');
-        tx = await r.swapExactTokensForETHSupportingFeeOnTransferTokens(
-          amountInWei,
-          amountOutMin,
-          state.bestPath,
-          state.account,
-          deadline,
-          txOptions
-        );
-      } else {
-        console.log('Executing Token -> Token swap with gas price:', state.gasPrice || 'auto');
-        tx = await r.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-          amountInWei,
-          amountOutMin,
-          state.bestPath,
-          state.account,
-          deadline,
-          txOptions
-        );
-      }
-      
-      console.log('Swap tx hash:', tx.hash);
-      showInfo('Transaction submitted: ' + tx.hash.slice(0, 12) + '...');
-      const receipt = await tx.wait();
-      
-      if (receipt.status === 1) {
-        showSuccess('✅ Swap successful! Tx: ' + receipt.hash.slice(0, 12) + '...');
-        document.getElementById('amountIn').value = '';
-        document.getElementById('amountOut').value = '';
-        state.needsApproval = true;
-        setTimeout(() => {
-          loadBalances();
-          updateOutput();
-        }, 2000);
-      } else {
-        showError('Swap transaction failed');
-      }
-    } catch (e) {
-      console.error('Swap tx error:', e);
-      showError('Swap failed: ' + e.message.substring(0, 80));
-    }
-  } catch (e) {
-    console.error('Swap error:', e);
-    showError('Swap error: ' + e.message.substring(0, 100));
-  } finally {
-    state.isProcessing = false;
-    swapBtn.disabled = false;
-    updateSwapBtn();
-  }
+async function executeSwap() {if (!state.account) {connectWallet();return;}
+if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||!state.bestPath) {showError('Invalid input or path');return;}
+if (state.tokenIn.address ===state.tokenOut.address) {showError('Cannot swap same token');return;}
+if (state.isProcessing) {showError('Transaction is already processing');return;}
+state.isProcessing =true;const swapBtn =document.getElementById('swapBtn');try {if (state.needsApproval &&state.tokenIn.address !=='0xBNB') {swapBtn.disabled =true;swapBtn.textContent ='Approving...';const approved =await checkAndApproveToken();if (!approved) {state.isProcessing =false;await updateSwapBtn();return;}
+state.needsApproval =false;await updateSwapBtn();state.isProcessing =false;return;}
+state.isProcessing =true;swapBtn.disabled =true;swapBtn.textContent ='Executing Swap...';showInfo('Processing swap transaction...');const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);const minAmount =parseFloat(state.amountOut) *(1 - state.outSlippage / 100);const minAmountStr =truncateDecimals(minAmount.toString(),state.tokenOut.decimals);const amountOutMin =ethers.parseUnits(minAmountStr,state.tokenOut.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.signer);const deadline =Math.floor(Date.now() / 1000) + (state.outDeadline *60);const txOptions ={};if (state.gasPrice &&state.gasPrice >0) {try {txOptions.gasPrice =ethers.parseUnits(state.gasPrice.toString(),'gwei');console.log('Gas price set to:',state.gasPrice,'Gwei');} catch (e) {console.error('Invalid gas price:',e);}
+}
+try {let tx;if (state.tokenIn.address ==='0xBNB') {console.log('Executing ETH -> Token swap with gas price:',state.gasPrice ||'auto');txOptions.value =amountInWei;tx =await r.swapExactETHForTokensSupportingFeeOnTransferTokens(amountOutMin,state.bestPath,state.account,deadline,txOptions
+);} else if (state.tokenOut.address ==='0xBNB') {console.log('Executing Token -> ETH swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForETHSupportingFeeOnTransferTokens(amountInWei,amountOutMin,state.bestPath,state.account,deadline,txOptions
+);} else {console.log('Executing Token -> Token swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountInWei,amountOutMin,state.bestPath,state.account,deadline,txOptions
+);}
+console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.hash.slice(0,12) + '...');const receipt =await tx.wait();if (receipt.status ===1) {showSuccess('✅ Swap successful! Tx: ' + receipt.hash.slice(0,12) + '...');document.getElementById('amountIn').value ='';document.getElementById('amountOut').value ='';state.needsApproval =true;setTimeout(() =>{loadBalances();updateOutput();},2000);} else {showError('Swap transaction failed');}
+} catch (e) {console.error('Swap tx error:',e);showError('Swap failed: ' + e.message.substring(0,80));}
+} catch (e) {console.error('Swap error:',e);showError('Swap error: ' + e.message.substring(0,100));} finally {state.isProcessing =false;swapBtn.disabled =false;updateSwapBtn();}
 }
 function setOutSlippage(v){state.outSlippage=v;document.getElementById('outSlippageDisplay').textContent=v+'%';document.getElementById('outSlippageCustom').value='';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn')).forEach(b=>{if(b.textContent.trim()===v.toString()+'%')b.classList.add('active');});updateSlippageDisplay();updateOutput();}
 function handleCustomSlippageInput(){const customVal=parseFloat(document.getElementById('outSlippageCustom').value);if(customVal&&customVal>=0.1&&customVal<=100){state.outSlippage=customVal;document.getElementById('outSlippageDisplay').textContent=customVal+'%';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));updateSlippageDisplay();}}
@@ -435,18 +324,8 @@ function showError(msg) {console.error('Error:',msg);const a =document.getElemen
 function showSuccess(msg) {console.log('Success:',msg);const a =document.getElementById('alertSuccess');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 function showInfo(msg) {console.log('Info:',msg);const a =document.getElementById('alertInfo');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),6000);}
 loadSettings();updateUI();updateTopNavigation();updateSlippageDisplay();if(state.tokenIn){const inLogoUrl=getTokenLogo(state.tokenIn.address);const inIconHTML=inLogoUrl?`<img src="${inLogoUrl}" alt="${state.tokenIn.symbol}" onerror="this.style.display='none'"/>`:state.tokenIn.symbol.slice(0,3).toUpperCase();document.getElementById('tokenInBtn').innerHTML=`<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${state.tokenIn.symbol}</span>`;}if(state.tokenOut){const outLogoUrl=getTokenLogo(state.tokenOut.address);const outIconHTML=outLogoUrl?`<img src="${outLogoUrl}" alt="${state.tokenOut.symbol}" onerror="this.style.display='none'"/>`:state.tokenOut.symbol.slice(0,3).toUpperCase();document.getElementById('tokenOutBtn').innerHTML=`<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${state.tokenOut.symbol}</span>`;}window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();});function navigateTo(page){document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active'));event.target.closest('.nav-item').classList.add('active');console.log('Navigate to:',page);}
-tryAutoConnect();
-
-// ========== 调试和工具函数 ==========
-function printCurrentSettings() {
-  console.log('=== 当前交易设置 ===');
-  console.log('Gas Price:', state.gasPrice, 'Gwei');
-  console.log('Slippage:', state.outSlippage, '%');
-  console.log('Deadline:', state.outDeadline, 'minutes');
-  console.log('RPC URL:', state.rpcUrl || 'default');
-}
-window.printSettings = printCurrentSettings;
-</script>
+tryAutoConnect();function printCurrentSettings() {console.log('=== 当前交易设置 ===');console.log('Gas Price:',state.gasPrice,'Gwei');console.log('Slippage:',state.outSlippage,'%');console.log('Deadline:',state.outDeadline,'minutes');console.log('RPC URL:',state.rpcUrl ||'default');}
+window.printSettings =printCurrentSettings;</script>
 <div class="bottom-nav">
 <a href="#" class="nav-item active" onclick="navigateTo('swap');return false;">
 <div class="nav-icon">💱</div>
