@@ -197,9 +197,9 @@ async function connectWallet() {try {if (!window.ethereum) return showError('Ple
 function updateUI() {if (state.account) {loadBalances();}
 }
 async function loadBalances() {if (!state.account ||!state.provider) return;try {if (state.tokenIn) {let bal;if (state.tokenIn.address ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);bal =ethers.formatEther(balWei);} else {bal =await getBalance(state.tokenIn.address);}
-state.balances[state.tokenIn.address] =bal;document.getElementById('balanceInLabel').textContent ='Balance: ' + bal;document.getElementById('balanceInDisplay').textContent =bal;}
+state.balances[state.tokenIn.address] =bal;document.getElementById('balanceInLabel').textContent ='Balance: ' + bal;}
 if (state.tokenOut) {let bal;if (state.tokenOut.address ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);bal =ethers.formatEther(balWei);} else {bal =await getBalance(state.tokenOut.address);}
-state.balances[state.tokenOut.address] =bal;document.getElementById('balanceOutLabel').textContent ='Balance: ' + bal;document.getElementById('balanceOutDisplay').textContent =bal;}
+state.balances[state.tokenOut.address] =bal;document.getElementById('balanceOutLabel').textContent ='Balance: ' + bal;}
 } catch (e) {console.error('Balance load error:',e);}
 }
 async function getBalance(addr) {try {const c =new ethers.Contract(addr,ERC20_ABI,state.provider);const b =await c.balanceOf(state.account);const d =await c.decimals();return ethers.formatUnits(b,d);} catch (e) {console.error('getBalance error:',e);return '0';}
