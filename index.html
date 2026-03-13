@@ -341,15 +341,47 @@ handleAmountInChange();}
 function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';if (val &&parseFloat(val) >0) {startPriceAutoRefresh();} else {stopPriceAutoRefresh();}
 updateOutput();state.needsApproval =true;if(state.account){updateSwapBtn();}}
 async function updateOutput() {if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||state.amountIn ==='0') {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';return;}
-try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.provider);let possiblePaths =[];const getWNBAddr =() =>TOKENS.find(t =>t.symbol ==='WBNB').address;const getUSDTAddr =() =>TOKENS.find(t =>t.symbol ==='USDT').address;const getUSDCAddr =() =>TOKENS.find(t =>t.symbol ==='USDC').address;const generatePossiblePaths =(tokenIn,tokenOut) =>{let paths =[];paths.push([tokenIn,tokenOut]);const baseHubs =[{addr:getUSDTAddr(),name:'USDT' },{addr:getWNBAddr(),name:'WBNB' },{addr:getUSDCAddr(),name:'USDC' }
-];for (const hub of baseHubs) {if (hub.addr !==tokenIn &&hub.addr !==tokenOut) {paths.push([tokenIn,hub.addr,tokenOut]);}
-}
-for (const customToken of state.customTokens) {if (customToken.address !==tokenIn &&customToken.address !==tokenOut) {paths.push([tokenIn,customToken.address,tokenOut]);}
-}
-if (state.customTokens.length >0) {for (let i =0;i < Math.min(state.customTokens.length,2);i++) {const customToken =state.customTokens[i];if (customToken.address !==tokenIn &&customToken.address !==tokenOut) {paths.push([tokenIn,getUSDTAddr(),customToken.address,tokenOut]);}
-}
-}
-return paths;};if (state.tokenIn.address ==='0xBNB' ||state.tokenOut.address ==='0xBNB') {if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address !=='0xBNB') {possiblePaths =generatePossiblePaths(getWNBAddr(),state.tokenOut.address);} else if (state.tokenOut.address ==='0xBNB' &&state.tokenIn.address !=='0xBNB') {possiblePaths =generatePossiblePaths(state.tokenIn.address,getWNBAddr());} else if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address ==='0xBNB') {showError('Cannot swap BNB to BNB');return;}
+try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.provider);let possiblePaths =[];const getWNBAddr =() =>TOKENS.find(t =>t.symbol ==='WBNB').address;const getUSDTAddr =() =>TOKENS.find(t =>t.symbol ==='USDT').address;const getUSDCAddr =() =>TOKENS.find(t =>t.symbol ==='USDC').address;const generatePossiblePaths = (tokenIn, tokenOut) => {
+    let paths = [];
+    paths.push([tokenIn, tokenOut]);
+    
+    const baseHubs = [
+        { addr: getUSDTAddr(), name: 'USDT' },
+        { addr: getWNBAddr(), name: 'WBNB' },
+        { addr: getUSDCAddr(), name: 'USDC' }
+    ];
+
+    for (const hub of baseHubs) {
+        if (hub.addr !== tokenIn && hub.addr !== tokenOut) {
+            paths.push([tokenIn, hub.addr, tokenOut]);
+        }
+    }
+
+    for (const customToken of state.customTokens) {
+        if (customToken.address !== tokenIn && customToken.address !== tokenOut) {
+            paths.push([tokenIn, customToken.address, tokenOut]);
+        }
+    }
+
+    if (state.customTokens.length > 0) {
+        for (let i = 0; i < Math.min(state.customTokens.length, 2); i++) {
+            const customToken = state.customTokens[i];
+            if (customToken.address !== tokenIn && customToken.address !== tokenOut) {
+                paths.push([tokenIn, getUSDTAddr(), customToken.address, tokenOut]);
+            }
+        }
+    }
+
+    // === 新增过滤逻辑：移除包含重复代币的路径 ===
+    // 这一步会检查每条路径，如果路径中有重复的地址（忽略大小写），则将其剔除
+    paths = paths.filter(path => {
+        const uniqueTokens = new Set(path.map(addr => addr.toLowerCase()));
+        return uniqueTokens.size === path.length;
+    });
+    // ==========================================
+
+    return paths;
+};if (state.tokenIn.address ==='0xBNB' ||state.tokenOut.address ==='0xBNB') {if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address !=='0xBNB') {possiblePaths =generatePossiblePaths(getWNBAddr(),state.tokenOut.address);} else if (state.tokenOut.address ==='0xBNB' &&state.tokenIn.address !=='0xBNB') {possiblePaths =generatePossiblePaths(state.tokenIn.address,getWNBAddr());} else if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address ==='0xBNB') {showError('Cannot swap BNB to BNB');return;}
 } else {possiblePaths =generatePossiblePaths(state.tokenIn.address,state.tokenOut.address);}
 let bestPath =null;let bestOutput ='0';for (const path of possiblePaths) {try {const amounts =await r.getAmountsOut(amountInWei,path);const output =ethers.formatUnits(amounts[amounts.length - 1],state.tokenOut.decimals);if (parseFloat(output) >parseFloat(bestOutput)) {bestOutput =output;bestPath =path;}
 } catch (e) {console.error('Error calculating path:',path,e.message);}
