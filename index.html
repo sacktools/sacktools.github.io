@@ -508,12 +508,7 @@ window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();});function 
     
     // 处理页面导航逻辑
     if(page === 'history'){
-      console.log('Opening airdrop modal...');
-      if(typeof openAirdropModal === 'function'){
-        openAirdropModal();
-      }else{
-        console.error('openAirdropModal function not found');
-      }
+      console.log('History clicked');
     }else if(page === 'swap'){
       console.log('Navigate to swap');
     }else if(page === 'portfolio'){
