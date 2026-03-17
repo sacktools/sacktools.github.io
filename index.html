@@ -107,7 +107,7 @@
 </div>
 <!-- 接收地址组件 - 最终版本 -->
 <div style="display: flex; justify-content: center; align-items: center; margin: 8px 0; gap: 8px;">
-  <span style="font-size: 12px; color: var(--text-sub); font-weight: 600;">接收地址</span>
+  <span style="font-size: 12px; color: var(--text-sub); font-weight: 600;">Receive</span>
   <button type="button" id="expandReceiverBtn" onclick="toggleReceiverAddress()" 
           style="width: 16px; height: 16px; border: none; background: none; cursor: pointer; 
                  display: flex; align-items: center; justify-content: center; padding: 0; 
@@ -586,10 +586,10 @@ async function fetchTokenSecurity(tokenAddress) {
 
 function renderSecurityInfo(securityData,tokenAddress) {if (!securityData) {return '';}
 let html ='<div class="security-section">';const buyTax =parseFloat(securityData.buy_tax ||0) *100;const sellTax =parseFloat(securityData.sell_tax ||0) *100;const transferTax =parseFloat(securityData.transfer_tax ||0) *100;const lpHolders =securityData.lp_holders ||[];const lockedPercent =lpHolders.reduce((sum,h) =>{if (parseInt(h.is_locked) ===1) {return sum + parseFloat(h.percent ||0);}
-return sum;},0) *100;html +='<div class="security-row">';html +='<span class="security-label">税收 (✓):</span>';html +='<div class="security-value">';if (buyTax >=0) {html +=`<span class="security-badge safe">买: ${buyTax.toFixed(2)}%</span>`;}
-if (sellTax >=0) {html +=`<span class="security-badge danger">卖: ${sellTax.toFixed(2)}%</span>`;}
-if (transferTax >=0) {html +=`<span class="security-badge warning">转: ${transferTax.toFixed(2)}%</span>`;}
-html +='</div></div>';html +='<div class="security-row">';html +='<span class="security-label">监控:</span>';html +='<div class="security-value">';html +=`<span class="security-badge safe">已弃权</span>`;if (lockedPercent >0) {html +=`<span class="security-badge warning">锁池:${lockedPercent.toFixed(0)}%</span>`;}
+return sum;},0) *100;html +='<div class="security-row">';html +='<span class="security-label">TAX (✓):</span>';html +='<div class="security-value">';if (buyTax >=0) {html +=`<span class="security-badge safe">buy: ${buyTax.toFixed(2)}%</span>`;}
+if (sellTax >=0) {html +=`<span class="security-badge danger">sell: ${sellTax.toFixed(2)}%</span>`;}
+if (transferTax >=0) {html +=`<span class="security-badge warning">transfer: ${transferTax.toFixed(2)}%</span>`;}
+html +='</div></div>';html +='<div class="security-row">';html +='<span class="security-label">security:</span>';html +='<div class="security-value">';html +=`<span class="security-badge safe">renounce</span>`;if (lockedPercent >0) {html +=`<span class="security-badge warning">Locked:${lockedPercent.toFixed(0)}%</span>`;}
 html +='</div></div>';html +='</div>';return html;}
 async function updateSecurityCheck(){const container=document.getElementById('securityCheckContainer');if(!container){return;}
 container.innerHTML='';const checkTokens=[];if(state.tokenOut&&!isBuiltInToken(state.tokenOut.address)){checkTokens.push({token:state.tokenOut,label:'输出'});}
