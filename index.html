@@ -172,7 +172,6 @@ let receiverPanelOpen = false;
 function toggleReceiverAddress() {
   const panel = document.getElementById('receiverAddressPanel');
   const btn = document.getElementById('expandReceiverBtn');
-  const input = document.getElementById('receiverAddress');
   
   if (receiverPanelOpen) {
     // 关闭面板
@@ -187,7 +186,6 @@ function toggleReceiverAddress() {
     // 打开面板
     panel.style.display = 'block';
     btn.classList.add('active');
-    setTimeout(() => input.focus(), 100);
     receiverPanelOpen = true;
   }
 }
