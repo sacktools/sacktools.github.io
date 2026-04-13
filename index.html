@@ -147,6 +147,9 @@ function updateReceiverAddress() {const input =document.getElementById('receiver
 <span class="info-value" id="slippageInfo">-</span>
 </div>
 <div class="info-row" id="smartSlippageDetails" style="display:none;font-size:11px;padding-left:20px;color:#999;line-height:1.6;">
+<div style="font-weight:600;margin-bottom:4px;">💡 Smart Mode:</div>
+<div>Input: <span id="smartInputTaxDisplay" style="color:var(--primary);font-weight:500;">0%</span> + Output: <span id="smartOutputTaxDisplay" style="color:var(--primary);font-weight:500;">0%</span> + 1 = <span id="smartSlippageCalcDisplay" style="color:var(--primary);font-weight:600;">1%</span></div>
+</div>
 <div class="info-row">
 <span class="info-label">Min Received</span>
 <span class="info-value dark" id="minReceived">0</span>
@@ -381,90 +384,22 @@ async function fetchTokenMetadata(addr) {if (!isValidAddress(addr)) return null;
 }
 function selectToken(tokenObj) {if (!tokenObj ||!tokenObj.address) {showError('Invalid token object');return;}
 applyTokenSelection(tokenObj);}
-async function applyTokenSelection(t) {
-  if (!t || !t.address) {
-    showError('Invalid token selection');
-    return;
-  }
-
-  try {
-    const logoUrl = getTokenLogo(t.address);
-    const iconHTML = logoUrl
-      ? `<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>`
-      : t.symbol.slice(0, 3).toUpperCase();
-
-    // 更新选中的代币
-    if (state.tokenInType === 'in') {
-      state.tokenIn = t;
-      document.getElementById('tokenInBtn').innerHTML =
-        `<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;
-    } else {
-      state.tokenOut = t;
-      document.getElementById('tokenOutBtn').innerHTML =
-        `<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;
-    }
-
-    closeTokenModal();
-
-    if (state.amountIn && parseFloat(state.amountIn) > 0) {
-      startRealtimeUpdates();
-    }
-
-    await loadBalances();
-
-    // 先拿到最新税率，再计算智能滑点
-    try {
-      if (state.tokenIn && !isBuiltInToken(state.tokenIn.address)) {
-        const secIn = await fetchTokenSecurity(state.tokenIn.address);
-        if (secIn) {
-          state.tokenInSlippage = Math.max(
-            parseFloat(secIn.buy_tax || 0) * 100 || 0,
-            parseFloat(secIn.sell_tax || 0) * 100 || 0
-          );
-        } else {
-          state.tokenInSlippage = 0;
-        }
-      } else {
-        state.tokenInSlippage = 0;
-      }
-
-      if (state.tokenOut && !isBuiltInToken(state.tokenOut.address)) {
-        const secOut = await fetchTokenSecurity(state.tokenOut.address);
-        if (secOut) {
-          state.tokenOutSlippage = Math.max(
-            parseFloat(secOut.buy_tax || 0) * 100 || 0,
-            parseFloat(secOut.sell_tax || 0) * 100 || 0
-          );
-        } else {
-          state.tokenOutSlippage = 0;
-        }
-      } else {
-        state.tokenOutSlippage = 0;
-      }
-    } catch (e) {
-      console.error('Tax extraction error:', e);
-      state.tokenInSlippage = 0;
-      state.tokenOutSlippage = 0;
-    }
-
-    // 注意：这里必须放在税率更新之后
-    if (state.smartSlippageMode) {
-      calculateSmartSlippage();
-    }
-
-    if (state.account) {
-      await updateSwapBtn();
-      await updateSecurityCheck();
-    }
-
-    await updateOutput();
-
-  } catch (e) {
-    console.error('applyTokenSelection error:', e);
-    showError('Failed to select token: ' + (e.message || e));
-  }
+async function applyTokenSelection(t) {if (!t ||!t.address) {showError('Invalid token selection');return;}
+try {const logoUrl =getTokenLogo(t.address);const iconHTML =logoUrl
+?`<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>`
+:t.symbol.slice(0,3).toUpperCase();if (state.tokenInType ==='in') {state.tokenIn =t;document.getElementById('tokenInBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;} else {state.tokenOut =t;document.getElementById('tokenOutBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;}
+closeTokenModal();if (state.amountIn &&parseFloat(state.amountIn) >0) {startRealtimeUpdates();}
+await loadBalances();try {if (state.tokenIn &&!isBuiltInToken(state.tokenIn.address)) {const secIn =await fetchTokenSecurity(state.tokenIn.address);if (secIn) {state.tokenInSlippage =Math.max(parseFloat(secIn.buy_tax ||0) *100 ||0,parseFloat(secIn.sell_tax ||0) *100 ||0
+);} else {state.tokenInSlippage =0;}
+} else {state.tokenInSlippage =0;}
+if (state.tokenOut &&!isBuiltInToken(state.tokenOut.address)) {const secOut =await fetchTokenSecurity(state.tokenOut.address);if (secOut) {state.tokenOutSlippage =Math.max(parseFloat(secOut.buy_tax ||0) *100 ||0,parseFloat(secOut.sell_tax ||0) *100 ||0
+);} else {state.tokenOutSlippage =0;}
+} else {state.tokenOutSlippage =0;}
+} catch (e) {console.error('Tax extraction error:',e);state.tokenInSlippage =0;state.tokenOutSlippage =0;}
+ if (state.smartSlippageMode) {calculateSmartSlippage();}
+if (state.account) {await updateSwapBtn();await updateSecurityCheck();}
+await updateOutput();} catch (e) {console.error('applyTokenSelection error:',e);showError('Failed to select token: ' + (e.message ||e));}
 }
-
 async function swapTokens() {
   const tmp = state.tokenIn;
   state.tokenIn = state.tokenOut;
@@ -472,7 +407,6 @@ async function swapTokens() {
 
   const inSym = state.tokenIn ? state.tokenIn.symbol : 'Select';
   const outSym = state.tokenOut ? state.tokenOut.symbol : 'Select';
-
   const inLogoUrl = state.tokenIn ? getTokenLogo(state.tokenIn.address) : '';
   const outLogoUrl = state.tokenOut ? getTokenLogo(state.tokenOut.address) : '';
 
@@ -492,23 +426,23 @@ async function swapTokens() {
     ? `<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${outSym}</span>`
     : `<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;
 
-  try {
-    await loadBalances();
+  await loadBalances();
 
-    // 关键修复：切换代币后重新拉取税率，再计算智能滑点
-    await refreshTokenTaxes();
+  // 关键：切换后重新获取新 token 的税率/滑点基础数据
+  await refreshTokenTaxes();
 
-    await updateOutput();
+  if (state.smartSlippageMode) {
+    calculateSmartSlippage();
+  }
 
-    if (state.account) {
-      await updateSwapBtn();
-      await updateSecurityCheck();
-    }
-  } catch (e) {
-    console.error('swapTokens error:', e);
-    showError('Failed to swap token positions');
+  await updateOutput();
+
+  if (state.account) {
+    await updateSwapBtn();
+    await updateSecurityCheck();
   }
 }
+
 function setQuickAmount(percentage) {if (!state.tokenIn) {showError('Please select input token first');return;}
 const balanceText =document.getElementById('balanceInLabel').textContent.split(': ')[1];const balance =parseFloat(balanceText) ||0;if (percentage ===1) {const maxAmount =truncateDecimals(balance.toString(),6);document.getElementById('amountIn').value =maxAmount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');} else {const amount =truncateDecimals((balance *percentage).toString(),6);document.getElementById('amountIn').value =amount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');}
 handleAmountInChange();}
@@ -541,148 +475,24 @@ console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.has
 } catch (e) {console.error('Swap tx error:',e);showError('Swap failed: ' + e.message.substring(0,80));}
 } catch (e) {console.error('Swap error:',e);showError('Swap error: ' + e.message.substring(0,100));} finally {state.isProcessing =false;swapBtn.disabled =false;updateSwapBtn();}
 }
-function getTokenSlippage(tokenAddress) {
-if (!tokenAddress) return 0;
-if (tokenAddress === '0xBNB') return 0;
-const tokenInAddr = state.tokenIn.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenIn.address;
-const tokenOutAddr = state.tokenOut.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenOut.address;
-if (tokenAddress.toLowerCase() === tokenInAddr.toLowerCase()) {
-return state.tokenInSlippage;
-} else if (tokenAddress.toLowerCase() === tokenOutAddr.toLowerCase()) {
-return state.tokenOutSlippage;
+function getTokenSlippage(tokenAddress) {if (!tokenAddress) return 0;if (tokenAddress ==='0xBNB') return 0;const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;if (tokenAddress.toLowerCase() ===tokenInAddr.toLowerCase()) {return state.tokenInSlippage;} else if (tokenAddress.toLowerCase() ===tokenOutAddr.toLowerCase()) {return state.tokenOutSlippage;}
+return 0;}
+function calculateSmartSlippage() {if (!state.smartSlippageMode) return;const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;const inSlippage =state.tokenIn.address ==='0xBNB' ?0 :state.tokenInSlippage;const outSlippage =state.tokenOut.address ==='0xBNB' ?0 :state.tokenOutSlippage;const smartSlippage =inSlippage + outSlippage + 1;state.outSlippage =smartSlippage;document.getElementById('outSlippageDisplay').textContent =smartSlippage + '%';document.getElementById('slippageInfo').textContent =smartSlippage + '%';document.getElementById('smartInputTaxDisplay').textContent =inSlippage.toFixed(2) + '%';document.getElementById('smartOutputTaxDisplay').textContent =outSlippage.toFixed(2) + '%';document.getElementById('smartSlippageCalcDisplay').textContent =smartSlippage.toFixed(2) + '%';console.log('Smart Slippage: ' + inSlippage.toFixed(2) + '% + ' + outSlippage.toFixed(2) + '% + 1 = ' + smartSlippage.toFixed(2) + '%');}
+async function refreshTokenTaxes() {try {if (state.tokenIn &&!isBuiltInToken(state.tokenIn.address)) {const secIn =await fetchTokenSecurity(state.tokenIn.address);if (secIn) {state.tokenInSlippage =Math.max(parseFloat(secIn.buy_tax ||0) *100 ||0,parseFloat(secIn.sell_tax ||0) *100 ||0
+);} else {state.tokenInSlippage =0;}
+} else {state.tokenInSlippage =0;}
+ if (state.tokenOut &&!isBuiltInToken(state.tokenOut.address)) {const secOut =await fetchTokenSecurity(state.tokenOut.address);if (secOut) {state.tokenOutSlippage =Math.max(parseFloat(secOut.buy_tax ||0) *100 ||0,parseFloat(secOut.sell_tax ||0) *100 ||0
+);} else {state.tokenOutSlippage =0;}
+} else {state.tokenOutSlippage =0;}
+console.log('Tax refreshed:',{tokenIn:state.tokenIn?.symbol,tokenInSlippage:state.tokenInSlippage,tokenOut:state.tokenOut?.symbol,tokenOutSlippage:state.tokenOutSlippage
+});if (state.smartSlippageMode) {calculateSmartSlippage();}
+} catch (e) {console.error('Tax refresh error:',e);state.tokenInSlippage =0;state.tokenOutSlippage =0;if (state.smartSlippageMode) {calculateSmartSlippage();}
 }
-return 0;
 }
-function calculateSmartSlippage() {
-  if (!state.smartSlippageMode) return;
-
-  const inSlippage = state.tokenIn && state.tokenIn.address !== '0xBNB'
-    ? (parseFloat(state.tokenInSlippage) || 0)
-    : 0;
-
-  const outSlippage = state.tokenOut && state.tokenOut.address !== '0xBNB'
-    ? (parseFloat(state.tokenOutSlippage) || 0)
-    : 0;
-
-  const smartSlippage = inSlippage + outSlippage + 1;
-
-  state.outSlippage = Number(smartSlippage.toFixed(2));
-
-  document.getElementById('outSlippageDisplay').textContent = state.outSlippage + '%';
-  document.getElementById('slippageInfo').textContent = state.outSlippage + '%';
-  document.getElementById('smartInputTaxDisplay').textContent = inSlippage.toFixed(2) + '%';
-  document.getElementById('smartOutputTaxDisplay').textContent = outSlippage.toFixed(2) + '%';
-  document.getElementById('smartSlippageCalcDisplay').textContent = state.outSlippage.toFixed(2) + '%';
-
-  console.log(
-    'Smart Slippage: ' +
-    inSlippage.toFixed(2) + '% + ' +
-    outSlippage.toFixed(2) + '% + 1 = ' +
-    state.outSlippage.toFixed(2) + '%'
-  );
-}
-async function refreshTokenTaxes() {
-  try {
-    // 刷新输入币税率
-    if (state.tokenIn && !isBuiltInToken(state.tokenIn.address)) {
-      const secIn = await fetchTokenSecurity(state.tokenIn.address);
-      if (secIn) {
-        state.tokenInSlippage = Math.max(
-          parseFloat(secIn.buy_tax || 0) * 100 || 0,
-          parseFloat(secIn.sell_tax || 0) * 100 || 0
-        );
-      } else {
-        state.tokenInSlippage = 0;
-      }
-    } else {
-      state.tokenInSlippage = 0;
-    }
-
-    // 刷新输出币税率
-    if (state.tokenOut && !isBuiltInToken(state.tokenOut.address)) {
-      const secOut = await fetchTokenSecurity(state.tokenOut.address);
-      if (secOut) {
-        state.tokenOutSlippage = Math.max(
-          parseFloat(secOut.buy_tax || 0) * 100 || 0,
-          parseFloat(secOut.sell_tax || 0) * 100 || 0
-        );
-      } else {
-        state.tokenOutSlippage = 0;
-      }
-    } else {
-      state.tokenOutSlippage = 0;
-    }
-
-    console.log('Tax refreshed:', {
-      tokenIn: state.tokenIn?.symbol,
-      tokenInSlippage: state.tokenInSlippage,
-      tokenOut: state.tokenOut?.symbol,
-      tokenOutSlippage: state.tokenOutSlippage
-    });
-
-    // 税率拿到以后再重新计算智能滑点
-    if (state.smartSlippageMode) {
-      calculateSmartSlippage();
-    }
-  } catch (e) {
-    console.error('Tax refresh error:', e);
-
-    // 出错时兜底，避免保留旧值
-    state.tokenInSlippage = 0;
-    state.tokenOutSlippage = 0;
-
-    if (state.smartSlippageMode) {
-      calculateSmartSlippage();
-    }
-  }
-}
-
-async function toggleSmartSlippageMode() {
-  const checkbox = document.getElementById('smartSlippageMode');
-  const manualButtons = document.getElementById('manualSlippageButtons');
-  const details = document.getElementById('smartSlippageDetails');
-
-  state.smartSlippageMode = checkbox.checked;
-
-  try {
-    if (state.smartSlippageMode) {
-      manualButtons.style.opacity = '0.5';
-      manualButtons.style.pointerEvents = 'none';
-      details.style.display = 'block';
-
-      // 开启智能模式时，先刷新税率
-      await refreshTokenTaxes();
-      calculateSmartSlippage();
-    } else {
-      manualButtons.style.opacity = '1';
-      manualButtons.style.pointerEvents = 'auto';
-      details.style.display = 'none';
-    }
-
-    saveAllSettings();
-    updateSlippageDisplay();
-    await updateOutput();
-
-    console.log('Smart Slippage Mode: ' + (state.smartSlippageMode ? 'ON' : 'OFF'));
-  } catch (e) {
-    console.error('toggleSmartSlippageMode error:', e);
-    showError('Failed to update smart slippage mode');
-  }
-}
-function updateTokenSlippageValues(tokenAddress, slippageValue) {
-const tokenInAddr = state.tokenIn ? (state.tokenIn.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenIn.address) : null;
-const tokenOutAddr = state.tokenOut ? (state.tokenOut.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenOut.address) : null;
-if (tokenAddress === tokenInAddr) {
-state.tokenInSlippage = parseFloat(slippageValue) || 0;
-console.log('Token In Slippage set to: ' + state.tokenInSlippage + '%');
-} else if (tokenAddress === tokenOutAddr) {
-state.tokenOutSlippage = parseFloat(slippageValue) || 0;
-console.log('Token Out Slippage set to: ' + state.tokenOutSlippage + '%');
-}
-if (state.smartSlippageMode) {
-calculateSmartSlippage();
-updateOutput();
-}
+function toggleSmartSlippageMode() {const checkbox =document.getElementById('smartSlippageMode');state.smartSlippageMode =checkbox.checked;const manualButtons =document.getElementById('manualSlippageButtons');if (state.smartSlippageMode) {manualButtons.style.opacity ='0.5';manualButtons.style.pointerEvents ='none';document.getElementById('smartSlippageDetails').style.display ='block';calculateSmartSlippage();} else {manualButtons.style.opacity ='1';manualButtons.style.pointerEvents ='auto';document.getElementById('smartSlippageDetails').style.display ='none';}
+saveAllSettings();updateSlippageDisplay();updateOutput();console.log('Smart Slippage Mode: ' + (state.smartSlippageMode ?'ON' :'OFF'));}
+function updateTokenSlippageValues(tokenAddress,slippageValue) {const tokenInAddr =state.tokenIn ?(state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address) :null;const tokenOutAddr =state.tokenOut ?(state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address) :null;if (tokenAddress ===tokenInAddr) {state.tokenInSlippage =parseFloat(slippageValue) ||0;console.log('Token In Slippage set to: ' + state.tokenInSlippage + '%');} else if (tokenAddress ===tokenOutAddr) {state.tokenOutSlippage =parseFloat(slippageValue) ||0;console.log('Token Out Slippage set to: ' + state.tokenOutSlippage + '%');}
+if (state.smartSlippageMode) {calculateSmartSlippage();updateOutput();}
 }
 function setOutSlippage(v){if(state.smartSlippageMode){state.smartSlippageMode=false;document.getElementById('smartSlippageMode').checked=false;document.getElementById('smartSlippageDetails').style.display='none';const manualButtons=document.getElementById('manualSlippageButtons');manualButtons.style.opacity='1';manualButtons.style.pointerEvents='auto';saveAllSettings();}state.outSlippage=v;document.getElementById('outSlippageDisplay').textContent=v+'%';document.getElementById('slippageInfo').textContent=v+'%';document.getElementById('outSlippageCustom').value='';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn')).forEach(b=>{if(b.textContent.trim()===v.toString()+'%')b.classList.add('active');});updateSlippageDisplay();updateOutput();}
 function handleCustomSlippageInput(){const customVal=parseFloat(document.getElementById('outSlippageCustom').value);if(customVal&&customVal>=0.1&&customVal<=100){state.outSlippage=customVal;document.getElementById('outSlippageDisplay').textContent=customVal+'%';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));updateSlippageDisplay();}}
@@ -690,8 +500,7 @@ function setCustomSlippageValue(){const customVal=parseFloat(document.getElement
 function updateSlippageDisplay(){document.getElementById('slippageInfo').textContent=state.outSlippage+'%';}
 function setOutDeadline(v){state.outDeadline=v;const display=v>=60?(v/60)+'h':v+'m';document.getElementById('outDeadlineDisplay').textContent=display;document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(2) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(2) .preset-btn')).forEach(b=>{if(b.textContent.replace(/[hm]/g,'').trim()===v.toString())b.classList.add('active');});}
 function openOutSettings() {document.getElementById('outSettingsPanel').classList.add('show');if(document.getElementById('smartSlippageMode')){document.getElementById('smartSlippageMode').checked=state.smartSlippageMode;}
-const manualButtons = document.getElementById('manualSlippageButtons');
-if(state.smartSlippageMode){manualButtons.style.opacity='0.5';manualButtons.style.pointerEvents='none';}else{manualButtons.style.opacity='1';manualButtons.style.pointerEvents='auto';}}
+const manualButtons =document.getElementById('manualSlippageButtons');if(state.smartSlippageMode){manualButtons.style.opacity='0.5';manualButtons.style.pointerEvents='none';}else{manualButtons.style.opacity='1';manualButtons.style.pointerEvents='auto';}}
 function closeOutSettings() {document.getElementById('outSettingsPanel').classList.remove('show');}
 async function updateSwapBtn() {const btn =document.getElementById('swapBtn');if (state.isProcessing) {btn.disabled =true;btn.textContent ='Processing...';} else if (!state.account) {btn.disabled =true;btn.textContent ='Connect Wallet';} else if (!state.tokenIn ||!state.tokenOut) {btn.disabled =true;btn.textContent ='Select Tokens';} else if (!state.amountIn ||parseFloat(state.amountIn) <=0) {btn.disabled =true;btn.textContent ='Enter Amount';} else {btn.disabled =false;if (state.tokenIn.address ==='0xBNB') {btn.textContent ='Swap';} else {try {const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);const tc =new ethers.Contract(state.tokenIn.address,ERC20_ABI,state.provider);const currentAllowance =await tc.allowance(state.account,ROUTER);if (currentAllowance < amountInWei) {btn.textContent ='Approve';state.needsApproval =true;} else {btn.textContent ='Swap';state.needsApproval =false;}} catch (e) {btn.textContent ='Swap';}}
 }
