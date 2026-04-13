@@ -146,6 +146,10 @@ function updateReceiverAddress() {const input =document.getElementById('receiver
 <span class="info-label">Slippage</span>
 <span class="info-value" id="slippageInfo">-</span>
 </div>
+<div class="info-row" id="smartSlippageDetails" style="display:none;font-size:11px;padding-left:20px;color:#999;line-height:1.6;">
+<div style="font-weight:600;margin-bottom:4px;">💡 Smart Mode:</div>
+<div>Input: <span id="smartInputTaxDisplay" style="color:var(--primary);font-weight:500;">0%</span> + Output: <span id="smartOutputTaxDisplay" style="color:var(--primary);font-weight:500;">0%</span> + 1 = <span id="smartSlippageCalcDisplay" style="color:var(--primary);font-weight:600;">1%</span></div>
+</div>
 <div class="info-row">
 <span class="info-label">Min Received</span>
 <span class="info-value dark" id="minReceived">0</span>
@@ -177,7 +181,13 @@ function updateReceiverAddress() {const input =document.getElementById('receiver
 <span>Slippage Tolerance</span>
 <span class="setting-value" id="outSlippageDisplay" style="color:var(--primary)">1%</span>
 </div>
-<div class="preset-buttons">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+<input type="checkbox" id="smartSlippageMode" onchange="toggleSmartSlippageMode()" style="width:18px;height:18px;cursor:pointer;">
+<span>Smart Mode</span>
+</label>
+</div>
+<div class="preset-buttons" id="manualSlippageButtons">
 <button class="preset-btn" onclick="setOutSlippage(0.5)">0.5%</button>
 <button class="preset-btn active" onclick="setOutSlippage(1)">1%</button>
 <button class="preset-btn" onclick="setOutSlippage(5)">5%</button>
@@ -275,7 +285,7 @@ const cache =new CacheManager(5 *60 *1000);const limiter =new RateLimiter(20,600
 ];const ERC20_ABI =['function balanceOf(address owner) view returns (uint256)','function decimals() view returns (uint8)','function approve(address spender, uint256 amount) returns (bool)','function allowance(address owner, address spender) view returns (uint256)'
 ];const ROUTER_ABI =['function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)','function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external','function swapExactETHForTokensSupportingFeeOnTransferTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable','function swapExactTokensForETHSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'
 ];const BUILT_IN_TOKENS=['0xBNB','0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c','0x55d398326f99059fF775485246999027B3197955','0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d'];let state ={account:null,provider:null,signer:null,tokenIn:TOKENS[0],tokenOut:TOKENS[2],amountIn:'0',amountOut:'0',outSlippage:1,outDeadline:20,tokenInType:'in',balances:{},customTokens:[],allTokens:[],gasPrice:null,rpcUrl:null,isProcessing:false,needsApproval:false,securityCache:{}
-,airdropToken:null,airdropAmountPerAddress:'0',airdropNumRecipients:'0',bestPath:null};function isBuiltInToken(address){return BUILT_IN_TOKENS.some(t=>t.toLowerCase()===address.toLowerCase());}
+,airdropToken:null,airdropAmountPerAddress:'0',airdropNumRecipients:'0',bestPath:null,smartSlippageMode:false,tokenInSlippage:0,tokenOutSlippage:0};function isBuiltInToken(address){return BUILT_IN_TOKENS.some(t=>t.toLowerCase()===address.toLowerCase());}
 function truncateAddress(address) {if (!address ||address ==='0xBNB') return address;const first4 =address.substring(0,6);const last4 =address.substring(address.length - 4);return first4 + '...' + last4;}
 function getTokenLogo(address) {if (address ==='0xBNB') {return 'https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png';}
 try {return `https://tokens.pancakeswap.finance/images/${ethers.getAddress(address)}.png`;} catch (e) {return '';}
@@ -298,12 +308,12 @@ function refreshCustomTokensUI() {const container =document.getElementById('cust
           `;container.appendChild(li);});}
 const countElement =document.getElementById('customTokensCount');if (countElement) countElement.textContent =state.customTokens.length;}
 }
-function saveAllSettings() {const settings ={gasPrice:state.gasPrice,rpcUrl:state.rpcUrl,outSlippage:state.outSlippage,outDeadline:state.outDeadline,customTokens:state.customTokens
+function saveAllSettings() {const settings ={gasPrice:state.gasPrice,rpcUrl:state.rpcUrl,outSlippage:state.outSlippage,outDeadline:state.outDeadline,customTokens:state.customTokens,smartSlippageMode:state.smartSlippageMode
 };const jsonString =JSON.stringify(settings,(key,value) =>{if (typeof value ==='bigint') {console.warn(`Converting BigInt to Number for key: ${key}`);return Number(value);}
 if (value instanceof Date) {return value.toISOString();}
 return value;});localStorage.setItem('pancakeswapSettings',jsonString);console.log('All settings saved to localStorage:',settings);}
 function loadSettings() {try {const saved =localStorage.getItem('pancakeswapSettings');if (saved) {const settings =JSON.parse(saved);state.gasPrice =settings.gasPrice ||null;state.rpcUrl =settings.rpcUrl ||null;state.outSlippage =settings.outSlippage ||1;state.outDeadline =settings.outDeadline ||20;state.customTokens =Array.isArray(settings.customTokens) ?settings.customTokens :[];state.customTokens =state.customTokens.map(token =>({...token,decimals:Number(token.decimals) ||18
-}));document.getElementById('outGasPrice').value =state.gasPrice ||'';document.getElementById('outRpcUrl').value =state.rpcUrl ||'';document.getElementById('outSlippageDisplay').textContent =state.outSlippage + '%';document.getElementById('outDeadlineDisplay').textContent =(state.outDeadline >=60 ?(state.outDeadline / 60) + 'h' :state.outDeadline + 'm');console.log('All settings loaded from localStorage:',settings);} else {console.log('No saved settings found, using defaults');}
+}));state.smartSlippageMode =settings.smartSlippageMode ||false;document.getElementById('outGasPrice').value =state.gasPrice ||'';document.getElementById('outRpcUrl').value =state.rpcUrl ||'';document.getElementById('outSlippageDisplay').textContent =state.outSlippage + '%';document.getElementById('outDeadlineDisplay').textContent =(state.outDeadline >=60 ?(state.outDeadline / 60) + 'h' :state.outDeadline + 'm');if(document.getElementById('smartSlippageMode')){document.getElementById('smartSlippageMode').checked =state.smartSlippageMode;}console.log('All settings loaded from localStorage:',settings);} else {console.log('No saved settings found, using defaults');}
 } catch (e) {console.error('Error loading settings:',e);}
 refreshCustomTokensUI();}
 function saveOutSettings() {const gasPrice =document.getElementById('outGasPrice').value;const rpcUrl =document.getElementById('outRpcUrl').value;const customSlippage =document.getElementById('outSlippageCustom').value;state.gasPrice =gasPrice ?parseFloat(gasPrice) :null;state.rpcUrl =rpcUrl ||null;if(customSlippage){const customVal=parseFloat(customSlippage);if(customVal>=0.1&&customVal<=100){state.outSlippage=customVal;}}saveAllSettings();showSuccess('Settings saved successfully!');closeOutSettings();}
@@ -374,10 +384,134 @@ async function fetchTokenMetadata(addr) {if (!isValidAddress(addr)) return null;
 }
 function selectToken(tokenObj) {if (!tokenObj ||!tokenObj.address) {showError('Invalid token object');return;}
 applyTokenSelection(tokenObj);}
-async function applyTokenSelection(t) {const logoUrl =getTokenLogo(t.address);const iconHTML =logoUrl ?`<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>` :t.symbol.slice(0,3).toUpperCase();if (state.tokenInType ==='in') {state.tokenIn =t;document.getElementById('tokenInBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;} else {state.tokenOut =t;document.getElementById('tokenOutBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;} 
-closeTokenModal();if (state.amountIn &&parseFloat(state.amountIn) >0) {startRealtimeUpdates();}
-loadBalances();if (state.account) {await updateSwapBtn();await updateSecurityCheck();};await updateOutput();}
-async function swapTokens() {const tmp =state.tokenIn;state.tokenIn =state.tokenOut;state.tokenOut =tmp;const inSym =state.tokenIn ?state.tokenIn.symbol :'Select';const outSym =state.tokenOut ?state.tokenOut.symbol :'Select';const inLogoUrl =state.tokenIn ?getTokenLogo(state.tokenIn.address) :'';const outLogoUrl =state.tokenOut ?getTokenLogo(state.tokenOut.address) :'';const inIconHTML =state.tokenIn &&inLogoUrl ?`<img src="${inLogoUrl}" alt="${inSym}" onerror="this.style.display='none'"/>` :inSym.slice(0,3).toUpperCase();const outIconHTML =state.tokenOut &&outLogoUrl ?`<img src="${outLogoUrl}" alt="${outSym}" onerror="this.style.display='none'"/>` :outSym.slice(0,3).toUpperCase();document.getElementById('tokenInBtn').innerHTML =state.tokenIn ?`<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${inSym}</span>` :`<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;document.getElementById('tokenOutBtn').innerHTML =state.tokenOut ?`<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${outSym}</span>` :`<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;loadBalances();updateOutput();if(state.account){await updateSwapBtn();await updateSecurityCheck();}}
+async function applyTokenSelection(t) {
+  if (!t || !t.address) {
+    showError('Invalid token selection');
+    return;
+  }
+
+  try {
+    const logoUrl = getTokenLogo(t.address);
+    const iconHTML = logoUrl
+      ? `<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>`
+      : t.symbol.slice(0, 3).toUpperCase();
+
+    // 更新选中的代币
+    if (state.tokenInType === 'in') {
+      state.tokenIn = t;
+      document.getElementById('tokenInBtn').innerHTML =
+        `<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;
+    } else {
+      state.tokenOut = t;
+      document.getElementById('tokenOutBtn').innerHTML =
+        `<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;
+    }
+
+    closeTokenModal();
+
+    if (state.amountIn && parseFloat(state.amountIn) > 0) {
+      startRealtimeUpdates();
+    }
+
+    await loadBalances();
+
+    // 先拿到最新税率，再计算智能滑点
+    try {
+      if (state.tokenIn && !isBuiltInToken(state.tokenIn.address)) {
+        const secIn = await fetchTokenSecurity(state.tokenIn.address);
+        if (secIn) {
+          state.tokenInSlippage = Math.max(
+            parseFloat(secIn.buy_tax || 0) * 100 || 0,
+            parseFloat(secIn.sell_tax || 0) * 100 || 0
+          );
+        } else {
+          state.tokenInSlippage = 0;
+        }
+      } else {
+        state.tokenInSlippage = 0;
+      }
+
+      if (state.tokenOut && !isBuiltInToken(state.tokenOut.address)) {
+        const secOut = await fetchTokenSecurity(state.tokenOut.address);
+        if (secOut) {
+          state.tokenOutSlippage = Math.max(
+            parseFloat(secOut.buy_tax || 0) * 100 || 0,
+            parseFloat(secOut.sell_tax || 0) * 100 || 0
+          );
+        } else {
+          state.tokenOutSlippage = 0;
+        }
+      } else {
+        state.tokenOutSlippage = 0;
+      }
+    } catch (e) {
+      console.error('Tax extraction error:', e);
+      state.tokenInSlippage = 0;
+      state.tokenOutSlippage = 0;
+    }
+
+    // 注意：这里必须放在税率更新之后
+    if (state.smartSlippageMode) {
+      calculateSmartSlippage();
+    }
+
+    if (state.account) {
+      await updateSwapBtn();
+      await updateSecurityCheck();
+    }
+
+    await updateOutput();
+
+  } catch (e) {
+    console.error('applyTokenSelection error:', e);
+    showError('Failed to select token: ' + (e.message || e));
+  }
+}
+
+async function swapTokens() {
+  const tmp = state.tokenIn;
+  state.tokenIn = state.tokenOut;
+  state.tokenOut = tmp;
+
+  const inSym = state.tokenIn ? state.tokenIn.symbol : 'Select';
+  const outSym = state.tokenOut ? state.tokenOut.symbol : 'Select';
+
+  const inLogoUrl = state.tokenIn ? getTokenLogo(state.tokenIn.address) : '';
+  const outLogoUrl = state.tokenOut ? getTokenLogo(state.tokenOut.address) : '';
+
+  const inIconHTML = state.tokenIn && inLogoUrl
+    ? `<img src="${inLogoUrl}" alt="${inSym}" onerror="this.style.display='none'"/>`
+    : inSym.slice(0, 3).toUpperCase();
+
+  const outIconHTML = state.tokenOut && outLogoUrl
+    ? `<img src="${outLogoUrl}" alt="${outSym}" onerror="this.style.display='none'"/>`
+    : outSym.slice(0, 3).toUpperCase();
+
+  document.getElementById('tokenInBtn').innerHTML = state.tokenIn
+    ? `<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${inSym}</span>`
+    : `<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;
+
+  document.getElementById('tokenOutBtn').innerHTML = state.tokenOut
+    ? `<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${outSym}</span>`
+    : `<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;
+
+  try {
+    await loadBalances();
+
+    // 关键修复：切换代币后重新拉取税率，再计算智能滑点
+    await refreshTokenTaxes();
+
+    await updateOutput();
+
+    if (state.account) {
+      await updateSwapBtn();
+      await updateSecurityCheck();
+    }
+  } catch (e) {
+    console.error('swapTokens error:', e);
+    showError('Failed to swap token positions');
+  }
+}
 function setQuickAmount(percentage) {if (!state.tokenIn) {showError('Please select input token first');return;}
 const balanceText =document.getElementById('balanceInLabel').textContent.split(': ')[1];const balance =parseFloat(balanceText) ||0;if (percentage ===1) {const maxAmount =truncateDecimals(balance.toString(),6);document.getElementById('amountIn').value =maxAmount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');} else {const amount =truncateDecimals((balance *percentage).toString(),6);document.getElementById('amountIn').value =amount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');}
 handleAmountInChange();}
@@ -410,12 +544,157 @@ console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.has
 } catch (e) {console.error('Swap tx error:',e);showError('Swap failed: ' + e.message.substring(0,80));}
 } catch (e) {console.error('Swap error:',e);showError('Swap error: ' + e.message.substring(0,100));} finally {state.isProcessing =false;swapBtn.disabled =false;updateSwapBtn();}
 }
-function setOutSlippage(v){state.outSlippage=v;document.getElementById('outSlippageDisplay').textContent=v+'%';document.getElementById('outSlippageCustom').value='';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn')).forEach(b=>{if(b.textContent.trim()===v.toString()+'%')b.classList.add('active');});updateSlippageDisplay();updateOutput();}
+function getTokenSlippage(tokenAddress) {
+if (!tokenAddress) return 0;
+if (tokenAddress === '0xBNB') return 0;
+const tokenInAddr = state.tokenIn.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenIn.address;
+const tokenOutAddr = state.tokenOut.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenOut.address;
+if (tokenAddress.toLowerCase() === tokenInAddr.toLowerCase()) {
+return state.tokenInSlippage;
+} else if (tokenAddress.toLowerCase() === tokenOutAddr.toLowerCase()) {
+return state.tokenOutSlippage;
+}
+return 0;
+}
+function calculateSmartSlippage() {
+  if (!state.smartSlippageMode) return;
+
+  const inSlippage = state.tokenIn && state.tokenIn.address !== '0xBNB'
+    ? (parseFloat(state.tokenInSlippage) || 0)
+    : 0;
+
+  const outSlippage = state.tokenOut && state.tokenOut.address !== '0xBNB'
+    ? (parseFloat(state.tokenOutSlippage) || 0)
+    : 0;
+
+  const smartSlippage = inSlippage + outSlippage + 1;
+
+  state.outSlippage = Number(smartSlippage.toFixed(2));
+
+  document.getElementById('outSlippageDisplay').textContent = state.outSlippage + '%';
+  document.getElementById('slippageInfo').textContent = state.outSlippage + '%';
+  document.getElementById('smartInputTaxDisplay').textContent = inSlippage.toFixed(2) + '%';
+  document.getElementById('smartOutputTaxDisplay').textContent = outSlippage.toFixed(2) + '%';
+  document.getElementById('smartSlippageCalcDisplay').textContent = state.outSlippage.toFixed(2) + '%';
+
+  console.log(
+    'Smart Slippage: ' +
+    inSlippage.toFixed(2) + '% + ' +
+    outSlippage.toFixed(2) + '% + 1 = ' +
+    state.outSlippage.toFixed(2) + '%'
+  );
+}
+async function refreshTokenTaxes() {
+  try {
+    // 刷新输入币税率
+    if (state.tokenIn && !isBuiltInToken(state.tokenIn.address)) {
+      const secIn = await fetchTokenSecurity(state.tokenIn.address);
+      if (secIn) {
+        state.tokenInSlippage = Math.max(
+          parseFloat(secIn.buy_tax || 0) * 100 || 0,
+          parseFloat(secIn.sell_tax || 0) * 100 || 0
+        );
+      } else {
+        state.tokenInSlippage = 0;
+      }
+    } else {
+      state.tokenInSlippage = 0;
+    }
+
+    // 刷新输出币税率
+    if (state.tokenOut && !isBuiltInToken(state.tokenOut.address)) {
+      const secOut = await fetchTokenSecurity(state.tokenOut.address);
+      if (secOut) {
+        state.tokenOutSlippage = Math.max(
+          parseFloat(secOut.buy_tax || 0) * 100 || 0,
+          parseFloat(secOut.sell_tax || 0) * 100 || 0
+        );
+      } else {
+        state.tokenOutSlippage = 0;
+      }
+    } else {
+      state.tokenOutSlippage = 0;
+    }
+
+    console.log('Tax refreshed:', {
+      tokenIn: state.tokenIn?.symbol,
+      tokenInSlippage: state.tokenInSlippage,
+      tokenOut: state.tokenOut?.symbol,
+      tokenOutSlippage: state.tokenOutSlippage
+    });
+
+    // 税率拿到以后再重新计算智能滑点
+    if (state.smartSlippageMode) {
+      calculateSmartSlippage();
+    }
+  } catch (e) {
+    console.error('Tax refresh error:', e);
+
+    // 出错时兜底，避免保留旧值
+    state.tokenInSlippage = 0;
+    state.tokenOutSlippage = 0;
+
+    if (state.smartSlippageMode) {
+      calculateSmartSlippage();
+    }
+  }
+}
+
+async function toggleSmartSlippageMode() {
+  const checkbox = document.getElementById('smartSlippageMode');
+  const manualButtons = document.getElementById('manualSlippageButtons');
+  const details = document.getElementById('smartSlippageDetails');
+
+  state.smartSlippageMode = checkbox.checked;
+
+  try {
+    if (state.smartSlippageMode) {
+      manualButtons.style.opacity = '0.5';
+      manualButtons.style.pointerEvents = 'none';
+      details.style.display = 'block';
+
+      // 开启智能模式时，先刷新税率
+      await refreshTokenTaxes();
+      calculateSmartSlippage();
+    } else {
+      manualButtons.style.opacity = '1';
+      manualButtons.style.pointerEvents = 'auto';
+      details.style.display = 'none';
+    }
+
+    saveAllSettings();
+    updateSlippageDisplay();
+    await updateOutput();
+
+    console.log('Smart Slippage Mode: ' + (state.smartSlippageMode ? 'ON' : 'OFF'));
+  } catch (e) {
+    console.error('toggleSmartSlippageMode error:', e);
+    showError('Failed to update smart slippage mode');
+  }
+}
+function updateTokenSlippageValues(tokenAddress, slippageValue) {
+const tokenInAddr = state.tokenIn ? (state.tokenIn.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenIn.address) : null;
+const tokenOutAddr = state.tokenOut ? (state.tokenOut.address === '0xBNB' ? TOKENS.find(t => t.symbol === 'WBNB').address : state.tokenOut.address) : null;
+if (tokenAddress === tokenInAddr) {
+state.tokenInSlippage = parseFloat(slippageValue) || 0;
+console.log('Token In Slippage set to: ' + state.tokenInSlippage + '%');
+} else if (tokenAddress === tokenOutAddr) {
+state.tokenOutSlippage = parseFloat(slippageValue) || 0;
+console.log('Token Out Slippage set to: ' + state.tokenOutSlippage + '%');
+}
+if (state.smartSlippageMode) {
+calculateSmartSlippage();
+updateOutput();
+}
+}
+function setOutSlippage(v){if(state.smartSlippageMode){state.smartSlippageMode=false;document.getElementById('smartSlippageMode').checked=false;document.getElementById('smartSlippageDetails').style.display='none';const manualButtons=document.getElementById('manualSlippageButtons');manualButtons.style.opacity='1';manualButtons.style.pointerEvents='auto';saveAllSettings();}state.outSlippage=v;document.getElementById('outSlippageDisplay').textContent=v+'%';document.getElementById('slippageInfo').textContent=v+'%';document.getElementById('outSlippageCustom').value='';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn')).forEach(b=>{if(b.textContent.trim()===v.toString()+'%')b.classList.add('active');});updateSlippageDisplay();updateOutput();}
 function handleCustomSlippageInput(){const customVal=parseFloat(document.getElementById('outSlippageCustom').value);if(customVal&&customVal>=0.1&&customVal<=100){state.outSlippage=customVal;document.getElementById('outSlippageDisplay').textContent=customVal+'%';document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(1) .preset-btn').forEach(b=>b.classList.remove('active'));updateSlippageDisplay();}}
 function setCustomSlippageValue(){const customVal=parseFloat(document.getElementById('outSlippageCustom').value);if(customVal&&customVal>=0.1&&customVal<=100){state.outSlippage=customVal;document.getElementById('outSlippageDisplay').textContent=customVal+'%';updateSlippageDisplay();updateOutput();}else if(document.getElementById('outSlippageCustom').value.trim()!==''){showError('Please enter a valid slippage between 0.1 and 100');}}
 function updateSlippageDisplay(){document.getElementById('slippageInfo').textContent=state.outSlippage+'%';}
 function setOutDeadline(v){state.outDeadline=v;const display=v>=60?(v/60)+'h':v+'m';document.getElementById('outDeadlineDisplay').textContent=display;document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(2) .preset-btn').forEach(b=>b.classList.remove('active'));Array.from(document.querySelectorAll('#outSettingsPanel .setting-item:nth-child(2) .preset-btn')).forEach(b=>{if(b.textContent.replace(/[hm]/g,'').trim()===v.toString())b.classList.add('active');});}
-function openOutSettings() {document.getElementById('outSettingsPanel').classList.add('show');}
+function openOutSettings() {document.getElementById('outSettingsPanel').classList.add('show');if(document.getElementById('smartSlippageMode')){document.getElementById('smartSlippageMode').checked=state.smartSlippageMode;}
+const manualButtons = document.getElementById('manualSlippageButtons');
+if(state.smartSlippageMode){manualButtons.style.opacity='0.5';manualButtons.style.pointerEvents='none';}else{manualButtons.style.opacity='1';manualButtons.style.pointerEvents='auto';}}
 function closeOutSettings() {document.getElementById('outSettingsPanel').classList.remove('show');}
 async function updateSwapBtn() {const btn =document.getElementById('swapBtn');if (state.isProcessing) {btn.disabled =true;btn.textContent ='Processing...';} else if (!state.account) {btn.disabled =true;btn.textContent ='Connect Wallet';} else if (!state.tokenIn ||!state.tokenOut) {btn.disabled =true;btn.textContent ='Select Tokens';} else if (!state.amountIn ||parseFloat(state.amountIn) <=0) {btn.disabled =true;btn.textContent ='Enter Amount';} else {btn.disabled =false;if (state.tokenIn.address ==='0xBNB') {btn.textContent ='Swap';} else {try {const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);const tc =new ethers.Contract(state.tokenIn.address,ERC20_ABI,state.provider);const currentAllowance =await tc.allowance(state.account,ROUTER);if (currentAllowance < amountInWei) {btn.textContent ='Approve';state.needsApproval =true;} else {btn.textContent ='Swap';state.needsApproval =false;}} catch (e) {btn.textContent ='Swap';}}
 }
@@ -491,8 +770,7 @@ async function startRealtimeUpdates() {if (queryInterval) clearInterval(queryInt
 :state.tokenOut.address;if (tokenInAddr ===tokenOutAddr) return;const result =await queryBestPath(amountInWei,tokenInAddr,tokenOutAddr);if (!result) {document.getElementById('amountOut').value ='0';return;}
 const bestOutput =ethers.formatUnits(result.amountOut,state.tokenOut.decimals);const displayAmount =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(displayAmount).toFixed(6);const price =parseFloat(bestOutput) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent =priceTruncated + ' ' + state.tokenOut.symbol;const finalMinRec =truncateDecimals((parseFloat(bestOutput) *(1 - state.outSlippage / 100)).toString(),6
 );document.getElementById('minReceived').textContent =finalMinRec + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').style.display ='flex';} catch (e) {console.error('实时更新失败:',e);}
-};executeQuery();queryInterval =setInterval(executeQuery,QUERY_INTERVAL);console.log(`✓ 已启动实时查询（间隔: ${QUERY_INTERVAL}ms，立即执行一次）`);
-}
+};executeQuery();queryInterval =setInterval(executeQuery,QUERY_INTERVAL);console.log(`✓ 已启动实时查询（间隔: ${QUERY_INTERVAL}ms，立即执行一次）`);}
 function stopRealtimeUpdates() {if (queryInterval) {clearInterval(queryInterval);queryInterval =null;console.log('✓ 已停止实时查询');}
 }
 </script>
