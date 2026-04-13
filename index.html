@@ -128,7 +128,7 @@
 }
 ],"stateMutability":"view","type":"function"
 }
-];const QUERY_INTERVAL =1000;let pathFinderContract =null;let queryInterval =null;let amountChangeTimeout;let lastQueryTime=0;let receiverPanelOpen =false;function toggleReceiverAddress() {const panel =document.getElementById('receiverAddressPanel');const btn =document.getElementById('expandReceiverBtn');if (receiverPanelOpen) {panel.classList.add('closing');setTimeout(() =>{panel.style.display ='none';panel.classList.remove('closing');btn.classList.remove('active');},300);receiverPanelOpen =false;} else {panel.style.display ='block';btn.classList.add('active');receiverPanelOpen =true;}
+];const QUERY_INTERVAL =800;let pathFinderContract =null;let queryInterval =null;let amountChangeTimeout;let lastQueryTime=0;let receiverPanelOpen =false;function toggleReceiverAddress() {const panel =document.getElementById('receiverAddressPanel');const btn =document.getElementById('expandReceiverBtn');if (receiverPanelOpen) {panel.classList.add('closing');setTimeout(() =>{panel.style.display ='none';panel.classList.remove('closing');btn.classList.remove('active');},300);receiverPanelOpen =false;} else {panel.style.display ='block';btn.classList.add('active');receiverPanelOpen =true;}
 }
 function updateReceiverAddress() {const input =document.getElementById('receiverAddress');const display =document.getElementById('receiverAddressDisplay');const address =input.value.trim();if (address) {state.receiverAddress =address;const displayAddr =address.slice(0,5) + '...' + address.slice(-4);display.textContent =displayAddr;display.style.display ='inline';console.log('接收地址已设置:',address);} else {display.style.display ='none';state.receiverAddress ='';}
 }
