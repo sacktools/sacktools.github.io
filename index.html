@@ -130,8 +130,6 @@
 }
 ];const QUERY_INTERVAL =800;let pathFinderContract =null;let queryInterval =null;let amountChangeTimeout;let lastQueryTime=0;let receiverPanelOpen =false;function toggleReceiverAddress() {const panel =document.getElementById('receiverAddressPanel');const btn =document.getElementById('expandReceiverBtn');if (receiverPanelOpen) {panel.classList.add('closing');setTimeout(() =>{panel.style.display ='none';panel.classList.remove('closing');btn.classList.remove('active');},300);receiverPanelOpen =false;} else {panel.style.display ='block';btn.classList.add('active');receiverPanelOpen =true;}
 }
-function updateReceiverAddress() {const input =document.getElementById('receiverAddress');const display =document.getElementById('receiverAddressDisplay');const address =input.value.trim();if (address) {state.receiverAddress =address;const displayAddr =address.slice(0,5) + '...' + address.slice(-4);display.textContent =displayAddr;display.style.display ='inline';console.log('接收地址已设置:',address);} else {display.style.display ='none';state.receiverAddress ='';}
-}
 </script>
 <div class="info-card">
 <div class="info-row" id="priceSection" style="display:none;">
@@ -483,27 +481,21 @@ function formatPercent(value, maxDecimals = 2) {
 }
 
 function calculateSmartSlippage() {
-  if (!state.smartSlippageMode) return;
+    if (!state.smartSlippageMode) return;
 
-  const inSlippage = state.tokenIn.address === '0xBNB' ? 0 : state.tokenInSlippage;
-  const outSlippage = state.tokenOut.address === '0xBNB' ? 0 : state.tokenOutSlippage;
+    const inSlippage = state.tokenIn?.address === '0xBNB' ? 0 : state.tokenInSlippage;
+    const outSlippage = state.tokenOut?.address === '0xBNB' ? 0 : state.tokenOutSlippage;
+    const smartSlippage = Math.round((inSlippage + outSlippage + 1) * 100) / 100;
 
-  const smartSlippage = Math.round((inSlippage + outSlippage + 1) * 100) / 100;
-  state.outSlippage = smartSlippage;
+    state.outSlippage = smartSlippage;
 
-  document.getElementById('outSlippageDisplay').textContent = formatPercent(state.outSlippage) + '%';
-  document.getElementById('slippageInfo').textContent = formatPercent(state.outSlippage) + '%';
-  document.getElementById('smartInputTaxDisplay').textContent = formatPercent(inSlippage) + '%';
-  document.getElementById('smartOutputTaxDisplay').textContent = formatPercent(outSlippage) + '%';
-  document.getElementById('smartSlippageCalcDisplay').textContent = formatPercent(state.outSlippage) + '%';
-
-  console.log(
-    'Smart Slippage: ' +
-    formatPercent(inSlippage) + '% + ' +
-    formatPercent(outSlippage) + '% + 1 = ' +
-    formatPercent(state.outSlippage) + '%'
-  );
+    document.getElementById('outSlippageDisplay').textContent = formatPercent(state.outSlippage) + '%';
+    document.getElementById('slippageInfo').textContent = formatPercent(state.outSlippage) + '%';
+    document.getElementById('smartInputTaxDisplay').textContent = formatPercent(inSlippage) + '%';
+    document.getElementById('smartOutputTaxDisplay').textContent = formatPercent(outSlippage) + '%';
+    document.getElementById('smartSlippageCalcDisplay').textContent = formatPercent(state.outSlippage) + '%';
 }
+
 
 async function refreshTokenTaxes() {try {if (state.tokenIn &&!isBuiltInToken(state.tokenIn.address)) {const secIn =await fetchTokenSecurity(state.tokenIn.address);if (secIn) {state.tokenInSlippage =Math.max(parseFloat(secIn.buy_tax ||0) *100 ||0,parseFloat(secIn.sell_tax ||0) *100 ||0
 );} else {state.tokenInSlippage =0;}
@@ -516,8 +508,29 @@ console.log('Tax refreshed:',{tokenIn:state.tokenIn?.symbol,tokenInSlippage:stat
 } catch (e) {console.error('Tax refresh error:',e);state.tokenInSlippage =0;state.tokenOutSlippage =0;if (state.smartSlippageMode) {calculateSmartSlippage();}
 }
 }
-function toggleSmartSlippageMode() {const checkbox =document.getElementById('smartSlippageMode');state.smartSlippageMode =checkbox.checked;const manualButtons =document.getElementById('manualSlippageButtons');if (state.smartSlippageMode) {manualButtons.style.opacity ='0.5';manualButtons.style.pointerEvents ='none';document.getElementById('smartSlippageDetails').style.display ='block';calculateSmartSlippage();} else {manualButtons.style.opacity ='1';manualButtons.style.pointerEvents ='auto';document.getElementById('smartSlippageDetails').style.display ='none';}
-saveAllSettings();updateSlippageDisplay();updateOutput();console.log('Smart Slippage Mode: ' + (state.smartSlippageMode ?'ON' :'OFF'));}
+function toggleSmartSlippageMode() {
+    const checkbox = document.getElementById('smartSlippageMode');
+    state.smartSlippageMode = checkbox.checked;
+    const manualButtons = document.getElementById('manualSlippageButtons');
+    const details = document.getElementById('smartSlippageDetails');
+
+    if (state.smartSlippageMode) {
+        manualButtons.style.opacity = '0.5';
+        manualButtons.style.pointerEvents = 'none';
+        calculateSmartSlippage(); // 只计算
+        // 不要在这里强制 details.style.display = 'block'
+    } else {
+        manualButtons.style.opacity = '1';
+        manualButtons.style.pointerEvents = 'auto';
+        if (details) details.style.display = 'none';
+    }
+
+    saveAllSettings();
+    updateSlippageDisplay();
+    updateOutput();
+}
+
+
 function updateTokenSlippageValues(tokenAddress,slippageValue) {const tokenInAddr =state.tokenIn ?(state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address) :null;const tokenOutAddr =state.tokenOut ?(state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address) :null;if (tokenAddress ===tokenInAddr) {state.tokenInSlippage =parseFloat(slippageValue) ||0;console.log('Token In Slippage set to: ' + state.tokenInSlippage + '%');} else if (tokenAddress ===tokenOutAddr) {state.tokenOutSlippage =parseFloat(slippageValue) ||0;console.log('Token Out Slippage set to: ' + state.tokenOutSlippage + '%');}
 if (state.smartSlippageMode) {calculateSmartSlippage();updateOutput();}
 }
