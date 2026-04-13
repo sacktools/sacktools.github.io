@@ -477,7 +477,34 @@ console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.has
 }
 function getTokenSlippage(tokenAddress) {if (!tokenAddress) return 0;if (tokenAddress ==='0xBNB') return 0;const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;if (tokenAddress.toLowerCase() ===tokenInAddr.toLowerCase()) {return state.tokenInSlippage;} else if (tokenAddress.toLowerCase() ===tokenOutAddr.toLowerCase()) {return state.tokenOutSlippage;}
 return 0;}
-function calculateSmartSlippage() {if (!state.smartSlippageMode) return;const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;const inSlippage =state.tokenIn.address ==='0xBNB' ?0 :state.tokenInSlippage;const outSlippage =state.tokenOut.address ==='0xBNB' ?0 :state.tokenOutSlippage;const smartSlippage =inSlippage + outSlippage + 1;state.outSlippage =smartSlippage;document.getElementById('outSlippageDisplay').textContent =smartSlippage + '%';document.getElementById('slippageInfo').textContent =smartSlippage + '%';document.getElementById('smartInputTaxDisplay').textContent =inSlippage.toFixed(2) + '%';document.getElementById('smartOutputTaxDisplay').textContent =outSlippage.toFixed(2) + '%';document.getElementById('smartSlippageCalcDisplay').textContent =smartSlippage.toFixed(2) + '%';console.log('Smart Slippage: ' + inSlippage.toFixed(2) + '% + ' + outSlippage.toFixed(2) + '% + 1 = ' + smartSlippage.toFixed(2) + '%');}
+function formatPercent(value, maxDecimals = 2) {
+  const num = Number(value || 0);
+  return parseFloat(num.toFixed(maxDecimals)).toString();
+}
+
+function calculateSmartSlippage() {
+  if (!state.smartSlippageMode) return;
+
+  const inSlippage = state.tokenIn.address === '0xBNB' ? 0 : state.tokenInSlippage;
+  const outSlippage = state.tokenOut.address === '0xBNB' ? 0 : state.tokenOutSlippage;
+
+  const smartSlippage = Math.round((inSlippage + outSlippage + 1) * 100) / 100;
+  state.outSlippage = smartSlippage;
+
+  document.getElementById('outSlippageDisplay').textContent = formatPercent(state.outSlippage) + '%';
+  document.getElementById('slippageInfo').textContent = formatPercent(state.outSlippage) + '%';
+  document.getElementById('smartInputTaxDisplay').textContent = formatPercent(inSlippage) + '%';
+  document.getElementById('smartOutputTaxDisplay').textContent = formatPercent(outSlippage) + '%';
+  document.getElementById('smartSlippageCalcDisplay').textContent = formatPercent(state.outSlippage) + '%';
+
+  console.log(
+    'Smart Slippage: ' +
+    formatPercent(inSlippage) + '% + ' +
+    formatPercent(outSlippage) + '% + 1 = ' +
+    formatPercent(state.outSlippage) + '%'
+  );
+}
+
 async function refreshTokenTaxes() {try {if (state.tokenIn &&!isBuiltInToken(state.tokenIn.address)) {const secIn =await fetchTokenSecurity(state.tokenIn.address);if (secIn) {state.tokenInSlippage =Math.max(parseFloat(secIn.buy_tax ||0) *100 ||0,parseFloat(secIn.sell_tax ||0) *100 ||0
 );} else {state.tokenInSlippage =0;}
 } else {state.tokenInSlippage =0;}
