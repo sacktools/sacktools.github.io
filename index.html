@@ -6,7 +6,7 @@
 <title>TokenFree</title>
 <link rel="icon" href="favicon.ico">
 <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.js"></script>
-<style>:root{--primary:#4fa3f7;--primary-hover:#3b8dd9;--bg-body:#f0f6fa;--bg-card:#ffffff;--text-main:#280d5f;--text-sub:#76757b;--border-color:#e7e3eb;--input-bg:#f5f7fa;--shadow:0 4px 24px rgba(0,0,0,0.08);--radius-box:20px;--radius-btn:16px;--error:#ed4b9e;--success:#31d0aa;--warning:#ffa500;}*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}body{background:var(--bg-body);color:var(--text-main);display:flex;justify-content:center;min-height:100vh;padding:20px;padding-top:40px;padding-bottom:80px;}.topnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);z-index:100;}.nav-left{display:flex;align-items:center;gap:8px;}.nav-icon{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;}.nav-brand{font-weight:800;color:var(--primary);font-size:18px;}.nav-right{display:flex;align-items:center;gap:10px;}.connect-wallet-btn{background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:12px;font-weight:600;cursor:pointer;transition:0.2s;}.connect-wallet-btn:hover{opacity:0.9;}.wallet-address-display{background:#eff6ff;color:var(--primary);padding:6px 12px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;}.container{width:100%;max-width:420px;margin-top:40px;}.main-card{background:var(--bg-card);border-radius:var(--radius-box);box-shadow:var(--shadow);padding:8px;border:1px solid white;position:relative;}.card-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin-bottom:5px;}.tabs{display:flex;gap:20px;}.tab-item{font-size:18px;font-weight:700;color:var(--text-sub);cursor:pointer;position:relative;padding-bottom:4px;}.tab-item.active{color:var(--text-main);border-bottom:3px solid var(--primary);}.header-icons{display:flex;gap:12px;color:var(--text-sub);}.icon-btn{cursor:pointer;font-size:18px;transition:0.2s;background:none;border:none;color:var(--text-sub);}.icon-btn:hover{color:var(--text-main);}.alerts{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:999;width:90%;max-width:400px;}.alert{padding:10px 16px;border-radius:12px;margin-bottom:8px;display:none;font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.1);}.alert.show{display:block;animation:slideDown 0.3s ease;}.alert-error{background:#fff;border-left:4px solid var(--error);color:var(--error);}.alert-success{background:#fff;border-left:4px solid var(--success);color:var(--success);}.alert-info{background:#fff;border-left:4px solid var(--primary);color:var(--primary);}@keyframes slideDown{from{transform:translateY(-20px);opacity:0;}to{transform:translateY(0);opacity:1;}}.swap-section{display:flex;flex-direction:column;gap:0;position:relative;padding:16px;background:white;border-radius:20px;border:1px solid rgba(230,226,235,0.6);}.input-box{background:var(--input-bg);border-radius:20px;padding:16px;border:1px solid rgba(230,226,235,0.6);transition:0.2s;}.input-box:hover{border-color:#d7caec;}.input-box:focus-within{border-color:var(--primary);}.box-header{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);margin-bottom:10px;font-weight:600;}.box-main{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.token-selector{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:4px 8px 4px 0;border-radius:12px;transition:0.2s;}.token-selector:hover{opacity:0.7;}.token-icon{width:28px;height:28px;border-radius:50%;background:#ccc;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;}.token-icon img{width:100%;height:100%;object-fit:cover;}.token-symbol{font-size:18px;font-weight:700;color:var(--text-main);}.arrow-down{font-size:12px;margin-left:4px;}input[type="number"]{width:150px;text-align:right;font-size:24px;font-weight:600;color:var(--text-main);border:none;background:transparent;outline:none;}input[type="number"]::placeholder{color:#ccc;}.percent-row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;padding-right:4px;}.percent-btn{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;padding:2px 6px;border-radius:6px;}.percent-btn:hover{background:rgba(79,163,247,0.1);}.swap-divider{position:relative;margin:0;z-index:10;display:flex;justify-content:center;align-items:center;}.swap-arrow-btn{width:36px;height:36px;border-radius:50%;background:#eff6ff;border:4px solid #fff;color:var(--primary);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:0.2s;}.swap-arrow-btn:hover{transform:scale(1.1);}.info-card{padding:16px;margin-top:12px;background:#f9fbff;border:1px solid #e7e3eb;border-radius:16px;}.info-card-header{font-weight:700;color:var(--text-main);font-size:14px;margin-bottom:12px;}.info-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-sub);margin-bottom:10px;align-items:center;}.info-row:last-child{margin-bottom:0;}.info-label{font-weight:500;}.info-value{font-weight:600;color:var(--primary);}.info-value.dark{color:var(--text-main);}.security-section{padding:0;margin:8px 0;border-top:none;}.security-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px;}.security-row:last-child{margin-bottom:0;}.security-label{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--text-sub);}.security-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:11px;font-weight:600;}.security-badge.safe{background:#d4edda;color:#155724;}.security-badge.warning{background:#fff3cd;color:#856404;}.security-badge.danger{background:#f8d7da;color:#721c24;}.security-value{display:flex;align-items:center;gap:4px;font-weight:600;flex-wrap:wrap;justify-content:flex-end;}.action-btn{width:100%;background:var(--primary);color:white;border:none;padding:18px;border-radius:16px;font-size:18px;font-weight:700;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(79,163,247,0.3);transition:0.2s;}.action-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(79,163,247,0.4);}.action-btn:disabled{background:#e9eaeb;color:#bdc2c4;cursor:not-allowed;box-shadow:none;}.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px);}.modal.show{display:flex;}.modal-content{background:white;width:90%;max-width:400px;border-radius:24px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-height:80vh;display:flex;flex-direction:column;}.modal-header{display:flex;justify-content:space-between;margin-bottom:16px;font-weight:700;font-size:18px;}.close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-sub);}.search-input{width:100%;padding:12px;border:1px solid var(--border-color);border-radius:16px;background:var(--input-bg);margin-bottom:16px;outline:none;}.search-input:focus{border-color:var(--primary);}.search-hint{font-size:12px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:var(--input-bg);border-radius:8px;border-left:3px solid var(--primary);}.token-list{list-style:none;overflow-y:auto;flex:1;}.token-item{display:flex;align-items:center;gap:12px;padding:10px;cursor:pointer;border-radius:12px;transition:0.2s;}.token-item:hover{background:var(--input-bg);}.token-item-icon{width:24px;height:24px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;flex-shrink:0;overflow:hidden;}.token-item-icon img{width:100%;height:100%;border-radius:50%;object-fit:cover;}.token-item-info{flex:1;min-width:0;display:flex;flex-direction:column;}.token-item-name{font-weight:700;color:var(--text-main);font-size:14px;}.token-item-address{font-size:11px;color:var(--text-sub);word-break:break-all;margin-top:2px;font-family:'Monaco','Courier New',monospace;}.token-item-address-balance{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:11px;color:var(--text-sub);justify-content:space-between;flex-wrap:wrap;}.token-item-balance-container{display:flex;align-items:center;gap:4px;font-weight:600;color:var(--primary);}.token-balance-value{font-weight:600;color:var(--primary);}.token-item-delete-icon{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;transition:0.2s;display:flex;align-items:center;opacity:0.7;}.token-item-delete-icon:hover{opacity:1;transform:scale(1.2);}.no-results{text-align:center;padding:30px 20px;color:var(--text-sub);font-size:14px;}.token-item-action-btn{background:var(--primary);color:white;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-left:8px;transition:0.2s;flex-shrink:0;}.token-item-action-btn:hover{transform:scale(1.05);box-shadow:0 2px 8px rgba(79,163,247,0.3);}.settings-panel{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);backdrop-filter:blur(2px);align-items:center;justify-content:center;z-index:1000;}.settings-panel.show{display:flex;}.settings-content{background:white;border-radius:24px;padding:24px;width:90%;max-width:400px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.1);}.setting-item{margin-bottom:20px;}.setting-label{display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700;color:var(--text-main);font-size:14px;}.setting-value{font-size:16px;font-weight:700;color:var(--primary);}.preset-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:nowrap;align-items:center;}.preset-btn{flex:0 0 auto;min-width:50px;padding:6px 8px;border:1px solid var(--border-color);border-radius:12px;background:white;cursor:pointer;color:var(--primary);font-weight:600;font-size:12px;}.preset-btn:hover{background:rgba(79,163,247,0.05);border-color:var(--primary);}.preset-btn.active{background:var(--primary);color:white;}.input-slider{width:100%;height:6px;border-radius:3px;background:var(--border-color);outline:none;margin:12px 0;cursor:pointer;-webkit-appearance:none;appearance:none;}.input-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 8px rgba(79,163,247,0.3);}.input-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;border:none;box-shadow:0 2px 8px rgba(79,163,247,0.3);}.form-label{font-size:12px;color:var(--text-sub);display:block;margin-bottom:5px;font-weight:600;}.form-input{width:100%;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;font-size:13px;font-family:'Monaco','Courier New',monospace;outline:none;margin-bottom:8px;}.preset-buttons .form-input{width:auto;flex:0 0 100px;margin:0;padding:6px 8px;font-size:12px;border:1px solid var(--border-color);border-radius:12px;background:white;transition:0.2s;}.preset-buttons .form-input:focus{border-color:var(--primary);background:rgba(79,163,247,0.05);}.preset-buttons>div{display:flex;align-items:center;gap:6px;flex:0 0 auto;min-width:100px;}.form-input:focus{border-color:var(--primary);}.form-hint{font-size:11px;color:var(--text-sub);margin-bottom:10px;}.save-btn{width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(79,163,247,0.3);transition:0.2s;}.save-btn:hover{opacity:0.9;}.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:white;border-top:1px solid var(--border-color);display:flex;justify-content:space-around;align-items:center;z-index:99;}.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;text-decoration:none;color:var(--text-sub);transition:0.2s;}.nav-item.active{color:var(--primary);}.nav-icon{font-size:20px;}.nav-label{font-size:11px;font-weight:600;}.banner-container{width:100%;max-width:420px;margin:0 auto 20px auto;border-radius:var(--radius-box);overflow:hidden;position:relative;box-shadow:var(--shadow);aspect-ratio:3/1;background:#fff;}.banner-wrapper{display:flex;width:100%;height:100%;transition:transform 0.5s ease-in-out;}.banner-slide{min-width:100%;height:100%;}.banner-slide img{width:100%;height:100%;object-fit:cover;display:block;}.banner-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;}.banner-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:0.3s;}.banner-dot.active{background:#fff;transform:scale(1.2);}@media (max-width:480px){.container{max-width:100%;margin-top:20px;}.main-card{border-radius:0;box-shadow:none;border:none;background:transparent;}.input-box{border-radius:16px;}.banner-container{width:100%;max-width:420px;margin:0 auto 20px auto;border-radius:var(--radius-box);overflow:hidden;position:relative;box-shadow:var(--shadow);aspect-ratio:3/1;background:#fff;}.banner-wrapper{display:flex;width:100%;height:100%;transition:transform 0.5s ease-in-out;}.banner-slide{min-width:100%;height:100%;}.banner-slide img{width:100%;height:100%;object-fit:cover;display:block;}.banner-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;}.banner-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:0.3s;}.banner-dot.active{background:#fff;transform:scale(1.2);}}.airdrop-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px);}.airdrop-modal.show{display:flex;}.airdrop-content{background:white;width:90%;max-width:450px;border-radius:24px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;}.airdrop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-weight:700;font-size:18px;}.airdrop-form-group{margin-bottom:16px;}.airdrop-label{font-size:12px;color:var(--text-sub);display:block;margin-bottom:8px;font-weight:600;}.airdrop-info-row{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--input-bg);border-radius:12px;margin-bottom:12px;}.airdrop-info-label{font-size:13px;font-weight:600;color:var(--text-main);}.airdrop-info-value{font-size:13px;font-weight:700;color:var(--primary);}.airdrop-input{width:100%;padding:12px;border:1px solid var(--border-color);border-radius:12px;font-size:14px;outline:none;}.airdrop-input:focus{border-color:var(--primary);background:rgba(79,163,247,0.02);}.airdrop-button-group{display:flex;gap:12px;margin-top:20px;}.airdrop-button{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:0.2s;}.airdrop-button.primary{background:var(--primary);color:white;box-shadow:0 4px 12px rgba(79,163,247,0.3);}.airdrop-button.primary:hover{opacity:0.9;transform:translateY(-1px);}.airdrop-button.primary:disabled{background:#e9eaeb;color:#bdc2c4;cursor:not-allowed;box-shadow:none;}.airdrop-button.secondary{background:transparent;border:1px solid var(--border-color);color:var(--text-main);}.airdrop-button.secondary:hover{background:var(--input-bg);}.airdrop-alert{padding:12px;border-radius:12px;margin-bottom:12px;font-size:13px;font-weight:600;}.airdrop-alert.success{background:#d4edda;color:#155724;border-left:4px solid #31d0aa;}.airdrop-alert.error{background:#f8d7da;color:#721c24;border-left:4px solid var(--error);}.airdrop-alert.info{background:#d1ecf1;color:#0c5460;border-left:4px solid var(--primary);}.airdrop-summary{background:var(--input-bg);border-radius:12px;padding:12px;margin-top:12px;font-size:12px;}.airdrop-summary-item{display:flex;justify-content:space-between;margin-bottom:6px;}.airdrop-summary-item:last-child{margin-bottom:0;}.airdrop-summary-label{color:var(--text-sub);}.airdrop-summary-value{font-weight:700;color:var(--primary);}</style>
+<style>:root{--primary:#4fa3f7;--primary-hover:#3b8dd9;--bg-body:#f0f6fa;--bg-card:#ffffff;--text-main:#280d5f;--text-sub:#76757b;--border-color:#e7e3eb;--input-bg:#f5f7fa;--shadow:0 4px 24px rgba(0,0,0,0.08);--radius-box:20px;--radius-btn:16px;--error:#ed4b9e;--success:#31d0aa;--warning:#ffa500;}*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}body{background:var(--bg-body);color:var(--text-main);display:flex;justify-content:center;min-height:100vh;padding:20px;padding-top:40px;padding-bottom:80px;}.topnav{position:fixed;top:0;left:0;right:0;background:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);z-index:100;}.nav-left{display:flex;align-items:center;gap:8px;}.nav-icon{width:30px;height:30px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;}.nav-brand{font-weight:800;color:var(--primary);font-size:18px;}.nav-right{display:flex;align-items:center;gap:10px;}.connect-wallet-btn{background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:12px;font-weight:600;cursor:pointer;transition:0.2s;}.connect-wallet-btn:hover{opacity:0.9;}.wallet-address-display{background:#eff6ff;color:var(--primary);padding:6px 12px;border-radius:12px;font-weight:600;font-size:13px;cursor:pointer;}.container{width:100%;max-width:420px;margin-top:40px;}.main-card{background:var(--bg-card);border-radius:var(--radius-box);box-shadow:var(--shadow);padding:8px;border:1px solid white;position:relative;}.card-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;margin-bottom:5px;}.tabs{display:flex;gap:20px;}.tab-item{font-size:18px;font-weight:700;color:var(--text-sub);cursor:pointer;position:relative;padding-bottom:4px;}.tab-item.active{color:var(--text-main);border-bottom:3px solid var(--primary);}.header-icons{display:flex;gap:12px;color:var(--text-sub);}.icon-btn{cursor:pointer;font-size:18px;transition:0.2s;background:none;border:none;color:var(--text-sub);}.icon-btn:hover{color:var(--text-main);}.alerts{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:999;width:90%;max-width:400px;}.alert{padding:10px 16px;border-radius:12px;margin-bottom:8px;display:none;font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.1);}.alert.show{display:block;animation:slideDown 0.3s ease;}.alert-error{background:#fff;border-left:4px solid var(--error);color:var(--error);}.alert-success{background:#fff;border-left:4px solid var(--success);color:var(--success);}.alert-info{background:#fff;border-left:4px solid var(--primary);color:var(--primary);}@keyframes slideDown{from{transform:translateY(-20px);opacity:0;}to{transform:translateY(0);opacity:1;}}.swap-section{display:flex;flex-direction:column;gap:0;position:relative;padding:16px;background:white;border-radius:20px;border:1px solid rgba(230,226,235,0.6);}.input-box{background:var(--input-bg);border-radius:20px;padding:16px;border:1px solid rgba(230,226,235,0.6);transition:0.2s;}.input-box:hover{border-color:#d7caec;}.input-box:focus-within{border-color:var(--primary);}.box-header{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);margin-bottom:10px;font-weight:600;}.box-main{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}.token-selector{display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;padding:4px 8px 4px 0;border-radius:12px;transition:0.2s;}.token-selector:hover{opacity:0.7;}.token-icon{width:28px;height:28px;border-radius:50%;background:#ccc;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;}.token-icon img{width:100%;height:100%;object-fit:cover;}.token-symbol{font-size:18px;font-weight:700;color:var(--text-main);}.arrow-down{font-size:12px;margin-left:4px;}input[type="number"]{width:150px;text-align:right;font-size:24px;font-weight:600;color:var(--text-main);border:none;background:transparent;outline:none;}input[type="number"]::placeholder{color:#ccc;}.percent-row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;padding-right:4px;}.percent-btn{background:none;border:none;color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;padding:2px 6px;border-radius:6px;}.percent-btn:hover{background:rgba(79,163,247,0.1);}.swap-divider{position:relative;margin:0;z-index:10;display:flex;justify-content:center;align-items:center;}.swap-arrow-btn{width:36px;height:36px;border-radius:50%;background:#eff6ff;border:4px solid #fff;color:var(--primary);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:0.2s;}.swap-arrow-btn:hover{transform:scale(1.1);}.info-card{padding:16px;margin-top:12px;background:#f9fbff;border:1px solid #e7e3eb;border-radius:16px;}.info-card-header{font-weight:700;color:var(--text-main);font-size:14px;margin-bottom:12px;}.info-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-sub);margin-bottom:10px;align-items:center;}.info-row:last-child{margin-bottom:0;}.info-label{font-weight:500;}.info-value{font-weight:600;color:var(--primary);}.info-value.dark{color:var(--text-main);}.security-section{padding:0;margin:8px 0;border-top:none;}.security-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px;}.security-row:last-child{margin-bottom:0;}.security-label{display:flex;align-items:center;gap:6px;font-weight:500;color:var(--text-sub);}.security-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:11px;font-weight:600;}.security-badge.safe{background:#d4edda;color:#155724;}.security-badge.warning{background:#fff3cd;color:#856404;}.security-badge.danger{background:#f8d7da;color:#721c24;}.security-value{display:flex;align-items:center;gap:4px;font-weight:600;flex-wrap:wrap;justify-content:flex-end;}.action-btn{width:100%;background:var(--primary);color:white;border:none;padding:18px;border-radius:16px;font-size:18px;font-weight:700;cursor:pointer;margin-top:10px;box-shadow:0 4px 12px rgba(79,163,247,0.3);transition:0.2s;}.action-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(79,163,247,0.4);}.action-btn:disabled{background:#e9eaeb;color:#bdc2c4;cursor:not-allowed;box-shadow:none;}.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px);}.modal.show{display:flex;}.modal-content{background:white;width:90%;max-width:400px;border-radius:24px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-height:80vh;display:flex;flex-direction:column;}.modal-header{display:flex;justify-content:space-between;margin-bottom:16px;font-weight:700;font-size:18px;}.close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-sub);}.search-input{width:100%;padding:12px;border:1px solid var(--border-color);border-radius:16px;background:var(--input-bg);margin-bottom:16px;outline:none;}.search-input:focus{border-color:var(--primary);}.search-hint{font-size:12px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:var(--input-bg);border-radius:8px;border-left:3px solid var(--primary);}.token-list{list-style:none;overflow-y:auto;flex:1;}.token-item{display:flex;align-items:center;gap:12px;padding:10px;cursor:pointer;border-radius:12px;transition:0.2s;}.token-item:hover{background:var(--input-bg);}.token-item-icon{width:24px;height:24px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700;flex-shrink:0;overflow:hidden;}.token-item-icon img{width:100%;height:100%;border-radius:50%;object-fit:cover;}.token-item-info{flex:1;min-width:0;display:flex;flex-direction:column;}.token-item-name{font-weight:700;color:var(--text-main);font-size:14px;}.token-item-address{font-size:11px;color:var(--text-sub);word-break:break-all;margin-top:2px;font-family:'Monaco','Courier New',monospace;}.token-item-address-balance{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:11px;color:var(--text-sub);justify-content:space-between;flex-wrap:wrap;}.token-item-balance-container{display:flex;align-items:center;gap:4px;font-weight:600;color:var(--primary);}.token-balance-value{font-weight:600;color:var(--primary);}.token-item-delete-icon{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;transition:0.2s;display:flex;align-items:center;opacity:0.7;}.token-item-delete-icon:hover{opacity:1;transform:scale(1.2);}.no-results{text-align:center;padding:30px 20px;color:var(--text-sub);font-size:14px;}.token-item-action-btn{background:var(--primary);color:white;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;margin-left:8px;transition:0.2s;flex-shrink:0;}.token-item-action-btn:hover{transform:scale(1.05);box-shadow:0 2px 8px rgba(79,163,247,0.3);}.settings-panel{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);backdrop-filter:blur(2px);align-items:center;justify-content:center;z-index:1000;}.settings-panel.show{display:flex;}.settings-content{background:white;border-radius:24px;padding:24px;width:90%;max-width:400px;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.1);}.setting-item{margin-bottom:20px;}.setting-label{display:flex;justify-content:space-between;margin-bottom:12px;font-weight:700;color:var(--text-main);font-size:14px;}.setting-value{font-size:16px;font-weight:700;color:var(--primary);}.preset-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:nowrap;align-items:center;}.preset-btn{flex:0 0 auto;min-width:50px;padding:6px 8px;border:1px solid var(--border-color);border-radius:12px;background:white;cursor:pointer;color:var(--primary);font-weight:600;font-size:12px;}.preset-btn:hover{background:rgba(79,163,247,0.05);border-color:var(--primary);}.preset-btn.active{background:var(--primary);color:white;}.input-slider{width:100%;height:6px;border-radius:3px;background:var(--border-color);outline:none;margin:12px 0;cursor:pointer;-webkit-appearance:none;appearance:none;}.input-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 8px rgba(79,163,247,0.3);}.input-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary);cursor:pointer;border:none;box-shadow:0 2px 8px rgba(79,163,247,0.3);}.form-label{font-size:12px;color:var(--text-sub);display:block;margin-bottom:5px;font-weight:600;}.form-input{width:100%;padding:10px 12px;border:1px solid var(--border-color);border-radius:12px;font-size:13px;font-family:'Monaco','Courier New',monospace;outline:none;margin-bottom:8px;}.preset-buttons .form-input{width:auto;flex:0 0 100px;margin:0;padding:6px 8px;font-size:12px;border:1px solid var(--border-color);border-radius:12px;background:white;transition:0.2s;}.preset-buttons .form-input:focus{border-color:var(--primary);background:rgba(79,163,247,0.05);}.preset-buttons>div{display:flex;align-items:center;gap:6px;flex:0 0 auto;min-width:100px;}.form-input:focus{border-color:var(--primary);}.form-hint{font-size:11px;color:var(--text-sub);margin-bottom:10px;}.save-btn{width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(79,163,247,0.3);transition:0.2s;}.save-btn:hover{opacity:0.9;}.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:white;border-top:1px solid var(--border-color);display:flex;justify-content:space-around;align-items:center;z-index:99;}.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;text-decoration:none;color:var(--text-sub);transition:0.2s;}.nav-item.active{color:var(--primary);}.nav-icon{font-size:20px;}.nav-label{font-size:11px;font-weight:600;}.banner-container{width:100%;max-width:420px;margin:0 auto 20px auto;border-radius:var(--radius-box);overflow:hidden;position:relative;box-shadow:var(--shadow);aspect-ratio:3/1;background:#fff;}.banner-wrapper{display:flex;width:100%;height:100%;transition:transform 0.5s ease-in-out;}.banner-slide{min-width:100%;height:100%;}.banner-slide img{width:100%;height:100%;object-fit:cover;display:block;}.banner-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;}.banner-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:0.3s;}.banner-dot.active{background:#fff;transform:scale(1.2);}@media (max-width:480px){.container{max-width:100%;margin-top:20px;}.main-card{background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid white;padding:8px;}.input-box{border-radius:16px;}.banner-container{width:100%;max-width:420px;margin:0 auto 20px auto;border-radius:var(--radius-box);overflow:hidden;position:relative;box-shadow:var(--shadow);aspect-ratio:3/1;background:#fff;}.banner-wrapper{display:flex;width:100%;height:100%;transition:transform 0.5s ease-in-out;}.banner-slide{min-width:100%;height:100%;}.banner-slide img{width:100%;height:100%;object-fit:cover;display:block;}.banner-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10;}.banner-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:0.3s;}.banner-dot.active{background:#fff;transform:scale(1.2);}}.airdrop-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px);}.airdrop-modal.show{display:flex;}.airdrop-content{background:white;width:90%;max-width:450px;border-radius:24px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.1);max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;}.airdrop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-weight:700;font-size:18px;}.airdrop-form-group{margin-bottom:16px;}.airdrop-label{font-size:12px;color:var(--text-sub);display:block;margin-bottom:8px;font-weight:600;}.airdrop-info-row{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--input-bg);border-radius:12px;margin-bottom:12px;}.airdrop-info-label{font-size:13px;font-weight:600;color:var(--text-main);}.airdrop-info-value{font-size:13px;font-weight:700;color:var(--primary);}.airdrop-input{width:100%;padding:12px;border:1px solid var(--border-color);border-radius:12px;font-size:14px;outline:none;}.airdrop-input:focus{border-color:var(--primary);background:rgba(79,163,247,0.02);}.airdrop-button-group{display:flex;gap:12px;margin-top:20px;}.airdrop-button{flex:1;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:0.2s;}.airdrop-button.primary{background:var(--primary);color:white;box-shadow:0 4px 12px rgba(79,163,247,0.3);}.airdrop-button.primary:hover{opacity:0.9;transform:translateY(-1px);}.airdrop-button.primary:disabled{background:#e9eaeb;color:#bdc2c4;cursor:not-allowed;box-shadow:none;}.airdrop-button.secondary{background:transparent;border:1px solid var(--border-color);color:var(--text-main);}.airdrop-button.secondary:hover{background:var(--input-bg);}.airdrop-alert{padding:12px;border-radius:12px;margin-bottom:12px;font-size:13px;font-weight:600;}.airdrop-alert.success{background:#d4edda;color:#155724;border-left:4px solid #31d0aa;}.airdrop-alert.error{background:#f8d7da;color:#721c24;border-left:4px solid var(--error);}.airdrop-alert.info{background:#d1ecf1;color:#0c5460;border-left:4px solid var(--primary);}.airdrop-summary{background:var(--input-bg);border-radius:12px;padding:12px;margin-top:12px;font-size:12px;}.airdrop-summary-item{display:flex;justify-content:space-between;margin-bottom:6px;}.airdrop-summary-item:last-child{margin-bottom:0;}.airdrop-summary-label{color:var(--text-sub);}.airdrop-summary-value{font-weight:700;color:var(--primary);}</style>
 </head>
 <body>
 <div class="topnav">
@@ -100,112 +100,37 @@
 <span class="token-symbol">Select</span>
 <span class="arrow-down">▼</span>
 </button>
-
 <input type="number" id="amountOut" placeholder="0.0" disabled />
 </div>
 </div>
 </div>
-<!-- 接收地址组件 - 最终版本 -->
 <div style="display: flex; justify-content: center; align-items: center; margin: 8px 0; gap: 8px;">
-  <span style="font-size: 12px; color: var(--text-sub); font-weight: 600;">Receive</span>
-  <button type="button" id="expandReceiverBtn" onclick="toggleReceiverAddress()" 
-          style="width: 16px; height: 16px; border: none; background: none; cursor: pointer; 
+<span style="font-size: 12px; color: var(--text-sub); font-weight: 600;">Receive</span>
+<button type="button" id="expandReceiverBtn" onclick="toggleReceiverAddress()" style="width: 16px; height: 16px; border: none; background: none; cursor: pointer; 
                  display: flex; align-items: center; justify-content: center; padding: 0; 
                  color: var(--primary); font-size: 11px; transition: transform 0.3s ease; 
                  font-weight: bold;">▼</button>
-  <span id="receiverAddressDisplay" style="font-size: 11px; color: var(--primary); font-weight: 600; 
+<span id="receiverAddressDisplay" style="font-size: 11px; color: var(--primary); font-weight: 600; 
                                            max-width: 120px; word-break: break-all; text-align: center; 
                                            display: none;"></span>
 </div>
-
-<!-- 展开面板 -->
 <div id="receiverAddressPanel" style="display: none; margin-top: 6px; margin-bottom: 6px; padding: 0;
      animation: slideDown 0.3s ease; max-height: 100px; overflow: hidden;">
-  <input type="text" id="receiverAddress" placeholder="0x...." 
-         style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); 
+<input type="text" id="receiverAddress" placeholder="0x...." style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); 
                 border-radius: 12px; font-size: 12px; font-family: 'Monaco', 'Courier New', monospace; 
                 outline: none; box-sizing: border-box; background: transparent; 
-                transition: border-color 0.2s;" 
-         onchange="updateReceiverAddress()" onfocus="this.style.borderColor = 'var(--primary)'" 
-         onblur="this.style.borderColor = 'var(--border-color)'">
+                transition: border-color 0.2s;" onchange="updateReceiverAddress()" onfocus="this.style.borderColor = 'var(--primary)'" onblur="this.style.borderColor = 'var(--border-color)'">
 </div>
-
-<style>
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-  }
-  to {
-    opacity: 1;
-    max-height: 100px;
-    overflow: visible;
-  }
+<style>@keyframes slideDown{from{opacity:0;max-height:0;overflow:hidden;}to{opacity:1;max-height:100px;overflow:visible;}}@keyframes slideUp{from{opacity:1;max-height:100px;overflow:visible;}to{opacity:0;max-height:0;overflow:hidden;}}#receiverAddressPanel.closing{animation:slideUp 0.3s ease forwards;}#expandReceiverBtn.active{transform:rotate(180deg);}</style>
+<script>const PATH_FINDER_ADDRESS ='0x2e3A83Be38232bd801d26Bf59582F697cE205011';const PATH_FINDER_ABI =[{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[][]","name":"paths","type":"address[][]"}
+],"name":"findBestPath","outputs":[{"components":[{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"uint256","name":"amountOut","type":"uint256"},{"internalType":"uint256","name":"pathIndex","type":"uint256"}
+],"internalType":"struct PathResult","name":"result","type":"tuple"
 }
-
-@keyframes slideUp {
-  from {
-    opacity: 1;
-    max-height: 100px;
-    overflow: visible;
-  }
-  to {
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-  }
+],"stateMutability":"view","type":"function"
 }
-
-#receiverAddressPanel.closing {
-  animation: slideUp 0.3s ease forwards;
+];const QUERY_INTERVAL =1000;let pathFinderContract =null;let queryInterval =null;let amountChangeTimeout;let lastQueryTime=0;let receiverPanelOpen =false;function toggleReceiverAddress() {const panel =document.getElementById('receiverAddressPanel');const btn =document.getElementById('expandReceiverBtn');if (receiverPanelOpen) {panel.classList.add('closing');setTimeout(() =>{panel.style.display ='none';panel.classList.remove('closing');btn.classList.remove('active');},300);receiverPanelOpen =false;} else {panel.style.display ='block';btn.classList.add('active');receiverPanelOpen =true;}
 }
-
-#expandReceiverBtn.active {
-  transform: rotate(180deg);
-}
-</style>
-
-<script>
-let receiverPanelOpen = false;
-
-function toggleReceiverAddress() {
-  const panel = document.getElementById('receiverAddressPanel');
-  const btn = document.getElementById('expandReceiverBtn');
-  
-  if (receiverPanelOpen) {
-    // 关闭面板
-    panel.classList.add('closing');
-    setTimeout(() => {
-      panel.style.display = 'none';
-      panel.classList.remove('closing');
-      btn.classList.remove('active');
-    }, 300);
-    receiverPanelOpen = false;
-  } else {
-    // 打开面板
-    panel.style.display = 'block';
-    btn.classList.add('active');
-    receiverPanelOpen = true;
-  }
-}
-
-function updateReceiverAddress() {
-  const input = document.getElementById('receiverAddress');
-  const display = document.getElementById('receiverAddressDisplay');
-  const address = input.value.trim();
-  
-  if (address) {
-    state.receiverAddress = address;
-    // 显示缩略地址 (前5位...后4位)
-    const displayAddr = address.slice(0, 5) + '...' + address.slice(-4);
-    display.textContent = displayAddr;
-    display.style.display = 'inline';
-    console.log('接收地址已设置:', address);
-  } else {
-    display.style.display = 'none';
-    state.receiverAddress = '';
-  }
+function updateReceiverAddress() {const input =document.getElementById('receiverAddress');const display =document.getElementById('receiverAddressDisplay');const address =input.value.trim();if (address) {state.receiverAddress =address;const displayAddr =address.slice(0,5) + '...' + address.slice(-4);display.textContent =displayAddr;display.style.display ='inline';console.log('接收地址已设置:',address);} else {display.style.display ='none';state.receiverAddress ='';}
 }
 </script>
 <div class="info-card">
@@ -328,140 +253,29 @@ function updateReceiverAddress() {
 </div>
 </div>
 </div>
-<script>// ============================================================================
-// 优化工具库 - 最小化实现，只保留必要功能
-// ============================================================================
-
-/**
- * 缓存管理器 - TTL + 自动过期
- */
-class CacheManager {
-  constructor(defaultTTL = 5 * 60 * 1000) {
-    this.store = new Map();
-    this.timers = new Map();
-    this.defaultTTL = defaultTTL;
-  }
-
-  set(namespace, key, value, ttl = this.defaultTTL) {
-    const fullKey = `${namespace}:${key}`;
-    if (this.timers.has(fullKey)) clearTimeout(this.timers.get(fullKey));
-    
-    this.store.set(fullKey, value);
-    if (ttl > 0) {
-      this.timers.set(fullKey, setTimeout(() => this.delete(namespace, key), ttl));
-    }
-  }
-
-  get(namespace, key) {
-    return this.store.get(`${namespace}:${key}`) || null;
-  }
-
-  delete(namespace, key) {
-    const fullKey = `${namespace}:${key}`;
-    this.store.delete(fullKey);
-    if (this.timers.has(fullKey)) clearTimeout(this.timers.get(fullKey));
-    this.timers.delete(fullKey);
-  }
-
-  clear() {
-    for (const timer of this.timers.values()) clearTimeout(timer);
-    this.store.clear();
-    this.timers.clear();
-  }
+<script>class CacheManager {constructor(defaultTTL =5 *60 *1000) {this.store =new Map();this.timers =new Map();this.defaultTTL =defaultTTL;}
+set(namespace,key,value,ttl =this.defaultTTL) {const fullKey =`${namespace}:${key}`;if (this.timers.has(fullKey)) clearTimeout(this.timers.get(fullKey));this.store.set(fullKey,value);if (ttl >0) {this.timers.set(fullKey,setTimeout(() =>this.delete(namespace,key),ttl));}
 }
-
-/**
- * 防抖函数
- */
-function debounce(func, wait = 300) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
+get(namespace,key) {return this.store.get(`${namespace}:${key}`) ||null;}
+delete(namespace,key) {const fullKey =`${namespace}:${key}`;this.store.delete(fullKey);if (this.timers.has(fullKey)) clearTimeout(this.timers.get(fullKey));this.timers.delete(fullKey);}
+clear() {for (const timer of this.timers.values()) clearTimeout(timer);this.store.clear();this.timers.clear();}
 }
-
-/**
- * 并行加载 - 最大并发数限制
- */
-async function loadParallel(tasks, maxConcurrent = 10) {
-  const results = [];
-  for (let i = 0; i < tasks.length; i += maxConcurrent) {
-    const batch = tasks.slice(i, i + maxConcurrent);
-    const batchResults = await Promise.all(batch.map(t => t().catch(e => {
-      console.error('Task error:', e);
-      return null;
-    })));
-    results.push(...batchResults);
-  }
-  return results;
+function debounce(func,wait =300) {let timeout;return function(...args) {clearTimeout(timeout);timeout =setTimeout(() =>func.apply(this,args),wait);};}
+async function loadParallel(tasks,maxConcurrent =10) {const results =[];for (let i =0;i < tasks.length;i +=maxConcurrent) {const batch =tasks.slice(i,i + maxConcurrent);const batchResults =await Promise.all(batch.map(t =>t().catch(e =>{console.error('Task error:',e);return null;})));results.push(...batchResults);}
+return results;}
+async function withRetry(fn,maxRetries =3,delay =1000) {let lastError;for (let i =0;i <=maxRetries;i++) {try {return await fn();} catch (error) {lastError =error;if (i < maxRetries) await new Promise(r =>setTimeout(r,delay *Math.pow(2,i)));}
 }
-
-/**
- * 错误处理 + 重试
- */
-async function withRetry(fn, maxRetries = 3, delay = 1000) {
-  let lastError;
-  for (let i = 0; i <= maxRetries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-      if (i < maxRetries) await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
-    }
-  }
-  throw lastError;
+throw lastError;}
+function batchAppendDOM(container,items,createFn,clearFirst =true) {if (!container) return;const fragment =document.createDocumentFragment();items.forEach(item =>{const el =createFn(item);if (el) fragment.appendChild(el);});if (clearFirst) container.innerHTML ='';container.appendChild(fragment);}
+class RateLimiter {constructor(maxRequests =20,windowMs =60000) {this.maxRequests =maxRequests;this.windowMs =windowMs;this.requests =[];}
+canMake() {const now =Date.now();this.requests =this.requests.filter(t =>t >now - this.windowMs);if (this.requests.length < this.maxRequests) {this.requests.push(now);return true;}
+return false;}
 }
-
-/**
- * DOM批量操作 - 使用DocumentFragment
- */
-function batchAppendDOM(container, items, createFn, clearFirst = true) {
-  if (!container) return;
-  const fragment = document.createDocumentFragment();
-  items.forEach(item => {
-    const el = createFn(item);
-    if (el) fragment.appendChild(el);
-  });
-  if (clearFirst) container.innerHTML = '';
-  container.appendChild(fragment);
-}
-
-/**
- * 限流器
- */
-class RateLimiter {
-  constructor(maxRequests = 20, windowMs = 60000) {
-    this.maxRequests = maxRequests;
-    this.windowMs = windowMs;
-    this.requests = [];
-  }
-
-  canMake() {
-    const now = Date.now();
-    this.requests = this.requests.filter(t => t > now - this.windowMs);
-    if (this.requests.length < this.maxRequests) {
-      this.requests.push(now);
-      return true;
-    }
-    return false;
-  }
-}
-
-// 全局实例
-const cache = new CacheManager(5 * 60 * 1000);
-const limiter = new RateLimiter(20, 60000);
-
-
-// ============================================================================
-// 原始业务代码 - 直接优化实现
-// ============================================================================
-
-const ROUTER ='0x10ED43C718714eb63d5aA57B78B54704E256024E';const TOKENS =[{symbol:'BNB',address:'0xBNB',decimals:18,name:'BNB (Native)' },{symbol:'WBNB',address:'0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',decimals:18,name:'Wrapped BNB' },{symbol:'USDT',address:'0x55d398326f99059fF775485246999027B3197955',decimals:18,name:'Tether USD' },{symbol:'USDC',address:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',decimals:18,name:'USD Coin' }
+const cache =new CacheManager(5 *60 *1000);const limiter =new RateLimiter(20,60000);const ROUTER ='0x10ED43C718714eb63d5aA57B78B54704E256024E';const TOKENS =[{symbol:'BNB',address:'0xBNB',decimals:18,name:'BNB (Native)' },{symbol:'WBNB',address:'0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',decimals:18,name:'Wrapped BNB' },{symbol:'USDT',address:'0x55d398326f99059fF775485246999027B3197955',decimals:18,name:'Tether USD' },{symbol:'USDC',address:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',decimals:18,name:'USD Coin' }
 ];const ERC20_ABI =['function balanceOf(address owner) view returns (uint256)','function decimals() view returns (uint8)','function approve(address spender, uint256 amount) returns (bool)','function allowance(address owner, address spender) view returns (uint256)'
 ];const ROUTER_ABI =['function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)','function swapExactTokensForTokensSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external','function swapExactETHForTokensSupportingFeeOnTransferTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable','function swapExactTokensForETHSupportingFeeOnTransferTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external'
 ];const BUILT_IN_TOKENS=['0xBNB','0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c','0x55d398326f99059fF775485246999027B3197955','0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d'];let state ={account:null,provider:null,signer:null,tokenIn:TOKENS[0],tokenOut:TOKENS[2],amountIn:'0',amountOut:'0',outSlippage:1,outDeadline:20,tokenInType:'in',balances:{},customTokens:[],allTokens:[],gasPrice:null,rpcUrl:null,isProcessing:false,needsApproval:false,securityCache:{}
-,airdropToken:null,airdropAmountPerAddress:'0',airdropNumRecipients:'0',bestPathLockedTime:0,pathLockLocked:false};function isBuiltInToken(address){return BUILT_IN_TOKENS.some(t=>t.toLowerCase()===address.toLowerCase());}
+,airdropToken:null,airdropAmountPerAddress:'0',airdropNumRecipients:'0',bestPath:null};function isBuiltInToken(address){return BUILT_IN_TOKENS.some(t=>t.toLowerCase()===address.toLowerCase());}
 function truncateAddress(address) {if (!address ||address ==='0xBNB') return address;const first4 =address.substring(0,6);const last4 =address.substring(address.length - 4);return first4 + '...' + last4;}
 function getTokenLogo(address) {if (address ==='0xBNB') {return 'https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png';}
 try {return `https://tokens.pancakeswap.finance/images/${ethers.getAddress(address)}.png`;} catch (e) {return '';}
@@ -497,7 +311,7 @@ function updateTopNavigation() {if (state.account) {const displayAddress =trunca
 }
 function copyAddress() {if (state.account) {navigator.clipboard.writeText(state.account).then(() =>{showSuccess('Address copied to clipboard!');}).catch(() =>{showError('Failed to copy address');});}
 }
-async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();} catch (e) {showError('Connection failed: ' + e.message);}
+async function connectWallet() {try {if (!window.ethereum) return showError('Please install MetaMask');const accounts =await window.ethereum.request({method:'eth_requestAccounts' });state.account =accounts[0];state.provider =new ethers.BrowserProvider(window.ethereum);state.signer =await state.provider.getSigner();console.log('Wallet connected:',state.account);updateTopNavigation();updateUI();await updateSwapBtn();await initializePathFinder();} catch (e) {showError('Connection failed: ' + e.message);}
 }
 async function tryAutoConnect() {if (window.ethereum) {try {const accounts =await window.ethereum.request({method:'eth_accounts' });if (accounts.length >0) {console.log('Found authorized account, auto-connecting...');connectWallet();}
 } catch (e) {console.error("Auto connect check failed:",e);}
@@ -505,85 +319,19 @@ async function tryAutoConnect() {if (window.ethereum) {try {const accounts =awai
 }
 function updateUI() {if (state.account) {loadBalances();}
 }
-
-async function loadBalances() {
-  if (!state.account || !state.provider) return;
-  
-  try {
-    const tasks = [];
-    
-    if (state.tokenIn) {
-      tasks.push(async () => {
-        let balance;
-        if (state.tokenIn.address === '0xBNB') {
-          const balWei = await state.provider.getBalance(state.account);
-          balance = ethers.formatEther(balWei);
-        } else {
-          balance = await getBalance(state.tokenIn.address);
-        }
-        state.balances[state.tokenIn.address] = balance;
-        const el = document.getElementById('balanceInLabel');
-        if (el) el.textContent = 'Balance: ' + balance;
-      });
-    }
-    
-    if (state.tokenOut) {
-      tasks.push(async () => {
-        let balance;
-        if (state.tokenOut.address === '0xBNB') {
-          const balWei = await state.provider.getBalance(state.account);
-          balance = ethers.formatEther(balWei);
-        } else {
-          balance = await getBalance(state.tokenOut.address);
-        }
-        state.balances[state.tokenOut.address] = balance;
-        const el = document.getElementById('balanceOutLabel');
-        if (el) el.textContent = 'Balance: ' + balance;
-      });
-    }
-    
-    if (tasks.length > 0) {
-      await loadParallel(tasks, 3);
-    }
-  } catch (e) {
-    console.error('loadBalances error:', e);
-  }
+async function loadBalances() {if (!state.account ||!state.provider) return;try {const tasks =[];if (state.tokenIn) {tasks.push(async () =>{let balance;if (state.tokenIn.address ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);balance =ethers.formatEther(balWei);} else {balance =await getBalance(state.tokenIn.address);}
+state.balances[state.tokenIn.address] =balance;const el =document.getElementById('balanceInLabel');if (el) el.textContent ='Balance: ' + balance;});}
+if (state.tokenOut) {tasks.push(async () =>{let balance;if (state.tokenOut.address ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);balance =ethers.formatEther(balWei);} else {balance =await getBalance(state.tokenOut.address);}
+state.balances[state.tokenOut.address] =balance;const el =document.getElementById('balanceOutLabel');if (el) el.textContent ='Balance: ' + balance;});}
+if (tasks.length >0) {await loadParallel(tasks,3);}
+} catch (e) {console.error('loadBalances error:',e);}
 }
-
-
 async function getBalance(addr) {try {const c =new ethers.Contract(addr,ERC20_ABI,state.provider);const b =await c.balanceOf(state.account);const d =await c.decimals();return ethers.formatUnits(b,d);} catch (e) {console.error('getBalance error:',e);return '0';}
 }
 async function getTokenBalanceForItem(tokenAddress) {if (!state.account ||!state.provider) return '0';try {if (tokenAddress ==='0xBNB') {const balWei =await state.provider.getBalance(state.account);return ethers.formatEther(balWei);} else {const contract =new ethers.Contract(tokenAddress,ERC20_ABI,state.provider);const balance =await contract.balanceOf(state.account);const decimals =await contract.decimals();return ethers.formatUnits(balance,decimals);}
 } catch (e) {console.error('Error fetching balance:',e);return '0';}}
-
-async function fetchTokenSecurity(tokenAddress) {
-  if (isBuiltInToken(tokenAddress)) return null;
-  
-  // 检查缓存
-  let cached = cache.get('token_security', tokenAddress);
-  if (cached) return cached;
-  
-  // 限流检查
-  if (!limiter.canMake()) return null;
-  
-  try {
-    const chainId = 56;
-    const response = await fetch(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${tokenAddress}`, 
-      { signal: AbortSignal.timeout(10000) });
-    
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (data.code !== 1 || !data.result?.[tokenAddress.toLowerCase()]) return null;
-    
-    const result = data.result[tokenAddress.toLowerCase()];
-    cache.set('token_security', tokenAddress, result, 10 * 60 * 1000);
-    return result;
-  } catch (e) {
-    console.error('fetchTokenSecurity error:', e);
-    return null;
-  }
+async function fetchTokenSecurity(tokenAddress) {if (isBuiltInToken(tokenAddress)) return null;let cached =cache.get('token_security',tokenAddress);if (cached) return cached;if (!limiter.canMake()) return null;try {const chainId =56;const response =await fetch(`https://api.gopluslabs.io/api/v1/token_security/${chainId}?contract_addresses=${tokenAddress}`,{signal:AbortSignal.timeout(10000) });if (!response.ok) return null;const data =await response.json();if (data.code !==1 ||!data.result?.[tokenAddress.toLowerCase()]) return null;const result =data.result[tokenAddress.toLowerCase()];cache.set('token_security',tokenAddress,result,10 *60 *1000);return result;} catch (e) {console.error('fetchTokenSecurity error:',e);return null;}
 }
-
 function renderSecurityInfo(securityData,tokenAddress) {if (!securityData) {return '';}
 let html ='<div class="security-section">';const buyTax =parseFloat(securityData.buy_tax ||0) *100;const sellTax =parseFloat(securityData.sell_tax ||0) *100;const transferTax =parseFloat(securityData.transfer_tax ||0) *100;const lpHolders =securityData.lp_holders ||[];const lockedPercent =lpHolders.reduce((sum,h) =>{if (parseInt(h.is_locked) ===1) {return sum + parseFloat(h.percent ||0);}
 return sum;},0) *100;html +='<div class="security-row">';html +='<span class="security-label">TAX (✓):</span>';html +='<div class="security-value">';if (buyTax >=0) {html +=`<span class="security-badge safe">buy: ${buyTax.toFixed(2)}%</span>`;}
@@ -598,25 +346,10 @@ if(checkTokens.length===0){return;}
 for(const item of checkTokens){try{const securityData=await fetchTokenSecurity(item.token.address);if(securityData){const html=renderSecurityInfo(securityData,item.token.address);if(html){container.innerHTML+=html;}}}catch(e){console.error('Error updating security check:',e);}}}
 function openTokenModal(t) {if (!state.account) return showError('Connect wallet first');state.tokenInType =t;document.getElementById('tokenSearch').value ='';state.allTokens =[...TOKENS,...state.customTokens];renderTokenList(state.allTokens);document.getElementById('tokenModal').classList.add('show');document.getElementById('noResults').style.display ='none';}
 function closeTokenModal() {document.getElementById('tokenModal').classList.remove('show');}
-
-function renderTokenList(tokens) {
-  const list = document.getElementById('tokenList');
-  if (!tokens || tokens.length === 0) {
-    list.innerHTML = '';
-    const nr = document.getElementById('noResults');
-    if (nr) nr.style.display = 'block';
-    return;
-  }
-  
-  batchAppendDOM(list, tokens, (token) => {
-    const li = document.createElement('li');
-    li.className = 'token-item';
-    const logoUrl = getTokenLogo(token.address);
-    const iconHTML = logoUrl
-      ? `<img src="${logoUrl}" alt="${token.symbol}" onerror="this.style.display='none'"/>`
-      : token.symbol.slice(0, 3).toUpperCase();
-    
-    li.innerHTML = `
+function renderTokenList(tokens) {const list =document.getElementById('tokenList');if (!tokens ||tokens.length ===0) {list.innerHTML ='';const nr =document.getElementById('noResults');if (nr) nr.style.display ='block';return;}
+batchAppendDOM(list,tokens,(token) =>{const li =document.createElement('li');li.className ='token-item';const logoUrl =getTokenLogo(token.address);const iconHTML =logoUrl
+?`<img src="${logoUrl}" alt="${token.symbol}" onerror="this.style.display='none'"/>`
+:token.symbol.slice(0,3).toUpperCase();li.innerHTML =`
       <div class="token-item-icon">${iconHTML}</div>
       <div class="token-item-info">
         <div class="token-item-name">${token.symbol}</div>
@@ -625,161 +358,34 @@ function renderTokenList(tokens) {
           <span class="token-item-balance-container"><span class="token-balance-value" data-address="${token.address}">Loading...</span></span>
         </div>
       </div>
-    `;
-    
-    const isCustom = state.customTokens.some(ct => ct.address.toLowerCase() === token.address.toLowerCase());
-    const isDefault = TOKENS.some(dt => dt.address.toLowerCase() === token.address.toLowerCase());
-    
-    if (!isDefault && !isCustom) {
-      const saveBtn = document.createElement('button');
-      saveBtn.className = 'token-item-action-btn';
-      saveBtn.textContent = 'Save';
-      saveBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (addCustomToken(token)) setTimeout(() => closeTokenModal(), 500);
-      };
-      li.appendChild(saveBtn);
-    } else if (isCustom) {
-      const deleteBtn = document.createElement('button');
-      deleteBtn.className = 'token-item-delete-icon';
-      deleteBtn.textContent = '🗑️';
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        deleteCustomToken(token.address);
-      };
-      const addressSpan = li.querySelector('.token-item-address-balance > span:first-child');
-      if (addressSpan) addressSpan.appendChild(deleteBtn);
-    }
-    
-    li.onclick = (e) => {
-      e.stopPropagation();
-      if (!e.target.classList.contains('token-item-delete-icon')) {
-        selectToken(token);
-        return false;
-      }
-    };
-    
-    getTokenBalanceForItem(token.address).then(balance => {
-      const el = li.querySelector('[data-address="' + token.address + '"]');
-      if (el) el.textContent = parseFloat(balance).toFixed(6);
-    });
-    
-    return li;
-  }, true);
-  
-  const nr = document.getElementById('noResults');
-  if (nr) nr.style.display = 'none';
+    `;const isCustom =state.customTokens.some(ct =>ct.address.toLowerCase() ===token.address.toLowerCase());const isDefault =TOKENS.some(dt =>dt.address.toLowerCase() ===token.address.toLowerCase());if (!isDefault &&!isCustom) {const saveBtn =document.createElement('button');saveBtn.className ='token-item-action-btn';saveBtn.textContent ='Save';saveBtn.onclick =(e) =>{e.stopPropagation();if (addCustomToken(token)) setTimeout(() =>closeTokenModal(),500);};li.appendChild(saveBtn);} else if (isCustom) {const deleteBtn =document.createElement('button');deleteBtn.className ='token-item-delete-icon';deleteBtn.textContent ='🗑️';deleteBtn.onclick =(e) =>{e.stopPropagation();deleteCustomToken(token.address);};const addressSpan =li.querySelector('.token-item-address-balance > span:first-child');if (addressSpan) addressSpan.appendChild(deleteBtn);}
+li.onclick =(e) =>{e.stopPropagation();if (!e.target.classList.contains('token-item-delete-icon')) {selectToken(token);return false;}
+};getTokenBalanceForItem(token.address).then(balance =>{const el =li.querySelector('[data-address="' + token.address + '"]');if (el) el.textContent =parseFloat(balance).toFixed(6);});return li;},true);const nr =document.getElementById('noResults');if (nr) nr.style.display ='none';}
+const debouncedFilterTokens =debounce(async function() {const search =document.getElementById('tokenSearch')?.value.toLowerCase().trim() ||'';if (!search) {state.allTokens =[...TOKENS,...state.customTokens];renderTokenList(state.allTokens);return;}
+let filtered =TOKENS.filter(t =>t.symbol.toLowerCase().includes(search) ||t.name.toLowerCase().includes(search) ||t.address.toLowerCase().includes(search)
+);filtered =[...filtered,...state.customTokens.filter(t =>t.symbol.toLowerCase().includes(search) ||t.name.toLowerCase().includes(search) ||t.address.toLowerCase().includes(search)
+)
+];if (isValidAddress(search) &&!filtered.find(t =>t.address.toLowerCase() ===search.toLowerCase())) {showInfo('Loading token metadata...');const metadata =await fetchTokenMetadata(search);if (metadata) {filtered.unshift({symbol:metadata.symbol ||'UNKNOWN',address:search,decimals:metadata.decimals ||18,name:metadata.name ||'Unknown'
+});}
 }
-
-
-
-const debouncedFilterTokens = debounce(async function() {
-  const search = document.getElementById('tokenSearch')?.value.toLowerCase().trim() || '';
-  
-  if (!search) {
-    state.allTokens = [...TOKENS, ...state.customTokens];
-    renderTokenList(state.allTokens);
-    return;
-  }
-  
-  let filtered = TOKENS.filter(t =>
-    t.symbol.toLowerCase().includes(search) ||
-    t.name.toLowerCase().includes(search) ||
-    t.address.toLowerCase().includes(search)
-  );
-  
-  filtered = [
-    ...filtered,
-    ...state.customTokens.filter(t =>
-      t.symbol.toLowerCase().includes(search) ||
-      t.name.toLowerCase().includes(search) ||
-      t.address.toLowerCase().includes(search)
-    )
-  ];
-  
-  if (isValidAddress(search) && !filtered.find(t => t.address.toLowerCase() === search.toLowerCase())) {
-    showInfo('Loading token metadata...');
-    const metadata = await fetchTokenMetadata(search);
-    if (metadata) {
-      filtered.unshift({
-        symbol: metadata.symbol || 'UNKNOWN',
-        address: search,
-        decimals: metadata.decimals || 18,
-        name: metadata.name || 'Unknown'
-      });
-    }
-  }
-  
-  state.allTokens = filtered;
-  renderTokenList(filtered);
-}, 300);
-
-function filterTokens() {
-  debouncedFilterTokens();
+state.allTokens =filtered;renderTokenList(filtered);},300);function filterTokens() {debouncedFilterTokens();}
+async function fetchTokenMetadata(addr) {if (!isValidAddress(addr)) return null;let cached =cache.get('token_metadata',addr);if (cached) return cached;try {const result =await withRetry(async () =>{if (!state.provider) throw new Error('Provider not initialized');const c =new ethers.Contract(addr,['function symbol() view returns (string)','function name() view returns (string)','function decimals() view returns (uint8)'],state.provider);const [symbol,name,decimalsRaw] =await Promise.all([c.symbol(),c.name(),c.decimals()
+]);return {symbol,name,decimals:Number(decimalsRaw) };},2,500);cache.set('token_metadata',addr,result,30 *60 *1000);return result;} catch (e) {console.error('fetchTokenMetadata error:',e);return null;}
 }
-
-
-
-async function fetchTokenMetadata(addr) {
-  if (!isValidAddress(addr)) return null;
-  
-  let cached = cache.get('token_metadata', addr);
-  if (cached) return cached;
-  
-  try {
-    const result = await withRetry(async () => {
-      if (!state.provider) throw new Error('Provider not initialized');
-      const c = new ethers.Contract(addr,
-        ['function symbol() view returns (string)',
-         'function name() view returns (string)',
-         'function decimals() view returns (uint8)'],
-        state.provider);
-      
-      const [symbol, name, decimalsRaw] = await Promise.all([
-        c.symbol(), c.name(), c.decimals()
-      ]);
-      
-      return { symbol, name, decimals: Number(decimalsRaw) };
-    }, 2, 500);
-    
-    cache.set('token_metadata', addr, result, 30 * 60 * 1000);
-    return result;
-  } catch (e) {
-    console.error('fetchTokenMetadata error:', e);
-    return null;
-  }
-}
-
-
 function selectToken(tokenObj) {if (!tokenObj ||!tokenObj.address) {showError('Invalid token object');return;}
 applyTokenSelection(tokenObj);}
 async function applyTokenSelection(t) {const logoUrl =getTokenLogo(t.address);const iconHTML =logoUrl ?`<img src="${logoUrl}" alt="${t.symbol}" onerror="this.style.display='none'"/>` :t.symbol.slice(0,3).toUpperCase();if (state.tokenInType ==='in') {state.tokenIn =t;document.getElementById('tokenInBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;} else {state.tokenOut =t;document.getElementById('tokenOutBtn').innerHTML =`<div class="token-icon">${iconHTML}</div><span class="token-symbol">${t.symbol}</span>`;} 
-closeTokenModal();state.pathLockLocked =false;state.bestPathLockedTime =0;loadBalances();updateOutput();if(state.account){await updateSwapBtn();await updateSecurityCheck();}}
+closeTokenModal();if (state.amountIn &&parseFloat(state.amountIn) >0) {startRealtimeUpdates();}
+loadBalances();if (state.account) {await updateSwapBtn();await updateSecurityCheck();};await updateOutput();}
 async function swapTokens() {const tmp =state.tokenIn;state.tokenIn =state.tokenOut;state.tokenOut =tmp;const inSym =state.tokenIn ?state.tokenIn.symbol :'Select';const outSym =state.tokenOut ?state.tokenOut.symbol :'Select';const inLogoUrl =state.tokenIn ?getTokenLogo(state.tokenIn.address) :'';const outLogoUrl =state.tokenOut ?getTokenLogo(state.tokenOut.address) :'';const inIconHTML =state.tokenIn &&inLogoUrl ?`<img src="${inLogoUrl}" alt="${inSym}" onerror="this.style.display='none'"/>` :inSym.slice(0,3).toUpperCase();const outIconHTML =state.tokenOut &&outLogoUrl ?`<img src="${outLogoUrl}" alt="${outSym}" onerror="this.style.display='none'"/>` :outSym.slice(0,3).toUpperCase();document.getElementById('tokenInBtn').innerHTML =state.tokenIn ?`<div class="token-icon">${inIconHTML}</div><span class="token-symbol">${inSym}</span>` :`<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;document.getElementById('tokenOutBtn').innerHTML =state.tokenOut ?`<div class="token-icon">${outIconHTML}</div><span class="token-symbol">${outSym}</span>` :`<div class="token-icon">SEL</div><span class="token-symbol">Select</span>`;loadBalances();updateOutput();if(state.account){await updateSwapBtn();await updateSecurityCheck();}}
 function setQuickAmount(percentage) {if (!state.tokenIn) {showError('Please select input token first');return;}
 const balanceText =document.getElementById('balanceInLabel').textContent.split(': ')[1];const balance =parseFloat(balanceText) ||0;if (percentage ===1) {const maxAmount =truncateDecimals(balance.toString(),6);document.getElementById('amountIn').value =maxAmount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');} else {const amount =truncateDecimals((balance *percentage).toString(),6);document.getElementById('amountIn').value =amount;document.querySelectorAll('.quick-btn').forEach(btn =>btn.classList.remove('active'));event.target.classList.add('active');}
 handleAmountInChange();}
-function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';state.pathLockLocked =false;state.bestPathLockedTime =0;if (val &&parseFloat(val) >0) {startPriceAutoRefresh();} else {stopPriceAutoRefresh();}
-updateOutput();state.needsApproval =true;if(state.account){updateSwapBtn();}}
+function handleAmountInChange() {const val =document.getElementById('amountIn').value;state.amountIn =val ||'0';if (val &&parseFloat(val) >0) {clearTimeout(amountChangeTimeout);startRealtimeUpdates();} else {stopRealtimeUpdates();document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';}
+state.needsApproval =true;if(state.account){updateSwapBtn();}}
 async function updateOutput() {if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||state.amountIn ==='0') {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';return;}
-try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.provider);let possiblePaths =[];const getWNBAddr =() =>TOKENS.find(t =>t.symbol ==='WBNB').address;const getUSDTAddr =() =>TOKENS.find(t =>t.symbol ==='USDT').address;const getUSDCAddr =() =>TOKENS.find(t =>t.symbol ==='USDC').address;const generatePossiblePaths =(tokenIn,tokenOut) =>{let paths =[];paths.push([tokenIn,tokenOut]);const baseHubs =[{addr:getUSDTAddr(),name:'USDT' },{addr:getWNBAddr(),name:'WBNB' },{addr:getUSDCAddr(),name:'USDC' }
-];for (const hub of baseHubs) {if (hub.addr !==tokenIn &&hub.addr !==tokenOut) {paths.push([tokenIn,hub.addr,tokenOut]);}
-}
-for (const customToken of state.customTokens) {if (customToken.address !==tokenIn &&customToken.address !==tokenOut) {paths.push([tokenIn,customToken.address,tokenOut]);}
-}
-if (state.customTokens.length >0) {for (let i =0;i < Math.min(state.customTokens.length,2);i++) {const customToken =state.customTokens[i];if (customToken.address !==tokenIn &&customToken.address !==tokenOut) {paths.push([tokenIn,getUSDTAddr(),customToken.address,tokenOut]);}
-}
-}
-paths =paths.filter(path =>{const uniqueTokens =new Set(path.map(addr =>addr.toLowerCase()));return uniqueTokens.size ===path.length;});return paths;};if (state.tokenIn.address ==='0xBNB' ||state.tokenOut.address ==='0xBNB') {if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address !=='0xBNB') {possiblePaths =generatePossiblePaths(getWNBAddr(),state.tokenOut.address);} else if (state.tokenOut.address ==='0xBNB' &&state.tokenIn.address !=='0xBNB') {possiblePaths =generatePossiblePaths(state.tokenIn.address,getWNBAddr());} else if (state.tokenIn.address ==='0xBNB' &&state.tokenOut.address ==='0xBNB') {showError('Cannot swap BNB to BNB');return;}
-} else {possiblePaths =generatePossiblePaths(state.tokenIn.address,state.tokenOut.address);}
-checkPathLockTimeout();let bestPath =null;let bestOutput ='0';if (state.pathLockLocked &&state.bestPath) {bestPath =state.bestPath;try {const amounts =await r.getAmountsOut(amountInWei,bestPath);bestOutput =ethers.formatUnits(amounts[amounts.length - 1],state.tokenOut.decimals);console.log('[路径重用] 使用已锁定的路径: ' + bestPath.join(' → '));} catch (e) {console.error('缓存路径查询失败:',e.message);state.pathLockLocked =false;}
-}
-if (!state.pathLockLocked) {for (const path of possiblePaths) {try {const amounts =await r.getAmountsOut(amountInWei,path);const output =ethers.formatUnits(amounts[amounts.length - 1],state.tokenOut.decimals);if (parseFloat(output) >parseFloat(bestOutput)) {bestOutput =output;bestPath =path;}
-} catch (e) {console.error('Error calculating path:',path,e.message);}
-}
-}
-if (bestPath) {if (!state.pathLockLocked) {state.pathLockLocked =true;state.bestPathLockedTime =Date.now();console.log('[路径锁定] ✓ 最优路径已锁定，60秒内将使用该路径');}
-state.bestPath =bestPath;state.amountOut =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(state.amountOut).toFixed(6);const price =parseFloat(bestOutput) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent =priceTruncated + ' ' + state.tokenOut.symbol;console.log('✓ 实时价格: 1 ' + state.tokenIn.symbol + ' = ' + priceTruncated + ' ' + state.tokenOut.symbol);const finalMinRec =truncateDecimals((parseFloat(bestOutput) *(1 - state.outSlippage / 100)).toString(),6);console.log('  收出: ' + bestOutput + ' ' + state.tokenOut.symbol + ', 最小: ' + finalMinRec + ' ' + state.tokenOut.symbol);document.getElementById('minReceived').textContent =finalMinRec + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').style.display ='flex';if(state.account){updateSwapBtn();}} else {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';}} catch (e) {console.error('Price calc error:',e);document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';showError('Error calculating price: ' + e.message.substring(0,50));}
+try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;const pathResult =await queryBestPath(amountInWei,tokenInAddr,tokenOutAddr);if (pathResult &&pathResult.path &&pathResult.path.length >0) {state.bestPath =Array.from(pathResult.path);state.amountOut =truncateDecimals(ethers.formatUnits(pathResult.amountOut,state.tokenOut.decimals),state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(state.amountOut).toFixed(6);const price =parseFloat(state.amountOut) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent =priceTruncated + ' ' + state.tokenOut.symbol;console.log('✓ 实时价格: 1 ' + state.tokenIn.symbol + ' = ' + priceTruncated + ' ' + state.tokenOut.symbol);const finalMinRec =truncateDecimals((parseFloat(state.amountOut) *(1 - state.outSlippage / 100)).toString(),6);console.log('  收出: ' + state.amountOut + ' ' + state.tokenOut.symbol + ', 最小: ' + finalMinRec + ' ' + state.tokenOut.symbol);document.getElementById('minReceived').textContent =finalMinRec + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').style.display ='flex';if(state.account){updateSwapBtn();}} else {document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';}
+} catch (e) {console.error('Price calc error:',e);document.getElementById('amountOut').value ='0';document.getElementById('priceSection').style.display ='none';showError('Error calculating price: ' + e.message.substring(0,50));}
 }
 async function checkAndApproveToken() {try {if (!state.account ||!state.tokenIn) {showError('Please connect wallet and select token');return false;}
 if (state.tokenIn.address ==='0xBNB') {showInfo('BNB does not require approval');return true;}
@@ -788,18 +394,19 @@ const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);cons
 } catch (e) {console.error('Approval error:',e);showError('Approval failed: ' + e.message.substring(0,100));return false;}
 }
 async function executeSwap() {if (!state.account) {connectWallet();return;}
-if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||!state.bestPath) {showError('Invalid input or path');return;}
+if (!state.tokenIn ||!state.tokenOut ||!state.amountIn) {showError('Invalid input');return;}
 if (state.tokenIn.address ===state.tokenOut.address) {showError('Cannot swap same token');return;}
 if (state.isProcessing) {showError('Transaction is already processing');return;}
-state.isProcessing =true;const swapBtn =document.getElementById('swapBtn');try {if (state.needsApproval &&state.tokenIn.address !=='0xBNB') {swapBtn.disabled =true;swapBtn.textContent ='Approving...';const approved =await checkAndApproveToken();if (!approved) {state.isProcessing =false;await updateSwapBtn();return;}
+state.isProcessing =true;const swapBtn =document.getElementById('swapBtn');try {swapBtn.disabled =true;swapBtn.textContent ='Querying best path...';const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const tokenInAddr =state.tokenIn.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' ?TOKENS.find(t =>t.symbol ==='WBNB').address :state.tokenOut.address;const pathResult =await queryBestPath(amountInWei,tokenInAddr,tokenOutAddr);if (!pathResult ||!pathResult.path ||pathResult.path.length ===0) {showError('No valid swap path found');state.isProcessing =false;swapBtn.disabled =false;swapBtn.textContent ='Swap';return;}
+const bestPath =Array.from(pathResult.path);const bestAmountOut =pathResult.amountOut;swapBtn.textContent ='Approving...';if (state.needsApproval &&state.tokenIn.address !=='0xBNB') {const approved =await checkAndApproveToken();if (!approved) {state.isProcessing =false;await updateSwapBtn();return;}
 state.needsApproval =false;await updateSwapBtn();state.isProcessing =false;return;}
-state.isProcessing =true;swapBtn.disabled =true;swapBtn.textContent ='Executing Swap...';showInfo('Processing swap transaction...');const amountInWei =ethers.parseUnits(state.amountIn,state.tokenIn.decimals);const minAmount =parseFloat(state.amountOut) *(1 - state.outSlippage / 100);const minAmountStr =truncateDecimals(minAmount.toString(),state.tokenOut.decimals);const amountOutMin =ethers.parseUnits(minAmountStr,state.tokenOut.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.signer);const deadline =Math.floor(Date.now() / 1000) + (state.outDeadline *60);const txOptions ={};if (state.gasPrice &&state.gasPrice >0) {try {txOptions.gasPrice =ethers.parseUnits(state.gasPrice.toString(),'gwei');console.log('Gas price set to:',state.gasPrice,'Gwei');} catch (e) {console.error('Invalid gas price:',e);}
+state.isProcessing =true;swapBtn.textContent ='Executing Swap...';showInfo('Processing swap transaction...');const minAmount =parseFloat(ethers.formatUnits(bestAmountOut,state.tokenOut.decimals)) *(1 - state.outSlippage / 100);const minAmountStr =truncateDecimals(minAmount.toString(),state.tokenOut.decimals);const amountOutMin =ethers.parseUnits(minAmountStr,state.tokenOut.decimals);const r =new ethers.Contract(ROUTER,ROUTER_ABI,state.signer);const deadline =Math.floor(Date.now() / 1000) + (state.outDeadline *60);const txOptions ={};if (state.gasPrice &&state.gasPrice >0) {try {txOptions.gasPrice =ethers.parseUnits(state.gasPrice.toString(),'gwei');console.log('Gas price set to:',state.gasPrice,'Gwei');} catch (e) {console.error('Invalid gas price:',e);}
 }
-try {let tx;if (state.tokenIn.address ==='0xBNB') {console.log('Executing ETH -> Token swap with gas price:',state.gasPrice ||'auto');txOptions.value =amountInWei;tx =await r.swapExactETHForTokensSupportingFeeOnTransferTokens(amountOutMin,state.bestPath,(state.receiverAddress || state.account),deadline,txOptions
-);} else if (state.tokenOut.address ==='0xBNB') {console.log('Executing Token -> ETH swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForETHSupportingFeeOnTransferTokens(amountInWei,amountOutMin,state.bestPath,(state.receiverAddress || state.account),deadline,txOptions
-);} else {console.log('Executing Token -> Token swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountInWei,amountOutMin,state.bestPath,(state.receiverAddress || state.account),deadline,txOptions
+try {let tx;if (state.tokenIn.address ==='0xBNB') {console.log('Executing ETH -> Token swap with gas price:',state.gasPrice ||'auto');txOptions.value =amountInWei;tx =await r.swapExactETHForTokensSupportingFeeOnTransferTokens(amountOutMin,bestPath,(state.receiverAddress ||state.account),deadline,txOptions
+);} else if (state.tokenOut.address ==='0xBNB') {console.log('Executing Token -> ETH swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForETHSupportingFeeOnTransferTokens(amountInWei,amountOutMin,bestPath,(state.receiverAddress ||state.account),deadline,txOptions
+);} else {console.log('Executing Token -> Token swap with gas price:',state.gasPrice ||'auto');tx =await r.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountInWei,amountOutMin,bestPath,(state.receiverAddress ||state.account),deadline,txOptions
 );}
-console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.hash.slice(0,12) + '...');const receipt =await tx.wait();if (receipt.status ===1) {showSuccess('✅ Swap successful! Tx: ' + receipt.hash.slice(0,12) + '...');document.getElementById('amountIn').value ='';document.getElementById('amountOut').value ='';state.needsApproval =true;setTimeout(() =>{loadBalances();updateOutput();},2000);} else {showError('Swap transaction failed');}
+console.log('Swap tx hash:',tx.hash);showInfo('Transaction submitted: ' + tx.hash.slice(0,12) + '...');const receipt =await tx.wait();if (receipt.status ===1) {showSuccess('✅ Swap successful! Tx: ' + receipt.hash.slice(0,12) + '...');document.getElementById('amountIn').value ='';document.getElementById('amountOut').value ='';stopRealtimeUpdates();state.needsApproval =true;setTimeout(() =>{loadBalances();startRealtimeUpdates();},2000);} else {showError('Swap transaction failed');}
 } catch (e) {console.error('Swap tx error:',e);showError('Swap failed: ' + e.message.substring(0,80));}
 } catch (e) {console.error('Swap error:',e);showError('Swap error: ' + e.message.substring(0,100));} finally {state.isProcessing =false;swapBtn.disabled =false;updateSwapBtn();}
 }
@@ -816,9 +423,6 @@ async function updateSwapBtn() {const btn =document.getElementById('swapBtn');if
 let priceRefreshInterval =null;function startPriceAutoRefresh() {if (priceRefreshInterval) clearInterval(priceRefreshInterval);priceRefreshInterval =setInterval(() =>{if (state.amountIn &&parseFloat(state.amountIn) >0) {updateOutput();}
 },2000);}
 function stopPriceAutoRefresh() {if (priceRefreshInterval) {clearInterval(priceRefreshInterval);priceRefreshInterval =null;}
-}
-function checkPathLockTimeout() {if (state.pathLockLocked &&state.bestPathLockedTime) {const elapsed =Date.now() - state.bestPathLockedTime;if (elapsed >=60000) {state.pathLockLocked =false;state.bestPathLockedTime =0;console.log('[路径已解锁] 60秒已过期，下次查询将重新搜索最优路径');}
-}
 }
 function refreshPrices() {updateOutput();}
 function showError(msg) {console.error('Error:',msg);const a =document.getElementById('alertError');a.textContent =msg;a.classList.add('show');setTimeout(() =>a.classList.remove('show'),1000);}
@@ -840,90 +444,57 @@ const btn=document.getElementById('airdropExecuteBtn');btn.disabled=true;const o
 btn.textContent='Executing Airdrop...';showAirdropAlert('Sending airdrop transaction...','info');const airdropContract=new ethers.Contract(AIRDROP_CONTRACT,AIRDROP_ABI,state.signer);const airdropTx =await airdropContract.airdrop(state.airdropToken.address,amountPerWei,numRecipients
 );showAirdropAlert('Airdrop tx: '+airdropTx.hash.slice(0,12)+'...','info');await airdropTx.wait();showAirdropAlert('✅ Airdrop completed successfully!','success');setTimeout(()=>{closeAirdropModal();},2000);}catch(e){console.error('Airdrop error:',e);showAirdropAlert('Error: '+(e.message?e.message.substring(0,100):e),'error');}finally{btn.textContent=originalText;btn.disabled=false;}
 }
-window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();});function navigateTo(page){try{console.log('Navigate to:',page);if(event &&event.target){try{document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active'));const navItem =event.target.closest('.nav-item');if(navItem){navItem.classList.add('active');}
+window.addEventListener('beforeunload',() =>{stopPriceAutoRefresh();stopRealtimeUpdates();});function navigateTo(page){try{console.log('Navigate to:',page);if(event &&event.target){try{document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active'));const navItem =event.target.closest('.nav-item');if(navItem){navItem.classList.add('active');}
 }catch(e){console.error('Error updating nav item:',e);}
 }
 if(page ==='history'){console.log('History clicked');}else if(page ==='swap'){console.log('Navigate to swap');}else if(page ==='portfolio'){console.log('Navigate to portfolio');}
 }catch(e){console.error('navigateTo error:',e);}
 }
-tryAutoConnect();function printCurrentSettings() {console.log('=== 当前交易设置 ===');console.log('Gas Price:',state.gasPrice,'Gwei');console.log('Slippage:',state.outSlippage,'%');console.log('Deadline:',state.outDeadline,'minutes');console.log('RPC URL:',state.rpcUrl ||'default');}
+tryAutoConnect();async function initializeOnLoad() {await initializePathFinder();window.addEventListener('beforeunload',stopRealtimeUpdates);}
+initializeOnLoad();function printCurrentSettings() {console.log('=== 当前交易设置 ===');console.log('Gas Price:',state.gasPrice,'Gwei');console.log('Slippage:',state.outSlippage,'%');console.log('Deadline:',state.outDeadline,'minutes');console.log('RPC URL:',state.rpcUrl ||'default');}
 window.printSettings =printCurrentSettings;let currentSlide =0;const totalSlides =3;const autoPlayInterval =4000;let bannerTimer;function initBanner() {startBannerAutoPlay();}
 function goToSlide(index) {if (index < 0 ||index >=totalSlides) return;currentSlide =index;const wrapper =document.getElementById('bannerWrapper');const dots =document.querySelectorAll('.banner-dot');wrapper.style.transform =`translateX(-${currentSlide * 100}%)`;dots.forEach((dot,i) =>{if (i ===currentSlide) dot.classList.add('active');else dot.classList.remove('active');});resetBannerTimer();}
 function nextSlide() {let next =currentSlide + 1;if (next >=totalSlides) next =0;goToSlide(next);}
 function startBannerAutoPlay() {bannerTimer =setInterval(nextSlide,autoPlayInterval);}
 function resetBannerTimer() {clearInterval(bannerTimer);startBannerAutoPlay();}
-window.addEventListener('load',initBanner);
-
-// ============================================================================
-// 接收地址功能
-// ============================================================================
-
-function updateReceiverAddress() {
-  const input = document.getElementById('receiverAddress');
-  const address = input?.value?.trim() || '';
-  
-  if (!address) {
-    state.receiverAddress = null;
-    updateReceiverAddressDisplay();
-    return;
-  }
-  
-  // 验证地址格式
-  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-    showError('Invalid Ethereum address');
-    input.value = '';
-    state.receiverAddress = null;
-    updateReceiverAddressDisplay();
-    return;
-  }
-  
-  state.receiverAddress = address;
-  updateReceiverAddressDisplay();
-  showSuccess('Receiver address set');
+window.addEventListener('load',initBanner);function updateReceiverAddress() {const input =document.getElementById('receiverAddress');const address =input?.value?.trim() ||'';if (!address) {state.receiverAddress =null;updateReceiverAddressDisplay();return;}
+if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {showError('Invalid Ethereum address');input.value ='';state.receiverAddress =null;updateReceiverAddressDisplay();return;}
+state.receiverAddress =address;updateReceiverAddressDisplay();showSuccess('Receiver address set');}
+function clearReceiverAddress() {const input =document.getElementById('receiverAddress');if (input) {input.value ='';}
+state.receiverAddress =null;updateReceiverAddressDisplay();showSuccess('Receiver address cleared');}
+function setReceiverAddressToCurrentWallet() {if (!state.account) {showError('Wallet not connected');return;}
+const input =document.getElementById('receiverAddress');if (input) {input.value =state.account;}
+state.receiverAddress =null;updateReceiverAddressDisplay();showSuccess('Will receive tokens in current wallet');}
+function updateReceiverAddressDisplay() {const display =document.getElementById('receiverAddressDisplay');if (!display) return;if (!state.receiverAddress) {if (state.account) {display.textContent ='→ ' + truncateAddress(state.account);} else {display.textContent ='→ Current wallet (not connected)';}
+} else {display.textContent ='→ ' + truncateAddress(state.receiverAddress);}
 }
-
-
-function clearReceiverAddress() {
-  const input = document.getElementById('receiverAddress');
-  if (input) {
-    input.value = '';
-  }
-  state.receiverAddress = null;
-  updateReceiverAddressDisplay();
-  showSuccess('Receiver address cleared');
+async function initializePathFinder() {try {if (!state.signer) {console.warn('⚠️ 钱包未连接，无法初始化 PathFinder');return false;}
+pathFinderContract =new ethers.Contract(PATH_FINDER_ADDRESS,PATH_FINDER_ABI,state.signer
+);console.log('✓ PathFinder 合约已初始化');return true;} catch (e) {console.error('✗ PathFinder 初始化失败:',e);return false;}
 }
-
-function setReceiverAddressToCurrentWallet() {
-  if (!state.account) {
-    showError('Wallet not connected');
-    return;
-  }
-  
-  const input = document.getElementById('receiverAddress');
-  if (input) {
-    input.value = state.account;
-  }
-  
-  state.receiverAddress = null;  // null表示使用当前钱包地址
-  updateReceiverAddressDisplay();
-  showSuccess('Will receive tokens in current wallet');
+async function queryBestPath(amountIn,tokenInAddr,tokenOutAddr) {if (!pathFinderContract) {console.warn('PathFinder 合约未初始化');return null;}
+try {const possiblePaths =generatePathsForOptimizer(tokenInAddr,tokenOutAddr);if (possiblePaths.length ===0) return null;const result =await pathFinderContract.findBestPath(amountIn,possiblePaths
+);if (!result.path ||result.path.length ===0) return null;return {path:result.path,amountOut:result.amountOut,pathIndex:result.pathIndex,possiblePaths:possiblePaths};} catch (e) {console.error('查询路径失败:',e.message);return null;}
 }
-
-function updateReceiverAddressDisplay() {
-  const display = document.getElementById('receiverAddressDisplay');
-  if (!display) return;
-  
-  if (!state.receiverAddress) {
-    if (state.account) {
-      display.textContent = '→ ' + truncateAddress(state.account);
-    } else {
-      display.textContent = '→ Current wallet (not connected)';
-    }
-  } else {
-    display.textContent = '→ ' + truncateAddress(state.receiverAddress);
-  }
+function generatePathsForOptimizer(tokenInAddr,tokenOutAddr) {let paths =[];const getWNBAddr =() =>TOKENS.find(t =>t.symbol ==='WBNB').address;const getUSDTAddr =() =>TOKENS.find(t =>t.symbol ==='USDT').address;const getUSDCAddr =() =>TOKENS.find(t =>t.symbol ==='USDC').address;paths.push([tokenInAddr,tokenOutAddr]);const baseHubs =[getUSDTAddr(),getWNBAddr(),getUSDCAddr()];for (const hubAddr of baseHubs) {if (hubAddr !==tokenInAddr &&hubAddr !==tokenOutAddr) {paths.push([tokenInAddr,hubAddr,tokenOutAddr]);}
 }
-
+if (state.customTokens &&state.customTokens.length >0) {for (const customToken of state.customTokens) {if (customToken.address !==tokenInAddr &&customToken.address !==tokenOutAddr) {paths.push([tokenInAddr,customToken.address,tokenOutAddr]);for (const hubAddr of baseHubs) {if (hubAddr !==tokenInAddr &&hubAddr !==tokenOutAddr &&hubAddr !==customToken.address) {paths.push([tokenInAddr,hubAddr,customToken.address,tokenOutAddr]);}
+}
+}
+}
+}
+paths =paths.filter(path =>{if (path.length < 2 ||path.length >5) return false;const uniqueTokens =new Set(path.map(addr =>addr.toLowerCase()));return uniqueTokens.size ===path.length;});return paths;}
+async function startRealtimeUpdates() {if (queryInterval) clearInterval(queryInterval);const executeQuery=async () =>{if (!state.tokenIn ||!state.tokenOut ||!state.amountIn ||state.amountIn ==='0') return;try {const amountInStr =truncateDecimals(state.amountIn,18);const amountInWei =ethers.parseUnits(amountInStr,state.tokenIn.decimals);const tokenInAddr =state.tokenIn.address ==='0xBNB' 
+?TOKENS.find(t =>t.symbol ==='WBNB').address 
+:state.tokenIn.address;const tokenOutAddr =state.tokenOut.address ==='0xBNB' 
+?TOKENS.find(t =>t.symbol ==='WBNB').address 
+:state.tokenOut.address;if (tokenInAddr ===tokenOutAddr) return;const result =await queryBestPath(amountInWei,tokenInAddr,tokenOutAddr);if (!result) {document.getElementById('amountOut').value ='0';return;}
+const bestOutput =ethers.formatUnits(result.amountOut,state.tokenOut.decimals);const displayAmount =truncateDecimals(bestOutput,state.tokenOut.decimals);document.getElementById('amountOut').value =parseFloat(displayAmount).toFixed(6);const price =parseFloat(bestOutput) / parseFloat(amountInStr);const priceTruncated =truncateDecimals(price.toString(),6);document.getElementById('priceDisplay').textContent =priceTruncated + ' ' + state.tokenOut.symbol;const finalMinRec =truncateDecimals((parseFloat(bestOutput) *(1 - state.outSlippage / 100)).toString(),6
+);document.getElementById('minReceived').textContent =finalMinRec + ' ' + state.tokenOut.symbol;document.getElementById('priceSection').style.display ='flex';} catch (e) {console.error('实时更新失败:',e);}
+};executeQuery();queryInterval =setInterval(executeQuery,QUERY_INTERVAL);console.log(`✓ 已启动实时查询（间隔: ${QUERY_INTERVAL}ms，立即执行一次）`);
+}
+function stopRealtimeUpdates() {if (queryInterval) {clearInterval(queryInterval);queryInterval =null;console.log('✓ 已停止实时查询');}
+}
 </script>
 <div class="bottom-nav">
 <a href="#" class="nav-item active" onclick="navigateTo('swap');return false;">
