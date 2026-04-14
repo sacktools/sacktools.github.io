@@ -321,7 +321,7 @@ let html ='<div class="security-section">';const buyTax =parseFloat(securityData
 return sum;},0) *100;html +='<div class="security-row">';html +='<span class="security-label">TAX (✓):</span>';html +='<div class="security-value">';if (buyTax >=0) {html +=`<span class="security-badge safe">buy: ${buyTax.toFixed(2)}%</span>`;}
 if (sellTax >=0) {html +=`<span class="security-badge danger">sell: ${sellTax.toFixed(2)}%</span>`;}
 if (transferTax >=0) {html +=`<span class="security-badge warning">transfer: ${transferTax.toFixed(2)}%</span>`;}
-html +='</div></div>';html +='<div class="security-row">';html +='<span class="security-label">security:</span>';html +='<div class="security-value">';html +=`<span class="security-badge safe">renounce</span>`;if (lockedPercent >0) {html +=`<span class="security-badge warning">Locked:${lockedPercent.toFixed(0)}%</span>`;}
+html +='</div></div>';html +='<div class="security-row">';html +='<span class="security-label">security:</span>';html +='<div class="security-value">';html +=`<span class="security-badge safe">renounced</span>`;if (lockedPercent >0) {html +=`<span class="security-badge warning">Locked:${lockedPercent.toFixed(0)}%</span>`;}
 html +='</div></div>';html +='</div>';return html;}
 async function updateSecurityCheck(){const container=document.getElementById('securityCheckContainer');if(!container){return;}
 container.innerHTML='';const checkTokens=[];if(state.tokenOut&&!isBuiltInToken(state.tokenOut.address)){checkTokens.push({token:state.tokenOut,label:'输出'});}
