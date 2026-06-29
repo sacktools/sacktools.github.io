@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>市值工具 · BSC</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="8" fill="url(#grad)"/>
+        <path d="M14 6L20 10V18L14 22L8 18V10L14 6Z" stroke="white" stroke-width="1.5" fill="none"/>
+        <circle cx="14" cy="14" r="3" fill="white"/>
+        <defs><linearGradient id="grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient></defs>
+      </svg>
+    </div>
+    <span class="topbar-title">市值工具</span>
+    <span class="topbar-chip">BSC</span>
+  </div>
+  <div class="topbar-right">
+    <div class="bnb-price" id="bnbPriceTag">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#f0b90b"><path d="M12 2L8.5 8.5H2L7 13.5L5 20L12 16.5L19 20L17 13.5L22 8.5H15.5L12 2Z"/></svg>
+      <span>$--</span>
+    </div>
+    <div class="rpc-indicator" id="rpcIndicator">
+      <span class="rpc-dot" id="rpcDot"></span>
+      <span id="rpcLabel">连接中</span>
+    </div>
+  </div>
+</header>
+
+<!-- 手机端浮动选中栏 -->
+<div class="mobile-sel-bar hidden" id="mobileSelBar">
+  <span id="mobileSelText">已选 0 个钱包</span>
+  <div class="mobile-sel-bar-actions">
+    <button class="mobile-sel-bar-btn" onclick="selectAll()">全选</button>
+    <button class="mobile-sel-bar-btn" onclick="deselectAll()">清空</button>
+  </div>
+</div>
+
+<!-- 代币信息条 -->
+<div class="token-banner hidden" id="tokenBanner">
+  <div class="token-banner-inner">
+    <div class="token-avatar" id="tiAvatar">?</div>
+    <div class="token-meta">
+      <div class="token-name" id="tiName">--</div>
+      <div class="token-addr" id="tiSym">--</div>
+    </div>
+    <div class="token-stats">
+      <div class="tstat">
+        <div class="tstat-val" id="tiPrice">$--</div>
+        <div class="tstat-lbl">价格</div>
+      </div>
+      <div class="tstat">
+        <div class="tstat-val" id="tiMcap">--</div>
+        <div class="tstat-lbl">市值</div>
+      </div>
+      <div class="tstat">
+        <div class="tstat-val" id="tiLiq">--</div>
+        <div class="tstat-lbl">流动性</div>
+      </div>
+      <div class="tstat">
+        <div id="tiRoute" class="route-tag">检测中</div>
+        <div class="tstat-lbl" style="margin-top:5px">路由</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主体 -->
+<main class="main">
+
+  <!-- 左侧面板（桌面端） -->
+  <aside class="sidebar">
+
+    <!-- 钱包导入卡片 -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-hd-left">
+          <span class="card-icon card-icon-blue">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+          </span>
+          <span class="card-title">导入钱包</span>
+        </div>
+        <div class="sel-badge" id="selCount">已选 0</div>
+      </div>
+      <div class="card-bd">
+        <div class="field">
+          <label class="field-label">私钥列表（每行一个）</label>
+          <textarea class="field-textarea" id="pkInput" placeholder="每行输入一个私钥&#10;支持 0x 开头或不带 0x&#10;&#10;例如：&#10;0xabc123...&#10;def456..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="loadWallets()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            加载钱包
+          </button>
+          <button class="btn btn-ghost" onclick="saveLocal()">保存</button>
+          <button class="btn btn-ghost" onclick="loadLocal()">读取</button>
+        </div>
+        <div class="divider"></div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">生成数量</label>
+            <input type="number" class="field-input" id="genCount" value="5" min="1" max="100">
+          </div>
+          <div class="field">
+            <label class="field-label">名称前缀</label>
+            <input type="text" class="field-input" id="genPrefix" value="钱包">
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-ghost" onclick="generateWallets()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            生成钱包
+          </button>
+          <button class="btn btn-ghost" onclick="queryBalances()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            查询余额
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置卡片 -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-hd-left">
+          <span class="card-icon card-icon-gray">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          </span>
+          <span class="card-title">网络设置</span>
+        </div>
+      </div>
+      <div class="card-bd">
+        <div class="field">
+          <label class="field-label">RPC 节点</label>
+          <select class="field-select" id="rpcSelect" onchange="onRpcChange()">
+            <option value="https://bsc-dataseed2.defibit.io/" selected>DeFiBit 2（推荐）</option>
+            <option value="https://bsc-dataseed3.defibit.io/">DeFiBit 3</option>
+            <option value="https://bsc-dataseed4.defibit.io/">DeFiBit 4</option>
+            <option value="https://bsc-dataseed2.ninicoin.io/">NiniCoin 2</option>
+            <option value="https://bsc-dataseed3.ninicoin.io/">NiniCoin 3</option>
+            <option value="https://bsc-dataseed.binance.org/">Binance 官方</option>
+            <option value="https://bsc-dataseed1.defibit.io/">DeFiBit 1</option>
+            <option value="https://bsc-dataseed1.ninicoin.io/">NiniCoin 1</option>
+            <option value="https://rpc.ankr.com/bsc">Ankr</option>
+            <option value="https://bsc-rpc.publicnode.com">PublicNode（国内友好）</option>
+            <option value="https://bsc.meowrpc.com">MeowRPC</option>
+            <option value="custom">自定义...</option>
+          </select>
+          <input type="text" class="field-input field-mono" id="customRpc" placeholder="https://..." style="display:none;margin-top:6px" onblur="applyCustomRpc()">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Gas Price (Gwei)</label>
+            <input type="number" class="field-input" id="defaultGasPrice" value="0.05" min="0.01" step="0.01" onchange="syncGasPrice()">
+            <div class="chip-row">
+              <span class="chip" onclick="setDefaultGas(1)">1</span>
+              <span class="chip" onclick="setDefaultGas(3)">3</span>
+              <span class="chip" onclick="setDefaultGas(5)">5</span>
+              <span class="chip" onclick="setDefaultGas(10)">10</span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">Gas 倍数</label>
+            <input type="number" class="field-input" id="gasMulti" value="1.2" min="1" max="3" step="0.1">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">FLAP 合约</label>
+          <input type="text" class="field-input field-mono" id="cfgFlap" value="0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0">
+        </div>
+        <div class="field">
+          <label class="field-label">PancakeSwap V2 Router</label>
+          <input type="text" class="field-input field-mono" id="cfgRouter" value="0x10ED43C718714eb63d5aA57B78B54704E256024E">
+        </div>
+        <div class="field">
+          <label class="field-label">PancakeSwap Factory</label>
+          <input type="text" class="field-input field-mono" id="cfgFactory" value="0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73">
+        </div>
+        <div class="field">
+          <label class="field-label">WBNB 地址</label>
+          <input type="text" class="field-input field-mono" id="cfgWbnb" value="0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c">
+        </div>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="showPkCheck" onchange="toggleShowPk()">
+            <span class="toggle-text">显示私钥（危险）</span>
+          </label>
+          <label class="toggle-label">
+            <input type="checkbox" id="confirmCheck" checked>
+            <span class="toggle-text">交易前确认</span>
+          </label>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="saveSettings()" style="margin-top:10px">保存设置</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- 右侧主内容 -->
+  <section class="content">
+
+    <!-- 功能标签页（桌面端顶部导航） -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="trade" onclick="switchMainTab(this,'trade')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        交易
+      </button>
+      <button class="tab-btn" data-tab="manual" onclick="switchMainTab(this,'manual')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        手动买卖
+      </button>
+      <button class="tab-btn" data-tab="collect" onclick="switchMainTab(this,'collect')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        归集
+      </button>
+      <button class="tab-btn" data-tab="distribute" onclick="switchMainTab(this,'distribute')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        分发
+      </button>
+      <button class="tab-btn" data-tab="wallets" onclick="switchMainTab(this,'wallets')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        钱包列表
+        <span class="tab-badge" id="walletCount">0</span>
+      </button>
+      <button class="tab-btn" data-tab="snipe" onclick="switchMainTab(this,'snipe')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+        捆绑开盘
+        <span class="tab-badge snipe-badge" id="snipeStatus" style="display:none">ON</span>
+      </button>
+    </div>
+
+    <!-- 交易面板 -->
+    <div class="tab-panel active" id="panel-trade">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-green">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+            </span>
+            <span class="card-title">交易参数</span>
+          </div>
+          <div id="routeTagWrap"></div>
+        </div>
+        <div class="card-bd">
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">交易模式</label>
+              <select class="field-select" id="tradeMode" onchange="onTradeModeChange()">
+                <option value="bnb2token">BNB → Token（买入）</option>
+                <option value="token2bnb">Token → BNB（卖出）</option>
+                <option value="token2token">Token → Token（对换）</option>
+              </select>
+            </div>
+            <div class="field" id="tokenInGroup">
+              <label class="field-label">TokenIn 地址</label>
+              <input type="text" class="field-input field-mono" id="tokenIn" placeholder="WBNB / USDT 地址">
+              <div class="chip-row">
+                <span class="chip" onclick="setTokenIn('WBNB')">WBNB</span>
+                <span class="chip" onclick="setTokenIn('USDT')">USDT</span>
+                <span class="chip" onclick="setTokenIn('USDC')">USDC</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">目标代币 TokenOut</label>
+            <input type="text" class="field-input field-mono" id="tokenOut" placeholder="输入目标代币合约地址，自动检测路由..." oninput="onTokenOutInput(this.value)">
+          </div>
+
+          <div class="param-grid">
+            <div class="param-block">
+              <div class="param-label">买入金额范围 (BNB)</div>
+              <div class="range-row">
+                <input type="number" class="field-input" id="buyMin" value="0.001" min="0" step="0.0001">
+                <span class="range-sep">~</span>
+                <input type="number" class="field-input" id="buyMax" value="0.002" min="0" step="0.0001">
+              </div>
+            </div>
+            <div class="param-block" id="sellPctBlock" style="display:none">
+              <div class="param-label">卖出比例范围 (%)</div>
+              <div class="range-row">
+                <input type="number" class="field-input" id="sellPctMin" value="80" min="1" max="100">
+                <span class="range-sep">~</span>
+                <input type="number" class="field-input" id="sellPctMax" value="100" min="1" max="100">
+              </div>
+            </div>
+            <div class="param-block">
+              <div class="param-label">买入间隔 (ms)</div>
+              <div class="range-row">
+                <input type="number" class="field-input" id="buyIntervalMin" value="1000" min="0">
+                <span class="range-sep">~</span>
+                <input type="number" class="field-input" id="buyIntervalMax" value="3000" min="0">
+              </div>
+            </div>
+            <div class="param-block">
+              <div class="param-label">卖出间隔 (ms)</div>
+              <div class="range-row">
+                <input type="number" class="field-input" id="sellIntervalMin" value="1000" min="0">
+                <span class="range-sep">~</span>
+                <input type="number" class="field-input" id="sellIntervalMax" value="3000" min="0">
+              </div>
+            </div>
+            <div class="param-block">
+              <div class="param-label">滑点容忍 (%)</div>
+              <input type="number" class="field-input" id="slippage" value="5" min="0.1" max="100" step="0.1">
+            </div>
+            <div class="param-block">
+              <div class="param-label">循环次数 (0=无限)</div>
+              <input type="number" class="field-input" id="loopCount" value="0" min="0">
+            </div>
+            <div class="param-block">
+              <div class="param-label">Gas Price (Gwei)</div>
+              <input type="number" class="field-input" id="gasPrice" value="0.05" min="0.01" step="0.01">
+            </div>
+            <div class="param-block">
+              <div class="param-label">最小获得量</div>
+              <input type="number" class="field-input" id="amountOutMin" value="0" min="0" step="0.000001">
+            </div>
+          </div>
+
+          <!-- 止盈设置 -->
+          <div class="profit-stop-block" id="profitStopBlock">
+            <label class="toggle-label">
+              <input type="checkbox" id="enableProfitStop" onchange="onProfitStopToggle()">
+              <span class="toggle-text">拉盘止盈：买入后盈利超过</span>
+            </label>
+            <div class="profit-stop-row">
+              <input type="number" class="field-input profit-stop-input" id="profitStopPct" value="100" min="1" max="10000" step="1">
+              <span class="profit-stop-unit">% 自动全部卖出</span>
+              <span class="profit-stop-interval-label">检查间隔</span>
+              <input type="number" class="field-input profit-stop-input" id="profitCheckInterval" value="5" min="1" max="60" step="1">
+              <span class="profit-stop-unit">秒</span>
+            </div>
+            <div id="profitMonitorStatus" class="profit-monitor-status hidden">
+              <span class="profit-monitor-dot"></span>
+              <span id="profitMonitorText">止盈监控中，已记录 0 个地址...</span>
+            </div>
+          </div>
+
+          <div class="progress-wrap" id="tradeProgress">
+            <div class="progress-bar"><div class="progress-fill" id="tradeFill"></div></div>
+            <div class="progress-meta" id="tradeProgressText">0 / 0</div>
+          </div>
+
+          <div class="action-btns">
+
+            <button class="btn btn-success" onclick="startPump()" id="startPumpBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              开始拉盘
+            </button>
+            <button class="btn btn-ghost" onclick="stopPump()" id="stopPumpBtn" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              停止拉盘
+            </button>
+            <button class="btn btn-danger" onclick="startDump()" id="startDumpBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+              开始砸盘
+            </button>
+            <button class="btn btn-ghost" onclick="stopDump()" id="stopDumpBtn" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              停止砸盘
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-gray">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </span>
+            <span class="card-title">操作日志</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-xs" onclick="clearLog()">清空</button>
+            <button class="btn btn-ghost btn-xs" onclick="exportLog()">导出</button>
+          </div>
+        </div>
+        <div class="card-bd" style="padding:10px">
+          <div class="log-box" id="logWrap">
+            <div class="log-empty">暂无日志</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手动买卖面板 -->
+    <div class="tab-panel" id="panel-manual">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </span>
+            <span class="card-title">手动买卖</span>
+          </div>
+          <div id="manualRouteTag"></div>
+        </div>
+        <div class="card-bd">
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">目标代币地址</label>
+              <input type="text" class="field-input field-mono" id="manualToken"
+                placeholder="输入代币合约地址，自动检测路由..."
+                oninput="onManualTokenInput(this.value)">
+            </div>
+            <div class="field">
+              <label class="field-label">滑点容忍 (%)</label>
+              <input type="number" class="field-input" id="manualSlippage" value="5" min="0.1" max="100" step="0.1">
+              <div class="chip-row">
+                <span class="chip" onclick="document.getElementById('manualSlippage').value=1">1%</span>
+                <span class="chip" onclick="document.getElementById('manualSlippage').value=3">3%</span>
+                <span class="chip" onclick="document.getElementById('manualSlippage').value=5">5%</span>
+                <span class="chip" onclick="document.getElementById('manualSlippage').value=10">10%</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Gas Price (Gwei)</label>
+              <input type="number" class="field-input" id="manualGasPrice" value="0.05" min="0.01" step="0.01">
+            </div>
+            <div class="field">
+              <label class="field-label">执行方式</label>
+              <select class="field-select" id="manualExecMode">
+                <option value="parallel">同步并行</option>
+                <option value="serial">逐个顺序</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="manual-trade-grid">
+        <!-- 买入卡片 -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-green">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              </span>
+              <span class="card-title">买入</span>
+            </div>
+            <span class="manual-sel-tip" id="buySelTip">已选 0 个钱包</span>
+          </div>
+          <div class="card-bd">
+            <div class="field">
+              <label class="field-label">买入模式</label>
+              <div class="radio-group">
+                <label class="radio-item">
+                  <input type="radio" name="buyAmtMode" value="fixed" checked onchange="onBuyModeChange()"> 固定金额
+                </label>
+                <label class="radio-item">
+                  <input type="radio" name="buyAmtMode" value="random" onchange="onBuyModeChange()"> 随机范围
+                </label>
+              </div>
+            </div>
+            <div class="field" id="buyFixedField">
+              <label class="field-label">买入金额 BNB（每个钱包）</label>
+              <input type="number" class="field-input" id="manualBuyAmt" value="0.01" min="0" step="0.001">
+              <div class="chip-row">
+                <span class="chip" onclick="setManualBuyAmt(0.005)">0.005</span>
+                <span class="chip" onclick="setManualBuyAmt(0.01)">0.01</span>
+                <span class="chip" onclick="setManualBuyAmt(0.05)">0.05</span>
+                <span class="chip" onclick="setManualBuyAmt(0.1)">0.1</span>
+                <span class="chip" onclick="setManualBuyAmt(0.5)">0.5</span>
+              </div>
+            </div>
+            <div class="field" id="buyRangeField" style="display:none">
+              <label class="field-label">买入金额范围 BNB（每个钱包）</label>
+              <div class="range-row">
+                <input type="number" class="field-input" id="manualBuyMin" value="0.005" min="0" step="0.001" placeholder="最小">
+                <span class="range-sep">~</span>
+                <input type="number" class="field-input" id="manualBuyMax" value="0.015" min="0" step="0.001" placeholder="最大">
+              </div>
+            </div>
+            <div class="progress-wrap" id="manualBuyProgress">
+              <div class="progress-bar"><div class="progress-fill" id="manualBuyFill"></div></div>
+              <div class="progress-meta" id="manualBuyText">0 / 0</div>
+            </div>
+            <button class="btn btn-success btn-full" onclick="manualBuy()" id="manualBuyBtn" style="margin-top:10px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              立即买入（选中钱包）
+            </button>
+          </div>
+        </div>
+
+        <!-- 卖出卡片 -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+              </span>
+              <span class="card-title">卖出</span>
+            </div>
+            <span class="manual-sel-tip" id="sellSelTip">已选 0 个钱包</span>
+          </div>
+          <div class="card-bd">
+            <div class="sell-mode-tabs">
+              <button class="sell-tab active" id="sellTabPct" onclick="switchSellTab('pct')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+                按比例
+              </button>
+              <button class="sell-tab" id="sellTabAmt" onclick="switchSellTab('amt')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                按数量
+              </button>
+            </div>
+            <div id="sellPanelPct">
+              <div class="field">
+                <label class="field-label">卖出比例 (%)</label>
+                <div class="pct-slider-wrap">
+                  <input type="range" class="pct-slider" id="manualSellPctSlider" min="1" max="100" value="100"
+                    oninput="document.getElementById('manualSellPct').value=this.value">
+                  <input type="number" class="field-input pct-num" id="manualSellPct" value="100" min="1" max="100"
+                    oninput="document.getElementById('manualSellPctSlider').value=this.value">
+                  <span class="pct-unit">%</span>
+                </div>
+                <div class="chip-row" style="margin-top:6px">
+                  <span class="chip" onclick="setSellPct(25)">25%</span>
+                  <span class="chip" onclick="setSellPct(50)">50%</span>
+                  <span class="chip" onclick="setSellPct(75)">75%</span>
+                  <span class="chip sell-all-chip" onclick="setSellPct(100)">100% 全卖</span>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">随机浮动 (±%，0=不浮动)</label>
+                <input type="number" class="field-input" id="manualSellPctFloat" value="0" min="0" max="20" step="1" placeholder="例如 5 表示 ±5% 随机">
+              </div>
+            </div>
+            <div id="sellPanelAmt" style="display:none">
+              <div class="field">
+                <label class="field-label">卖出模式</label>
+                <div class="radio-group">
+                  <label class="radio-item"><input type="radio" name="sellAmtMode" value="fixed" checked> 固定数量</label>
+                  <label class="radio-item"><input type="radio" name="sellAmtMode" value="random"> 随机范围</label>
+                </div>
+              </div>
+              <div class="field" id="sellAmtFixedField">
+                <label class="field-label">卖出数量（每个钱包）</label>
+                <input type="number" class="field-input" id="manualSellAmt" value="0" min="0" step="1" placeholder="输入代币数量">
+              </div>
+              <div class="field" id="sellAmtRangeField" style="display:none">
+                <label class="field-label">卖出数量范围（每个钱包）</label>
+                <div class="range-row">
+                  <input type="number" class="field-input" id="manualSellAmtMin" value="0" min="0" step="1" placeholder="最小">
+                  <span class="range-sep">~</span>
+                  <input type="number" class="field-input" id="manualSellAmtMax" value="0" min="0" step="1" placeholder="最大">
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" style="color:#ef4444;font-size:11px">⚠️ 若余额不足则卖出全部</label>
+              </div>
+            </div>
+            <div class="progress-wrap" id="manualSellProgress">
+              <div class="progress-bar"><div class="progress-fill progress-fill-danger" id="manualSellFill"></div></div>
+              <div class="progress-meta" id="manualSellText">0 / 0</div>
+            </div>
+            <button class="btn btn-danger btn-full" onclick="manualSell()" id="manualSellBtn" style="margin-top:10px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+              立即卖出（选中钱包）
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-gray">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </span>
+            <span class="card-title">操作日志</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-xs" onclick="clearManualLog()">清空</button>
+            <button class="btn btn-ghost btn-xs" onclick="exportLog()">导出</button>
+          </div>
+        </div>
+        <div class="card-bd" style="padding:10px">
+          <div class="log-box" id="manualLogWrap">
+            <div class="log-empty">暂无日志</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 归集面板 -->
+    <div class="tab-panel" id="panel-collect">
+      <div class="panel-grid">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-yellow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </span>
+              <span class="card-title">BNB 归集</span>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="field">
+              <label class="field-label">目标地址（接收 BNB）</label>
+              <div class="input-with-btn">
+                <input type="text" class="field-input field-mono" id="collectBnbTarget" placeholder="0x...">
+                <button class="btn btn-ghost btn-sm" onclick="useFirstWallet('collectBnbTarget')">用首个</button>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">每个保留 BNB</label>
+                <input type="number" class="field-input" id="collectBnbReserve" value="0" min="0" step="0.0001">
+              </div>
+              <div class="field">
+                <label class="field-label">Gas Price (Gwei)</label>
+                <input type="number" class="field-input" id="collectGasPrice" value="0.05" min="0.01" step="0.01">
+              </div>
+            </div>
+            <div class="collect-progress" id="collectBnbProgress">
+              <div class="progress-bar"><div class="progress-fill" id="collectBnbFill"></div></div>
+              <div class="progress-meta" id="collectBnbText">0 / 0</div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="collectBnb()" id="collectBnbBtn" style="margin-top:4px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              归集 BNB 到目标地址
+            </button>
+            <div class="collect-result" id="collectBnbResult">
+              <div class="collect-result-item"><span class="collect-result-label">成功</span><span class="collect-result-val ok" id="collectBnbOk">0</span></div>
+              <div class="collect-result-item"><span class="collect-result-label">失败</span><span class="collect-result-val fail" id="collectBnbFail">0</span></div>
+              <div class="collect-result-item"><span class="collect-result-label">共归集</span><span class="collect-result-val total" id="collectBnbTotal">0 BNB</span></div>
+            </div>
+            <div class="collect-log-wrap" id="collectBnbLog"><div class="log-empty">暂无日志</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-purple">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </span>
+              <span class="card-title">代币归集</span>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="field">
+              <label class="field-label">代币合约地址</label>
+              <input type="text" class="field-input field-mono" id="collectTokenAddr" placeholder="0x...">
+            </div>
+            <div class="field">
+              <label class="field-label">目标地址（接收代币）</label>
+              <div class="input-with-btn">
+                <input type="text" class="field-input field-mono" id="collectTokenTarget" placeholder="0x...">
+                <button class="btn btn-ghost btn-sm" onclick="useFirstWallet('collectTokenTarget')">用首个</button>
+              </div>
+            </div>
+            <div class="collect-progress" id="collectTokenProgress">
+              <div class="progress-bar"><div class="progress-fill" id="collectTokenFill"></div></div>
+              <div class="progress-meta" id="collectTokenText">0 / 0</div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="collectToken()" id="collectTokenBtn" style="margin-top:14px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              归集代币到目标地址
+            </button>
+            <div class="collect-result" id="collectTokenResult">
+              <div class="collect-result-item"><span class="collect-result-label">成功</span><span class="collect-result-val ok" id="collectTokenOk">0</span></div>
+              <div class="collect-result-item"><span class="collect-result-label">失败</span><span class="collect-result-val fail" id="collectTokenFail">0</span></div>
+            </div>
+            <div class="collect-log-wrap" id="collectTokenLog"><div class="log-empty">暂无日志</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分发面板 -->
+    <div class="tab-panel" id="panel-distribute">
+      <div class="panel-grid">
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-yellow">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </span>
+              <span class="card-title">BNB 分发</span>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="field">
+              <label class="field-label">来源钱包私钥</label>
+              <input type="password" class="field-input field-mono" id="distFromPk" placeholder="发送方私钥（0x...）">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">每个钱包最小 BNB</label>
+                <input type="number" class="field-input" id="distBnbMin" value="0.005" min="0" step="0.0001">
+              </div>
+              <div class="field">
+                <label class="field-label">每个钱包最大 BNB</label>
+                <input type="number" class="field-input" id="distBnbMax" value="0.01" min="0" step="0.0001">
+              </div>
+            </div>
+            <div class="dist-progress" id="distBnbProgress">
+              <div class="progress-bar"><div class="progress-fill" id="distBnbFill"></div></div>
+              <div class="progress-meta" id="distBnbText">0 / 0</div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="distributeBnb()" id="distBnbBtn" style="margin-top:4px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              分发 BNB 到选中钱包
+            </button>
+            <div class="dist-result" id="distBnbResult">
+              <div class="dist-result-item"><span class="dist-result-label">成功</span><span class="dist-result-val ok" id="distBnbOk">0</span></div>
+              <div class="dist-result-item"><span class="dist-result-label">失败</span><span class="dist-result-val fail" id="distBnbFail">0</span></div>
+            </div>
+            <div class="dist-log-wrap" id="distBnbLog"><div class="log-empty">暂无日志</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-left">
+              <span class="card-icon card-icon-purple">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </span>
+              <span class="card-title">代币分发</span>
+            </div>
+          </div>
+          <div class="card-bd">
+            <div class="field">
+              <label class="field-label">来源钱包私钥</label>
+              <input type="password" class="field-input field-mono" id="distTokenFromPk" placeholder="发送方私钥（0x...）">
+            </div>
+            <div class="field">
+              <label class="field-label">代币合约地址</label>
+              <input type="text" class="field-input field-mono" id="distTokenAddr" placeholder="0x...">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label">每个钱包最小数量</label>
+                <input type="number" class="field-input" id="distTokenMin" value="100" min="0">
+              </div>
+              <div class="field">
+                <label class="field-label">每个钱包最大数量</label>
+                <input type="number" class="field-input" id="distTokenMax" value="500" min="0">
+              </div>
+            </div>
+            <div class="dist-progress" id="distTokenProgress">
+              <div class="progress-bar"><div class="progress-fill" id="distTokenFill"></div></div>
+              <div class="progress-meta" id="distTokenText">0 / 0</div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="distributeToken()" id="distTokenBtn" style="margin-top:4px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              分发代币到选中钱包
+            </button>
+            <div class="dist-result" id="distTokenResult">
+              <div class="dist-result-item"><span class="dist-result-label">成功</span><span class="dist-result-val ok" id="distTokenOk">0</span></div>
+              <div class="dist-result-item"><span class="dist-result-label">失败</span><span class="dist-result-val fail" id="distTokenFail">0</span></div>
+            </div>
+            <div class="dist-log-wrap" id="distTokenLog"><div class="log-empty">暂无日志</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 钱包列表面板 -->
+    <div class="tab-panel" id="panel-wallets">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span class="card-title">钱包列表</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-xs" onclick="selectAll()">全选</button>
+            <button class="btn btn-ghost btn-xs" onclick="deselectAll()">清空</button>
+            <button class="btn btn-ghost btn-xs" onclick="deleteSelected()">删除选中</button>
+            <button class="btn btn-ghost btn-xs" onclick="copyAddresses()">复制地址</button>
+            <button class="btn btn-ghost btn-xs" onclick="copyPrivateKeys()">复制私钥</button>
+          </div>
+        </div>
+        <!-- 桌面端：表格 -->
+        <div class="wallet-table-wrap">
+          <table class="wallet-table" id="walletTable">
+            <thead>
+              <tr>
+                <th><input type="checkbox" class="check" id="checkAll" onchange="toggleCheckAll(this)"></th>
+                <th>#</th>
+                <th>地址</th>
+                <th>BNB</th>
+                <th id="thTokenIn">TokenIn</th>
+                <th id="thTokenOut">TokenOut</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="walletTbody">
+              <tr class="empty-row"><td colspan="7">暂无钱包，请导入或生成</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 手机端：卡片列表 -->
+        <div class="wallet-card-list" id="walletCardList">
+          <div style="text-align:center;color:var(--c-text3);padding:24px;font-size:13px">暂无钱包，请导入或生成</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 捆绑开盘面板 -->
+    <div class="tab-panel" id="panel-snipe">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-danger">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            </span>
+            <span class="card-title">捆绑开盘</span>
+          </div>
+          <div class="snipe-status-badge" id="snipeStatusBadge">
+            <span class="snipe-dot" id="snipeDot"></span>
+            <span id="snipeStatusText">待机中</span>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="snipe-desc">
+            设定目标合约地址，点击「开始监测」后每 0.5 秒检测一次合约是否已部署（totalSupply &gt; 0），检测到后立即触发选中钱包同步买入。
+          </div>
+
+          <div class="snipe-grid">
+            <!-- 左列：参数设置 -->
+            <div class="snipe-col">
+              <div class="field">
+                <label class="field-label">目标合约地址</label>
+                <input type="text" class="field-input field-mono" id="snipeTokenAddr" placeholder="0x...待开盘的代币合约">
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">买入金额 (BNB/钱包)</label>
+                  <input type="number" class="field-input" id="snipeBuyAmt" value="0.01" min="0" step="0.001">
+                  <div class="chip-row">
+                    <span class="chip" onclick="document.getElementById('snipeBuyAmt').value=0.005">0.005</span>
+                    <span class="chip" onclick="document.getElementById('snipeBuyAmt').value=0.01">0.01</span>
+                    <span class="chip" onclick="document.getElementById('snipeBuyAmt').value=0.05">0.05</span>
+                    <span class="chip" onclick="document.getElementById('snipeBuyAmt').value=0.1">0.1</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label">最小获得代币数量</label>
+                  <input type="number" class="field-input" id="snipeMinTokenOut" value="0" min="0" step="1" placeholder="0 = 不限制">
+                  <div class="chip-row">
+                    <span class="chip" onclick="document.getElementById('snipeMinTokenOut').value=0">0(不限)</span>
+                    <span class="chip" onclick="document.getElementById('snipeMinTokenOut').value=1000000">100万</span>
+                    <span class="chip" onclick="document.getElementById('snipeMinTokenOut').value=10000000">1000万</span>
+                    <span class="chip" onclick="document.getElementById('snipeMinTokenOut').value=100000000">1亿</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label">Gas Price (Gwei)</label>
+                  <input type="number" class="field-input" id="snipeGasPrice" value="5" min="0.01" step="0.01">
+                  <div class="chip-row">
+                    <span class="chip" onclick="document.getElementById('snipeGasPrice').value=1">1</span>
+                    <span class="chip" onclick="document.getElementById('snipeGasPrice').value=3">3</span>
+                    <span class="chip" onclick="document.getElementById('snipeGasPrice').value=5">5</span>
+                    <span class="chip" onclick="document.getElementById('snipeGasPrice').value=10">10</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="field-label">检测间隔 (ms)</label>
+                  <input type="number" class="field-input" id="snipeInterval" value="500" min="100" max="2000" step="100">
+                  <div class="chip-row">
+                    <span class="chip" onclick="document.getElementById('snipeInterval').value=200">200ms</span>
+                    <span class="chip" onclick="document.getElementById('snipeInterval').value=500">500ms</span>
+                    <span class="chip" onclick="document.getElementById('snipeInterval').value=1000">1s</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">已选钱包</label>
+                <div class="snipe-sel-info" id="snipeSelInfo">请先在钱包列表选中钱包</div>
+              </div>
+              <div class="snipe-action-row">
+                <button class="btn btn-danger" onclick="startSnipe()" id="startSnipeBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+                  开始监测
+                </button>
+                <button class="btn btn-ghost" onclick="stopSnipe()" id="stopSnipeBtn" disabled>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  停止监测
+                </button>
+              </div>
+            </div>
+
+            <!-- 右列：监测状态和日志 -->
+            <div class="snipe-col">
+              <div class="snipe-monitor-card">
+                <div class="snipe-monitor-hd">监测状态</div>
+                <div class="snipe-monitor-body" id="snipeMonitorBody">
+                  <div class="snipe-monitor-row">
+                    <span class="snipe-monitor-label">目标合约</span>
+                    <span class="snipe-monitor-val" id="snipeMonitorAddr">--</span>
+                  </div>
+                  <div class="snipe-monitor-row">
+                    <span class="snipe-monitor-label">监测次数</span>
+                    <span class="snipe-monitor-val" id="snipeMonitorCount">0</span>
+                  </div>
+                  <div class="snipe-monitor-row">
+                    <span class="snipe-monitor-label">已运行</span>
+                    <span class="snipe-monitor-val" id="snipeMonitorTime">--</span>
+                  </div>
+                  <div class="snipe-monitor-row">
+                    <span class="snipe-monitor-label">目标钱包</span>
+                    <span class="snipe-monitor-val" id="snipeMonitorWallets">0 个</span>
+                  </div>
+                  <div class="snipe-monitor-row">
+                    <span class="snipe-monitor-label">每个金额</span>
+                    <span class="snipe-monitor-val" id="snipeMonitorAmt">--</span>
+                  </div>
+                </div>
+              </div>
+              <div class="snipe-log-wrap" id="snipeLog"><div class="log-empty">暂无日志</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手机端专属：导入/设置面板 -->
+    <div class="tab-panel" id="panel-settings">
+      <!-- 导入钱包 -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+            </span>
+            <span class="card-title">导入钱包</span>
+          </div>
+          <div class="sel-badge" id="selCount2">已选 0</div>
+        </div>
+        <div class="card-bd">
+          <div class="field">
+            <label class="field-label">私钥列表（每行一个）</label>
+            <textarea class="field-textarea" id="pkInput2" placeholder="每行输入一个私钥&#10;支持 0x 开头或不带 0x" style="min-height:100px"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-full" onclick="loadWalletsMobile()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+              加载钱包
+            </button>
+          </div>
+          <div class="btn-row" style="margin-top:6px">
+            <button class="btn btn-ghost" onclick="saveLocal()" style="flex:1">保存</button>
+            <button class="btn btn-ghost" onclick="loadLocal()" style="flex:1">读取</button>
+          </div>
+          <div class="divider"></div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">生成数量</label>
+              <input type="number" class="field-input" id="genCount2" value="5" min="1" max="100">
+            </div>
+            <div class="field">
+              <label class="field-label">名称前缀</label>
+              <input type="text" class="field-input" id="genPrefix2" value="钱包">
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="generateWalletsMobile()" style="flex:1">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              生成钱包
+            </button>
+            <button class="btn btn-ghost" onclick="queryBalances()" style="flex:1">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              查询余额
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 网络设置 -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-left">
+            <span class="card-icon card-icon-gray">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            </span>
+            <span class="card-title">网络 & 参数设置</span>
+          </div>
+        </div>
+        <div class="card-bd">
+          <div class="field">
+            <label class="field-label">RPC 节点</label>
+            <select class="field-select" id="rpcSelect2" onchange="onRpcChange2()">
+              <option value="https://bsc-dataseed2.defibit.io/" selected>DeFiBit 2（推荐）</option>
+              <option value="https://bsc-dataseed3.defibit.io/">DeFiBit 3</option>
+              <option value="https://bsc-dataseed4.defibit.io/">DeFiBit 4</option>
+              <option value="https://bsc-dataseed2.ninicoin.io/">NiniCoin 2</option>
+              <option value="https://bsc-dataseed3.ninicoin.io/">NiniCoin 3</option>
+              <option value="https://bsc-dataseed.binance.org/">Binance 官方</option>
+              <option value="https://bsc-dataseed1.defibit.io/">DeFiBit 1</option>
+              <option value="https://bsc-dataseed1.ninicoin.io/">NiniCoin 1</option>
+              <option value="https://rpc.ankr.com/bsc">Ankr</option>
+              <option value="https://bsc-rpc.publicnode.com">PublicNode（国内友好）</option>
+              <option value="https://bsc.meowrpc.com">MeowRPC</option>
+              <option value="custom">自定义...</option>
+            </select>
+            <input type="text" class="field-input field-mono" id="customRpc2" placeholder="https://..." style="display:none;margin-top:6px" onblur="applyCustomRpc2()">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label class="field-label">Gas Price (Gwei)</label>
+              <input type="number" class="field-input" id="defaultGasPrice2" value="0.05" min="0.01" step="0.01" onchange="syncGasPrice2()">
+              <div class="chip-row">
+                <span class="chip" onclick="setDefaultGas2(1)">1</span>
+                <span class="chip" onclick="setDefaultGas2(3)">3</span>
+                <span class="chip" onclick="setDefaultGas2(5)">5</span>
+                <span class="chip" onclick="setDefaultGas2(10)">10</span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Gas 倍数</label>
+              <input type="number" class="field-input" id="gasMulti2" value="1.2" min="1" max="3" step="0.1">
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label">FLAP 合约地址</label>
+            <input type="text" class="field-input field-mono" id="cfgFlap2" value="0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0">
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" id="showPkCheck2" onchange="toggleShowPk2()">
+              <span class="toggle-text">显示私钥（危险）</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="confirmCheck2" checked onchange="syncConfirmCheck()">
+              <span class="toggle-text">交易前确认</span>
+            </label>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="saveSettingsMobile()" style="margin-top:12px">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<!-- 底部导航栏（手机端） -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" data-tab="trade" onclick="switchBottomTab(this,'trade')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    <span class="bottom-nav-label">交易</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="manual" onclick="switchBottomTab(this,'manual')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span class="bottom-nav-label">手动</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="collect" onclick="switchBottomTab(this,'collect')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    <span class="bottom-nav-label">归集</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="distribute" onclick="switchBottomTab(this,'distribute')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    <span class="bottom-nav-label">分发</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="wallets" onclick="switchBottomTab(this,'wallets')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="bottom-nav-badge" id="walletCountBadge" style="display:none">0</span>
+    <span class="bottom-nav-label">钱包</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="snipe" onclick="switchBottomTab(this,'snipe')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+    <span class="bottom-nav-label">捆绑</span>
+  </button>
+  <button class="bottom-nav-btn" data-tab="settings" onclick="switchBottomTab(this,'settings')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span class="bottom-nav-label">设置</span>
+  </button>
+</nav>
+
+<!-- Toast 容器 -->
+<div id="toastWrap"></div>
+
+<!-- 确认弹窗 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-hd">
+      <span class="modal-title" id="confirmTitle">确认操作</span>
+      <button class="modal-close" onclick="cancelModal('confirmModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-bd" id="confirmBody"></div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="cancelModal('confirmModal')">取消</button>
+      <button class="btn btn-primary" id="confirmOkBtn" onclick="doConfirm()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- 加载遮罩 -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">处理中...</div>
+</div>
+
+<script src="lib/ethers.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

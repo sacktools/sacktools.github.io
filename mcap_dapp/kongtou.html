@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BSC 空投 DApp</title>
+<script src="lib/ethers.umd.min.js"></script>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--accent:#f0b90b;--accent-h:#d4a009;--text:#e6edf3;--muted:#8b949e;--success:#3fb950;--error:#f85149;--warn:#d29922;--radius:10px;}body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 64px;}header{width:100%;max-width:760px;display:flex;align-items:center;gap:12px;margin-bottom:28px;}.logo{width:40px;height:40px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#000;flex-shrink:0;}header h1{font-size:22px;font-weight:700;}header span{font-size:12px;color:var(--muted);margin-left:4px;}.card{width:100%;max-width:760px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;}.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:18px;display:flex;align-items:center;gap:8px;}.card-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px;}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;}.form-grid .full{grid-column:1 / -1;}label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);}label span{font-weight:500;}input,select{background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;width:100%;}input:focus,select:focus{border-color:var(--accent);}input[type="password"]{letter-spacing:.08em;}input::placeholder{color:var(--muted);opacity:.6;}.pk-wrap{position:relative;}.pk-wrap input{padding-right:40px;}.pk-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px;line-height:1;}.pk-eye:hover{color:var(--text);}#walletBar{display:none;background:rgba(240,185,11,.07);border:1px solid rgba(240,185,11,.25);border-radius:8px;padding:10px 14px;margin-top:14px;font-size:12px;gap:20px;flex-wrap:wrap;}#walletBar.show{display:flex;}.wb-item{display:flex;flex-direction:column;gap:3px;}.wb-label{color:var(--muted);font-size:11px;}.wb-val{color:var(--text);font-weight:600;word-break:break-all;}.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}button{cursor:pointer;border:none;border-radius:7px;font-size:13px;font-weight:600;padding:10px 20px;transition:opacity .15s,transform .1s;}button:active{transform:scale(.97);}button:disabled{opacity:.4;cursor:not-allowed;transform:none;}.btn-primary{background:var(--accent);color:#000;flex:1;min-width:140px;}.btn-primary:hover:not(:disabled){background:var(--accent-h);}.btn-secondary{background:var(--border);color:var(--text);}.btn-secondary:hover:not(:disabled){background:#3d444d;}.btn-danger{background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.4);color:var(--error);}.btn-danger:hover:not(:disabled){background:rgba(248,81,73,.25);}#progressWrap{display:none;margin-top:18px;}#progressWrap.show{display:block;}.prog-header{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}.prog-bar-bg{background:var(--border);border-radius:99px;height:8px;overflow:hidden;}.prog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#f5d060);transition:width .4s ease;width:0%;}.prog-stats{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}.stat{display:flex;flex-direction:column;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 14px;}.stat-label{font-size:11px;color:var(--muted);}.stat-val{font-size:16px;font-weight:700;}.stat-val.ok{color:var(--success);}.stat-val.err{color:var(--error);}.stat-val.neu{color:var(--accent);}#logWrap{display:none;}#logWrap.show{display:block;}#logBox{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:1.7;max-height:340px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;}#logBox .log-info{color:var(--text);}#logBox .log-success{color:var(--success);}#logBox .log-error{color:var(--error);}#logBox .log-warn{color:var(--warn);}#logBox .log-muted{color:var(--muted);}#logBox .log-accent{color:var(--accent);}.log-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;}.log-actions button{font-size:11px;padding:5px 12px;}#logBox::-webkit-scrollbar{width:6px;}#logBox::-webkit-scrollbar-track{background:transparent;}#logBox::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}a.tx-link{color:var(--accent);text-decoration:none;}a.tx-link:hover{text-decoration:underline;}@media (max-width:520px){.form-grid{grid-template-columns:1fr;}.form-grid .full{grid-column:1;}}</style>
+</head>
+<body>
+<header>
+<div class="logo">B</div>
+<div>
+<h1>BSC 空投 DApp <span>BEP-20</span></h1>
+</div>
+</header>
+<div class="card">
+<div class="card-title">钱包 &amp; 网络</div>
+<div class="form-grid">
+<label class="full">
+<span>私钥 <em style="color:var(--error);font-style:normal">*</em></span>
+<div class="pk-wrap">
+<input id="privateKey" type="password" placeholder="0x... 或不带 0x 前缀均可" autocomplete="off" />
+<button class="pk-eye" id="eyeBtn" title="显示/隐藏私钥" onclick="togglePK()">👁</button>
+</div>
+</label>
+<label class="full">
+<span>RPC 节点（留空自动测速选最快）</span>
+<input id="rpcUrl" type="text" placeholder="https://bsc-dataseed.binance.org" />
+</label>
+</div>
+<div id="walletBar">
+<div class="wb-item"><span class="wb-label">钱包地址</span><span class="wb-val" id="wbAddr">—</span></div>
+<div class="wb-item"><span class="wb-label">BNB 余额</span><span class="wb-val" id="wbBnb">—</span></div>
+<div class="wb-item"><span class="wb-label">代币余额</span><span class="wb-val" id="wbToken">—</span></div>
+<div class="wb-item"><span class="wb-label">网络</span><span class="wb-val" id="wbNet">BSC Mainnet</span></div>
+</div>
+<div class="btn-row">
+<button class="btn-primary" id="loadWalletBtn" onclick="loadWallet()">加载钱包</button>
+</div>
+</div>
+<div class="card">
+<div class="card-title">空投参数</div>
+<div class="form-grid">
+<label class="full">
+<span>代币合约地址 <em style="color:var(--error);font-style:normal">*</em></span>
+<input id="tokenAddr" type="text" placeholder="0x..." />
+</label>
+<label>
+<span>每地址空投数量（token）</span>
+<input id="amountPer" type="text" value="0.000001" placeholder="0.000001" />
+</label>
+<label>
+<span>每轮地址数量</span>
+<input id="addrsPerRound" type="number" value="300" min="1" max="1000" />
+</label>
+<label>
+<span>总轮数</span>
+<input id="rounds" type="number" value="12" min="1" max="500" />
+</label>
+<label>
+<span>轮次间隔（毫秒）</span>
+<input id="interval" type="number" value="2000" min="0" />
+</label>
+<label>
+<span>固定 Gas Price（Gwei）</span>
+<input id="gasPrice" type="text" value="0.05" placeholder="0.05" />
+</label>
+</div>
+</div>
+<div class="card" style="padding:18px 24px;">
+<div class="btn-row" style="margin-top:0;">
+<button class="btn-primary" id="startBtn" onclick="startAirdrop()" disabled>开始空投</button>
+<button class="btn-danger" id="stopBtn" onclick="stopAirdrop()" disabled>停止</button>
+<button class="btn-secondary" onclick="clearLog()">清空日志</button>
+</div>
+<div id="progressWrap">
+<div class="prog-header">
+<span id="progText">准备中...</span>
+<span id="progPct">0%</span>
+</div>
+<div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill"></div></div>
+<div class="prog-stats">
+<div class="stat"><span class="stat-label">总轮数</span><span class="stat-val neu" id="statTotal">0</span></div>
+<div class="stat"><span class="stat-label">已完成</span><span class="stat-val neu" id="statDone">0</span></div>
+<div class="stat"><span class="stat-label">成功</span><span class="stat-val ok" id="statOk">0</span></div>
+<div class="stat"><span class="stat-label">失败</span><span class="stat-val err" id="statErr">0</span></div>
+</div>
+</div>
+</div>
+<div class="card" id="logWrap">
+<div class="card-title">执行日志</div>
+<div id="logBox"></div>
+<div class="log-actions">
+<button class="btn-secondary" onclick="copyLog()">复制日志</button>
+<button class="btn-secondary" onclick="clearLog()">清空</button>
+</div>
+</div>
+<script>const DROP_CONTRACT ='0x7a36F493D53002e092a96036cD02e755553bd3Fb';const MAX_UINT256 ='115792089237316195423570985008687907853269984665640564039457584007913129639935';const RPC_LIST =['https://bsc.publicnode.com','https://bsc-rpc.publicnode.com','https://bsc-dataseed1.ninicoin.io','https://bsc-dataseed2.binance.org','https://bsc-dataseed4.binance.org','https://bsc-dataseed.binance.org','https://bsc-dataseed2.defibit.io','https://bsc-dataseed2.ninicoin.io','https://bsc-dataseed3.ninicoin.io','https://bsc-dataseed1.binance.org','https://bsc-dataseed3.binance.org','https://bsc.meowrpc.com','https://1rpc.io/bnb',];const AIRDROP_ABI =[{name:'airdrop',type:'function',inputs:[{name:'tokenContract',type:'address' },{name:'amount',type:'uint256' },{name:'numRecipients',type:'uint256' }
+],outputs:[],stateMutability:'nonpayable'
+}
+];const ERC20_ABI =[{name:'decimals',type:'function',inputs:[],outputs:[{name:'',type:'uint8' }],stateMutability:'view' },{name:'symbol',type:'function',inputs:[],outputs:[{name:'',type:'string' }],stateMutability:'view' },{name:'balanceOf',type:'function',inputs:[{name:'account',type:'address' }],outputs:[{name:'',type:'uint256' }],stateMutability:'view' },{name:'allowance',type:'function',inputs:[{name:'owner',type:'address' },{name:'spender',type:'address' }],outputs:[{name:'',type:'uint256' }],stateMutability:'view' },{name:'approve',type:'function',inputs:[{name:'spender',type:'address' },{name:'amount',type:'uint256' }],outputs:[{name:'',type:'bool' }],stateMutability:'nonpayable' }
+];let provider =null;let wallet =null;let abortFlag =false;function ts() {return new Date().toISOString().replace('T',' ').slice(0,19);}
+function sleep(ms) {return new Promise(resolve =>setTimeout(resolve,ms));}
+function log(msg,type ='info') {const box =document.getElementById('logBox');document.getElementById('logWrap').classList.add('show');const line =document.createElement('div');line.className =`log-${type}`;line.innerHTML =`[${ts()}] ${msg}`;box.appendChild(line);box.scrollTop =box.scrollHeight;}
+function clearLog() {document.getElementById('logBox').innerHTML ='';}
+function copyLog() {const text =document.getElementById('logBox').innerText;navigator.clipboard.writeText(text).then(() =>alert('日志已复制到剪贴板'));}
+function togglePK() {const inp =document.getElementById('privateKey');inp.type =inp.type ==='password' ?'text' :'password';}
+function setProgress(done,total,ok,err) {const pct =total >0 ?Math.round((done / total) *100) :0;document.getElementById('progFill').style.width =pct + '%';document.getElementById('progPct').textContent =pct + '%';document.getElementById('progText').textContent =`第 ${done} / ${total} 轮`;document.getElementById('statTotal').textContent =total;document.getElementById('statDone').textContent =done;document.getElementById('statOk').textContent =ok;document.getElementById('statErr').textContent =err;}
+function txLink(hash) {return `<a class="tx-link" href="https://bscscan.com/tx/${hash}" target="_blank">${hash.slice(0,10)}...${hash.slice(-6)}</a>`;}
+async function testRpc(url) {const start =Date.now();try {const p =new ethers.JsonRpcProvider(url,{chainId:56,name:'bnb' });await Promise.race([p.getBlockNumber(),new Promise((_,r) =>setTimeout(() =>r(new Error('timeout')),5000))
+]);return {url,ms:Date.now() - start };} catch {return {url,ms:Infinity };}
+}
+async function pickBestRpc(customRpc) {if (customRpc &&customRpc.trim()) {log(`使用自定义 RPC: ${customRpc.trim()}`,'accent');return customRpc.trim();}
+log(`正在测速 ${RPC_LIST.length} 个 RPC 节点...`,'muted');const results =await Promise.all(RPC_LIST.map(testRpc));const avail =results.filter(r =>r.ms !==Infinity).sort((a,b) =>a.ms - b.ms);if (!avail.length) throw new Error('所有 RPC 节点均不可用');log(`可用节点 ${avail.length}/${RPC_LIST.length}，最快 3 个：`,'muted');avail.slice(0,3).forEach(r =>log(`  ${String(r.ms).padStart(4)}ms  ${r.url}`,'muted'));log(`选用节点: ${avail[0].url}`,'accent');return avail[0].url;}
+async function loadWallet() {const pkRaw =document.getElementById('privateKey').value.trim();if (!pkRaw) {alert('请输入私钥');return;}
+const btn =document.getElementById('loadWalletBtn');btn.disabled =true;btn.textContent ='加载中...';try {const pk =pkRaw.startsWith('0x') ?pkRaw :'0x' + pkRaw;const rpcUrl =await pickBestRpc(document.getElementById('rpcUrl').value);provider =new ethers.JsonRpcProvider(rpcUrl,{chainId:56,name:'bnb' });wallet =new ethers.Wallet(pk,provider);const bnbBal =await provider.getBalance(wallet.address);document.getElementById('wbAddr').textContent =wallet.address;document.getElementById('wbBnb').textContent =parseFloat(ethers.formatEther(bnbBal)).toFixed(6) + ' BNB';const tokenAddrVal =document.getElementById('tokenAddr').value.trim();if (ethers.isAddress(tokenAddrVal)) {try {const tc =new ethers.Contract(tokenAddrVal,ERC20_ABI,provider);const [dec,sym,bal] =await Promise.all([tc.decimals(),tc.symbol(),tc.balanceOf(wallet.address)]);document.getElementById('wbToken').textContent =parseFloat(ethers.formatUnits(bal,dec)).toLocaleString() + ' ' + sym;} catch {document.getElementById('wbToken').textContent ='查询失败';}
+}
+document.getElementById('walletBar').classList.add('show');document.getElementById('startBtn').disabled =false;log(`钱包加载成功: ${wallet.address}`,'success');log(`BNB 余额: ${ethers.formatEther(bnbBal)} BNB`,'info');} catch (e) {log(`钱包加载失败: ${e.message}`,'error');alert('钱包加载失败：' + e.message);} finally {btn.disabled =false;btn.textContent ='加载钱包';}
+}
+async function withRetry(fn,retries =3) {for (let i =1;i <=retries;i++) {try {return await fn();}
+catch (e) {log(`  [重试 ${i}/${retries}] ${e.message}`,'warn');if (i ===retries) throw e;await sleep(3000 *i);}
+}
+}
+async function startAirdrop() {if (!wallet) {alert('请先加载钱包');return;}
+const tokenAddr =document.getElementById('tokenAddr').value.trim();const amountStr =document.getElementById('amountPer').value.trim();const addrsPerRound=parseInt(document.getElementById('addrsPerRound').value);const rounds =parseInt(document.getElementById('rounds').value);const intervalMs =parseInt(document.getElementById('interval').value);const gasPriceGwei =document.getElementById('gasPrice').value.trim();if (!ethers.isAddress(tokenAddr)) {alert('代币合约地址无效');return;}
+if (!amountStr ||isNaN(parseFloat(amountStr))) {alert('空投数量无效');return;}
+abortFlag =false;document.getElementById('startBtn').disabled =true;document.getElementById('stopBtn').disabled =false;document.getElementById('progressWrap').classList.add('show');setProgress(0,rounds,0,0);log('══════════════════════════════════════','muted');log('空投任务启动','accent');try {const tokenContract =new ethers.Contract(tokenAddr,ERC20_ABI,wallet);const decimals =Number(await tokenContract.decimals());const symbol =await tokenContract.symbol().catch(() =>'TOKEN');log(`代币: ${symbol}，精度: ${decimals}`,'info');const amountPerAddr =ethers.parseUnits(amountStr,decimals);const grandTotal =amountPerAddr *BigInt(addrsPerRound) *BigInt(rounds);log(`每地址: ${amountStr} ${symbol}，每轮: ${addrsPerRound} 个地址，共 ${rounds} 轮`,'info');log(`全部总量: ${ethers.formatUnits(grandTotal, decimals)} ${symbol}`,'info');const gasPrice =ethers.parseUnits(gasPriceGwei,'gwei');log(`Gas Price: ${gasPriceGwei} Gwei`,'info');const currentAllowance =await tokenContract.allowance(wallet.address,DROP_CONTRACT);log(`当前 allowance: ${ethers.formatUnits(currentAllowance, decimals)} ${symbol}`,'info');if (currentAllowance < grandTotal) {log('allowance 不足，正在 approve (MaxUint256) ...','warn');const approveTx =await withRetry(() =>tokenContract.approve(DROP_CONTRACT,MAX_UINT256,{gasPrice })
+);log(`approve 已发送，等待确认... ${txLink(approveTx.hash)}`,'info');await approveTx.wait();log(`approve 已确认 ✓`,'success');} else {log('allowance 充足，跳过 approve ✓','success');}
+const dropContract =new ethers.Contract(DROP_CONTRACT,AIRDROP_ABI,wallet);let okCount =0,errCount =0;for (let round =1;round <=rounds;round++) {if (abortFlag) {log('用户手动停止','warn');break;}
+log(`第 ${String(round).padStart(4,'0')} / ${rounds} 轮  发送中...`,'info');try {const gasEst =await dropContract.airdrop.estimateGas(tokenAddr,amountPerAddr,addrsPerRound);const gasLimit =(gasEst *130n) / 100n;const tx =await withRetry(() =>dropContract.airdrop(tokenAddr,amountPerAddr,addrsPerRound,{gasPrice,gasLimit })
+);log(`  tx: ${txLink(tx.hash)}`,'success');await tx.wait();log(`  第 ${round} 轮确认 ✓`,'success');okCount++;} catch (e) {log(`  第 ${round} 轮失败: ${e.message}`,'error');errCount++;}
+setProgress(round,rounds,okCount,errCount);if (round < rounds &&!abortFlag) {await sleep(intervalMs);}
+}
+log('══════════════════════════════════════','muted');log(`全部完成！成功: ${okCount} 轮，失败: ${errCount} 轮`,okCount >0 ?'success' :'warn');} catch (e) {log(`脚本异常: ${e.message}`,'error');} finally {document.getElementById('startBtn').disabled =false;document.getElementById('stopBtn').disabled =true;abortFlag =false;}
+}
+function stopAirdrop() {abortFlag =true;document.getElementById('stopBtn').disabled =true;log('正在等待当前轮次完成后停止...','warn');}
+document.getElementById('privateKey').addEventListener('keydown',e =>{if (e.key ==='Enter') loadWallet();});</script>
+</body>
+</html>
