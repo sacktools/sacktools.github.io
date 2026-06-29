@@ -2493,8 +2493,8 @@ function stopSnipe() {
 async function _warmupSnipeCache(sel, buyAmt, gasP, minTokenOutRaw) {
   const gasPrice = ethers.utils.parseUnits(gasP.toString(), 'gwei');
   const amtWei = ethers.utils.parseEther(buyAmt.toString());
-  // 固定 gasLimit：FLAP 内盘买入实测约 150k~200k，给 350000 足够安全
-  const gasLimit = 350000;
+  // 固定 gasLimit：FLAP 内盘买入实测约 150k~200k，给 1000000 足够安全
+  const gasLimit = 1000000;
   const minTokenOut = ethers.BigNumber.from(minTokenOutRaw || '0');
 
   const walletObjs = sel.map(w => new ethers.Wallet(w.privateKey, provider));
@@ -2573,7 +2573,7 @@ async function _snipeBuy(tokenAddr, sel, buyAmt, gasP, minTokenOutRaw) {
     const nonces = await Promise.all(
       walletObjs.map(w => provider.getTransactionCount(w.address, 'pending'))
     );
-    cache = { walletObjs, routerContracts, nonces, amtWei, gasPrice, gasLimit: 350000, minTokenOut, sel };
+    cache = { walletObjs, routerContracts, nonces, amtWei, gasPrice, gasLimit: 1000000, minTokenOut, sel };
   } else {
     // 监测期间钱包无其他交易，直接使用预热缓存的 nonce，零延迟
   }
