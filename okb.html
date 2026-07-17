@@ -461,12 +461,25 @@ input[type=range]:focus{border:none;outline:none}
               <div class="grid2">
                 <div class="field">
                   <label class="field-label">Gas 倍速</label>
-                  <input type="text" id="gasMultiplier" value="1" placeholder="1.0" />
+                  <input type="text" id="gasMultiplier" value="1" placeholder="1.0" oninput="updateOkbTip()" />
                 </div>
                 <div class="field">
                   <label class="field-label">购买笔数</label>
-                  <input type="text" id="snipingCount" value="1" placeholder="1" />
+                  <input type="text" id="snipingCount" value="1" placeholder="1" oninput="updateOkbTip()" />
                 </div>
+              </div>
+              <!-- OKB 预留量提示 -->
+              <div id="okbTipBox" style="margin-top:10px;padding:10px 12px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:6px;font-size:11px;line-height:1.7;color:var(--warn)">
+                <div style="font-weight:700;margin-bottom:4px">⚠️ 狙击模式钱包 OKB 预留建议</div>
+                <div style="color:var(--text2)">固定 Gas Limit：<span style="color:var(--warn);font-family:var(--mono)">5,000,000</span></div>
+                <div style="color:var(--text2)">当前网络 Gas Price：<span id="okbTipGasPrice" style="color:var(--warn);font-family:var(--mono)">读取中...</span></div>
+                <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(245,166,35,.15)">
+                  每笔交易最多消耗：<span id="okbTipPerTx" style="color:var(--accent);font-family:var(--mono);font-weight:700">计算中...</span> OKB
+                </div>
+                <div id="okbTipMulti" style="display:none">
+                  <span id="okbTipCount"></span> 笔共需预留：<span id="okbTipTotal" style="color:var(--accent);font-family:var(--mono);font-weight:700"></span> OKB
+                </div>
+                <div style="margin-top:4px;font-size:10px;color:var(--text3)">实际消耗通常远小于此値（实际用气远小于 500 万），但钱包余额必须足够支付此上限</div>
               </div>
             </div>
           </div>
@@ -821,7 +834,49 @@ async function initWeb3WithFallback(){
 }
 
 /* ── 缓存 ── */
-function loadCache(){CACHE_KEYS.forEach(key=>{const el=document.getElementById(key);if(!el)return;const val=localStorage.getItem('ps_'+key);if(val!==null)el.value=val;el.addEventListener('input',()=>localStorage.setItem('ps_'+key,el.value));});}
+function loadCache(){CACHE_KEYS.forEach(key=>{const el=document.getElementById(key);if(!el)return;const val=localStorage.getItem('ps_'+key);if(val!==null)el.value=val;el.addEventListener('input',()=>localStorage.setItem('ps_'+key,el.value));});setTimeout(updateOkbTip,500);}
+
+/* ── OKB 预留量提示（基于 500 万 gas limit） ── */
+let _okbTipTimer=null;
+async function updateOkbTip(){
+  clearTimeout(_okbTipTimer);
+  _okbTipTimer=setTimeout(async()=>{
+    try{
+      const gasMultiplier=parseFloat(document.getElementById('gasMultiplier').value||'1');
+      const count=parseInt(document.getElementById('snipingCount').value||'1');
+      const GAS_LIMIT=5000000;
+      // 尝试获取当前 gasPrice
+      let gasPriceGwei='--';
+      let perTxOkb='--';
+      let totalOkb='--';
+      try{
+        const w3tmp=new Web3(getRpcUrl());
+        const gp=await w3tmp.eth.getGasPrice();
+        const adjGp=BigInt(gp)*BigInt(Math.round(gasMultiplier*100))/100n;
+        gasPriceGwei=(Number(adjGp)/1e9).toFixed(4)+' Gwei';
+        // 消耗 OKB = gas * gasPrice / 1e18
+        const costWei=BigInt(GAS_LIMIT)*adjGp;
+        const costOkb=Number(costWei)/1e18;
+        perTxOkb=costOkb.toFixed(6);
+        totalOkb=(costOkb*count).toFixed(6);
+      }catch{
+        gasPriceGwei='无法获取（请检查 RPC）';
+      }
+      const gpEl=document.getElementById('okbTipGasPrice');
+      const perEl=document.getElementById('okbTipPerTx');
+      const multiEl=document.getElementById('okbTipMulti');
+      const countEl=document.getElementById('okbTipCount');
+      const totalEl=document.getElementById('okbTipTotal');
+      if(gpEl)gpEl.textContent=gasPriceGwei;
+      if(perEl)perEl.textContent=perTxOkb+' OKB';
+      if(count>1&&multiEl){
+        multiEl.style.display='block';
+        if(countEl)countEl.textContent=count;
+        if(totalEl)totalEl.textContent=totalOkb+' OKB';
+      }else if(multiEl){multiEl.style.display='none';}
+    }catch{}
+  },300);
+}
 
 /* ── 钱包列表渲染 ── */
 function renderWallets(){
@@ -1038,11 +1093,14 @@ document.getElementById('immediateBuyButton').addEventListener('click',async fun
     const rpcUrl=getRpcUrl();
     const pk0=keys[0].startsWith('0x')?keys[0]:'0x'+keys[0];
     const toAddr=w3.eth.accounts.privateKeyToAccount(pk0).address;
+    // 预取 tokenIn decimals，确保 Worker 的 amountIn 精度正确
+    const tokenInDecimals=await new w3.eth.Contract(ERC20_ABI,tokenIn).methods.decimals().call().then(Number).catch(()=>18);
+    const workerAmountIn=parseAmount(amountInVal,tokenInDecimals)||'100000000000000000';
     stopWorkers();
     for(let i=0;i<workerCount&&isRunning;i++){
       const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
       const w=new Worker(URL.createObjectURL(wb));
-      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:toAddr,walletAddr:toAddr,deadline,rpcUrl});
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:workerAmountIn,to:toAddr,walletAddr:toAddr,deadline,rpcUrl});
       w.onmessage=async(e)=>{
         if(!isRunning||globalTriggered)return;
         if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
@@ -1055,6 +1113,9 @@ document.getElementById('immediateBuyButton').addEventListener('click',async fun
       workers.push(w);
       const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'estimateGas'});},intervalMs);
     }
+    // 启动后台预热：预取 nonce/gasPrice、预签名交易
+    startWarmup(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,deadline,'logFast');
+    logFast('预热启动：取 gasPrice×2 + 锁定 nonce + 完整预签名，触发时零 RPC 广播...','success');
   }catch(err){logFast(`启动失败: ${err.message}`,'error');stopAll();}
 });
 
@@ -1101,11 +1162,14 @@ document.getElementById('buyButton').addEventListener('click',async function(){
     const rpcUrl=getRpcUrl();
     const pk0=keys[0].startsWith('0x')?keys[0]:'0x'+keys[0];
     const accountAddr=w3.eth.accounts.privateKeyToAccount(pk0).address;
+    // 预取 tokenIn decimals，确保 Worker 的 amountIn 精度正确
+    const tokenInDecimals=await new w3.eth.Contract(ERC20_ABI,tokenIn).methods.decimals().call().then(Number).catch(()=>18);
+    const workerAmountIn=parseAmount(amountInVal,tokenInDecimals)||'100000000000000000';
     stopWorkers();
     for(let i=0;i<workerCount;i++){
       const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
       const w=new Worker(URL.createObjectURL(wb));
-      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:accountAddr,walletAddr:accountAddr,deadline,rpcUrl});
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:workerAmountIn,to:accountAddr,walletAddr:accountAddr,deadline,rpcUrl});
       w.onmessage=async(e)=>{
         if(!isRunning||globalTriggered)return;
         if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
@@ -1120,6 +1184,9 @@ document.getElementById('buyButton').addEventListener('click',async function(){
       workers.push(w);
       const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'estimateGas'});},intervalMs);
     }
+    // 启动后台预热：预取 nonce/gasPrice、预签名交易
+    startWarmup(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,deadline,'logOrder');
+    logOrder('预热启动：取 gasPrice×2 + 锁定 nonce + 完整预签名，触发时零 RPC 广播...','success');
   }catch(err){logOrder(`挂单启动失败: ${err.message}`,'error');stopAll();this.disabled=false;}
 });
 
@@ -1128,7 +1195,7 @@ document.getElementById('stopButton').addEventListener('click',function(){stopAl
 /* ── 停止 ── */
 function stopWorkers(){workers.forEach(w=>{try{w.terminate();}catch{}});workers=[];}
 function stopAll(){
-  isRunning=false;globalTriggered=false;stopWorkers();
+  isRunning=false;globalTriggered=false;stopWorkers();stopWarmup();
   setGlobalStatus('idle','待机',0);
   document.getElementById('fastStopRow').style.display='none';
   document.getElementById('orderStopRow').style.display='none';
@@ -1143,47 +1210,125 @@ function stopAll(){
   document.getElementById('orderBadge').style.display='none';
 }
 
+/* ── 预热缓存《最终方案》
+   启动时一次性：取 gasPrice×倍速×2 + nonce + 构建 txData + 完整预签名
+   触发时：零 RPC，直接广播预签名交易
+   gasPrice 乘以 2 确保即使波动也能被打包
+── */
+const GAS_LIMIT_SNIPE=5000000; // 狙击模式固定 500 万 gas
+let _warmCache=null; // { signedTxs:[{idx,raw}], ts }
+
+async function warmupBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,deadline,logId){
+  const chainId=parseInt(document.getElementById('chainId').value||'196');
+  const recvAddrGlobal=document.getElementById('reciveAddress').value.trim();
+  const tokenInContract=new w3.eth.Contract(ERC20_ABI,tokenIn);
+  const routerContract=new w3.eth.Contract(ROUTER_ABI,routerAddr);
+  try{
+    // 并行获取 decimals + gasPrice
+    const[decimals,rawGasPrice]=await Promise.all([
+      tokenInContract.methods.decimals().call(),
+      w3.eth.getGasPrice()
+    ]);
+    // gasPrice × 倍速 × 2（应对波动，不再实时取）
+    const adjustedGas=BigInt(rawGasPrice)*BigInt(Math.round(gasMultiplier*100))/100n*2n;
+    const amountIn=parseAmount(amountInVal,Number(decimals));
+    if(!amountIn){logTo(logId,'预热：数量解析失败','error');return;}
+    const amountOutMin=parseAmount(amountOutMinVal,18)||'0';
+
+    // 所有钱包并行：预取 nonce → 构建 txData → 完整签名
+    const signedTxs=await Promise.all(keys.map(async(key,i)=>{
+      const pk=key.startsWith('0x')?key:'0x'+key;
+      const account=w3.eth.accounts.privateKeyToAccount(pk);
+      const toAddr=recvAddrGlobal||account.address;
+      const txData=routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        amountIn,amountOutMin,[tokenIn,tokenOut],toAddr,deadline
+      ).encodeABI();
+      const nonce=await w3.eth.getTransactionCount(account.address,'pending');
+      const tx={from:account.address,to:routerAddr,gas:GAS_LIMIT_SNIPE,gasPrice:adjustedGas.toString(),data:txData,nonce,chainId};
+      const signed=await w3.eth.accounts.signTransaction(tx,pk);
+      return{idx:i,raw:signed.rawTransaction};
+    }));
+    _warmCache={signedTxs,ts:Date.now()};
+    const gpGwei=(Number(adjustedGas)/1e9).toFixed(4);
+    logTo(logId,`预热完成：${keys.length} 个钱包已全部预签名 | gasPrice=${gpGwei} Gwei | 触发时零 RPC 直接广播`,'success');
+  }catch(err){logTo(logId,`预热失败: ${err.message}`,'warn');}
+}
+
+function startWarmup(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,deadline,logId){
+  stopWarmup();
+  warmupBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,deadline,logId);
+}
+
+function stopWarmup(){
+  _warmCache=null;
+}
+
 /* ── 并行买入 ── */
 async function executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,count,intervalMs,deadline,logId='log'){
+  for(let c=0;c<count;c++){
+    if(!isRunning)return;
+    logTo(logId,`第 ${c+1}/${count} 轮：${keys.length} 个钱包并行广播...`,'info');
+
+    if(_warmCache&&c===0){
+      // 零 RPC：直接广播预签名交易
+      logTo(logId,`使用预签名交易，零 RPC 直接广播...`,'success');
+      await Promise.all(_warmCache.signedTxs.map(async({idx,raw})=>{
+        if(!raw)return;
+        try{
+          const receipt=await w3.eth.sendSignedTransaction(raw);
+          logTo(logId,`✓ [${c+1}/${count}] 钱包 ${idx+1} 买入成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+        }catch(err){
+          logTo(logId,`✗ [${c+1}/${count}] 钱包 ${idx+1} 广播失败，实时重建: ${err.message}`,'warn');
+          await executeBuyFresh(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,1,intervalMs,deadline,logId,c);
+        }
+      }));
+    }else{
+      await executeBuyFresh(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,1,intervalMs,deadline,logId,c);
+    }
+    if(c<count-1)await sleep(intervalMs);
+  }
+  stopWarmup();
+}
+
+/* 实时构建并广播（预热失效时的备用路径） */
+async function executeBuyFresh(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,count,intervalMs,deadline,logId,roundOffset=0){
   const chainId=parseInt(document.getElementById('chainId').value||'196');
   const recvAddrGlobal=document.getElementById('reciveAddress').value.trim();
   const tokenInContract=new w3.eth.Contract(ERC20_ABI,tokenIn);
   const routerContract=new w3.eth.Contract(ROUTER_ABI,routerAddr);
   let decimals,amountIn,amountOutMin,adjustedGas;
   try{
-    [decimals,adjustedGas]=await Promise.all([
+    const[dec,rawGp]=await Promise.all([
       tokenInContract.methods.decimals().call(),
-      w3.eth.getGasPrice().then(p=>BigInt(p)*BigInt(Math.round(gasMultiplier*100))/100n)
+      w3.eth.getGasPrice()
     ]);
+    decimals=dec;
+    // 备用路径同样用 gasPrice×倍速×2
+    adjustedGas=BigInt(rawGp)*BigInt(Math.round(gasMultiplier*100))/100n*2n;
     amountIn=parseAmount(amountInVal,Number(decimals));
     if(!amountIn){logTo(logId,'数量解析失败','error');return;}
     amountOutMin=parseAmount(amountOutMinVal,18)||'0';
   }catch(err){logTo(logId,`预取参数失败: ${err.message}`,'error');return;}
-
   for(let c=0;c<count;c++){
-    if(!isRunning)return;
-    logTo(logId,`第 ${c+1}/${count} 轮：${keys.length} 个钱包并行买入...`,'info');
+    const round=roundOffset+c+1;
     const signedTxs=await Promise.all(keys.map(async(key,i)=>{
       const pk=key.startsWith('0x')?key:'0x'+key;
       const account=w3.eth.accounts.privateKeyToAccount(pk);
       const toAddr=recvAddrGlobal||account.address;
       const walletTxData=routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin,[tokenIn,tokenOut],toAddr,deadline).encodeABI();
       try{
-        const[nonce,gasEstimate]=await Promise.all([
-          w3.eth.getTransactionCount(account.address,'pending'),
-          routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin,[tokenIn,tokenOut],toAddr,deadline).estimateGas({from:account.address}).catch(()=>300000)
-        ]);
-        const tx={from:account.address,to:routerAddr,gas:Math.ceil(Number(gasEstimate)*1.2),gasPrice:adjustedGas.toString(),data:walletTxData,nonce,chainId};
+        const nonce=await w3.eth.getTransactionCount(account.address,'pending');
+        const tx={from:account.address,to:routerAddr,gas:GAS_LIMIT_SNIPE,gasPrice:adjustedGas.toString(),data:walletTxData,nonce,chainId};
         const signed=await w3.eth.accounts.signTransaction(tx,pk);
         return{idx:i,raw:signed.rawTransaction};
-      }catch(err){logTo(logId,`✗ [${c+1}/${count}] 钱包 ${i+1} 签名失败: ${err.message}`,'error');return{idx:i,raw:null};}
+      }catch(err){logTo(logId,`✗ [轮${round}] 钱包 ${i+1} 签名失败: ${err.message}`,'error');return{idx:i,raw:null};}
     }));
     await Promise.all(signedTxs.map(async({idx,raw})=>{
       if(!raw)return;
       try{
         const receipt=await w3.eth.sendSignedTransaction(raw);
-        logTo(logId,`✓ [${c+1}/${count}] 钱包 ${idx+1} 买入成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
-      }catch(err){logTo(logId,`✗ [${c+1}/${count}] 钱包 ${idx+1} 广播失败: ${err.message}`,'error');}
+        logTo(logId,`✓ [轮${round}] 钱包 ${idx+1} 买入成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+      }catch(err){logTo(logId,`✗ [轮${round}] 钱包 ${idx+1} 广播失败: ${err.message}`,'error');}
     }));
     if(c<count-1)await sleep(intervalMs);
   }
