@@ -1,207 +1,1395 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="image/favicon.ico" />
-    <title>OKB</title>
+    <title>OKB DEX Sniper</title>
+    <style>
+        /* ===== 基础变量 ===== */
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --surface2: #1c2230;
+            --border: #2a3244;
+            --accent: #00c896;
+            --accent-dim: rgba(0,200,150,0.12);
+            --accent-hover: #00e5ab;
+            --warn: #f0a500;
+            --warn-dim: rgba(240,165,0,0.12);
+            --danger: #e05252;
+            --danger-dim: rgba(224,82,82,0.12);
+            --text: #e6edf3;
+            --text-muted: #7d8fa3;
+            --text-dim: #4a5568;
+            --radius: 8px;
+            --radius-sm: 5px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
 
-    <!-- 引入Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/styles.css"> <!-- 导入外部CSS文件 -->
-    <link rel="stylesheet" href="css/bootstrap.min.css"> <!-- 导入外部CSS文件 -->
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <script>
-        // 设置缓存功能
-        const inputs = [
-            'privateKeyD',
-            'tokeninAddress',
-            'customAddress',
-            'tokenOutAddress',
-            'customBddress',
-            'reciveAddress',
-            'amountIn',
-            'amountOutMin',
-            'gasMultiplier',
-            'snipingCount',
-            'buyintervalTime'
-        ];
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            min-height: 100vh;
+            padding: 16px;
+        }
 
-        // 加载缓存
-        window.onload = function() {
-            inputs.forEach(input => {
-                const element = document.getElementById(input);
-                if (element) {
-                    element.value = localStorage.getItem(input) || '';
-                    element.addEventListener('input', () => {
-                        localStorage.setItem(input, element.value);
-                    });
-                }
-            });
-        };
-    </script>
+        /* ===== 顶部栏 ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+        }
+        .logo span { color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            margin-left: 12px;
+            transition: color 0.2s;
+        }
+        .social-links a:hover { color: var(--accent); }
+
+        /* ===== 卡片 ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        /* ===== 私钥区域 ===== */
+        textarea#privateKeyD {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            padding: 10px;
+            font-size: 13px;
+            font-family: 'Consolas', monospace;
+            resize: vertical;
+            min-height: 70px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea#privateKeyD:focus { border-color: var(--accent); }
+        textarea#privateKeyD::placeholder { color: var(--text-dim); }
+
+        /* ===== 路由配置 ===== */
+        .router-config {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .router-config .field { flex: 1; }
+        .router-config .field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        /* ===== 输入框 ===== */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            padding: 8px 10px;
+            font-size: 13px;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        input:focus, select:focus { border-color: var(--accent); }
+        input::placeholder { color: var(--text-dim); }
+        select option { background: var(--surface); }
+
+        /* ===== Swap 区域 ===== */
+        .swap-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 4px;
+        }
+        .swap-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .swap-box-header .label { font-size: 11px; color: var(--text-muted); }
+        .balance-display {
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .balance-display:hover { color: var(--accent); }
+        .balance-display.loaded { color: var(--accent); }
+
+        .token-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .token-select-wrap { position: relative; flex-shrink: 0; }
+        .token-select-wrap select {
+            width: 100px;
+            padding: 8px 28px 8px 10px;
+            appearance: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .token-select-wrap::after {
+            content: '▾';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 11px;
+        }
+        .amount-input {
+            flex: 1;
+            text-align: right;
+            font-size: 18px;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            padding: 4px 0;
+        }
+        .amount-input:focus { border: none; outline: none; }
+        .amount-input::placeholder { color: var(--text-dim); }
+
+        /* 自定义地址输入（条件显示） */
+        .custom-addr-row {
+            margin-top: 8px;
+            display: none;
+        }
+        .custom-addr-row.show { display: block; }
+        .custom-addr-row input {
+            font-size: 12px;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ===== 切换按钮 ===== */
+        .swap-toggle-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2px 0;
+            position: relative;
+            z-index: 1;
+        }
+        #toggleButton {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--accent);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #toggleButton:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            transform: rotate(180deg);
+        }
+
+        /* ===== 滑点 ===== */
+        .slippage-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .slippage-row label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+        .slippage-row input[type="range"] {
+            flex: 1;
+            padding: 0;
+            border: none;
+            background: transparent;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        .slippage-row input[type="range"]:focus { border: none; outline: none; }
+        .slippage-val {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 42px;
+            text-align: right;
+        }
+        .slippage-presets {
+            display: flex;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .slippage-preset {
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .slippage-preset:hover, .slippage-preset.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ===== 接收地址 ===== */
+        .receive-row { margin-bottom: 10px; }
+        .receive-row label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: block; }
+        .receive-row input { font-size: 12px; font-family: 'Consolas', monospace; }
+
+        /* ===== 主按钮行 ===== */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 11px 0;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-approve {
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+        .btn-approve:hover:not(:disabled) {
+            background: var(--accent);
+            color: #0d1117;
+        }
+        .btn-swap {
+            background: var(--warn-dim);
+            border: 1px solid var(--warn);
+            color: var(--warn);
+        }
+        .btn-swap:hover:not(:disabled) {
+            background: var(--warn);
+            color: #0d1117;
+        }
+        .btn-fast {
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+        .btn-fast:hover:not(:disabled) {
+            background: var(--accent);
+            color: #0d1117;
+        }
+        .btn-order {
+            background: var(--warn-dim);
+            border: 1px solid var(--warn);
+            color: var(--warn);
+        }
+        .btn-order:hover:not(:disabled) {
+            background: var(--warn);
+            color: #0d1117;
+        }
+        .btn-stop {
+            background: var(--danger-dim);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            display: none;
+        }
+        .btn-stop:hover:not(:disabled) {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* ===== 参数网格 ===== */
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .param-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .param-field input { font-size: 13px; }
+
+        /* ===== 单选模式 ===== */
+        .radio-row {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .radio-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+        }
+        .radio-row input[type="radio"] { accent-color: var(--accent); }
+
+        /* ===== 路由配置卡片 ===== */
+        .router-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+        .router-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .router-section-header .title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+        .router-section-header .toggle-icon {
+            color: var(--text-muted);
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+        .router-section-header.open .toggle-icon { transform: rotate(180deg); }
+        .router-section-body { display: block; }
+        .router-section-body.collapsed { display: none; }
+
+        .router-preset-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .router-preset {
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .router-preset:hover, .router-preset.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .router-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .router-field label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .router-field input {
+            font-size: 11px;
+            font-family: 'Consolas', monospace;
+        }
+        .router-field.full { grid-column: 1 / -1; }
+
+        /* ===== 日志 ===== */
+        #log {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            font-family: 'Consolas', monospace;
+            color: var(--text-muted);
+            margin-top: 10px;
+            line-height: 1.7;
+        }
+        #log:empty::before {
+            content: '> 等待操作...';
+            color: var(--text-dim);
+        }
+        .log-info { color: var(--text-muted); }
+        .log-success { color: var(--accent); }
+        .log-warn { color: var(--warn); }
+        .log-error { color: var(--danger); }
+        .log-time { color: var(--text-dim); margin-right: 6px; }
+
+        /* ===== 状态指示 ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .status-badge.idle { background: rgba(125,143,163,0.15); color: var(--text-muted); }
+        .status-badge.running { background: var(--accent-dim); color: var(--accent); }
+        .status-badge.error { background: var(--danger-dim); color: var(--danger); }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .status-badge.running .status-dot { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ===== 顶部状态行 ===== */
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .network-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-weight: 600;
+            border: 1px solid var(--accent);
+        }
+
+        /* ===== 分隔线 ===== */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 10px 0;
+        }
+
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .params-grid { grid-template-columns: 1fr; }
+            .router-fields { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-
 <body>
-    <!-- 科学家部分 -->
-    <div class="container" id="homeSection" style="display: block;">
 
-        <div class="mb-2" style="text-align: left;">
-            <a href="https://twitter.com/bscjack2024" target="_blank">
-                <img src="image/twitter.png" alt="Twitter" style="width: 30px; height: 30px;">
-            </a>
-            <a href="https://t.me/LPZ131419" target="_blank">
-                <img src="image/tg.png" alt="Telegram" style="width: 30px; height: 30px;">
-            </a>
+<!-- ===== 顶部栏 ===== -->
+<div class="top-bar">
+    <div class="logo">OKB<span>DEX Sniper</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span class="network-tag">X Layer</span>
+        <div class="social-links">
+            <a href="https://twitter.com/bscjack2024" target="_blank">🐦 Twitter</a>
+            <a href="https://t.me/LPZ131419" target="_blank">✈️ Telegram</a>
         </div>
-
-        <textarea id="privateKeyD" class="form-control" placeholder="输入多个私钥，请用换行符隔开"></textarea>
-        <div class="card mb-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="form-row align-items-center">
-                        <div class="col">
-                            <select id="tokeninAddress" style="font-size: 14px; padding: 5px; height: 30px; width: 80px; margin-right: 5px; z-index: 10;">
-                                <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
-                                <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
-                                <option value="自定义">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="privateKeyResult" class="text-muted mb-2" style="font-size: 14px;">余额显示</div>
-                </div>
-                <div class="input-group mb-2">
-                    <input type="number" class="number form-control text-right" placeholder="0" id="from_amount" min="0">
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center" style="margin: 0;">
-            <button id="toggleButton" style="width: 40px; height: 40px; border-radius: 50%; background-color: #f8f9fa; color: #007bff; border: none; cursor: pointer;">⇅</button>
-        </div>
-
-        <div class="card mb-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="form-row align-items-center">
-                        <div class="col">
-                            <select id="tokenOutAddress" style="font-size: 14px; padding: 5px; height: 30px; width: 80px; margin-right: 5px; z-index: 10;">
-                                <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
-                                <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
-                                <option value="自定义">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div id="tokeninResult" class="text-muted mb-2" style="font-size: 14px;">余额显示</div>
-                </div>
-                <div class="input-group mb-2">
-                    <input type="number" class="number form-control text-right" placeholder="0" id="from_amount_out" min="0">
-                </div>
-
-                <div class="row mb-0 justify-content-center align-items-center">
-                    <div class="col-3 text-center">
-                        <div style="font-size: 16px;">
-                            滑点：
-                        </div>
-                    </div>
-                    <div class="col-6 range-container">
-                        <input type="range" class="form-control-range" value="0.5" min="0.1" max="99.9" step="0.1" onInput="$('#slippage').text($(this).val())">
-                    </div>
-                    <div class="col-3 text-center">
-                        <div style="font-size: 16px; display: flex; align-items: center; justify-content: center;">
-                            <span id="slippage">5</span>%
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <div id="addressModal" style="display: none;">
-            <h3>From（从）合约地址</h3>
-            <input type="text" id="customAddress" placeholder="输入地址" />
-            <button onclick="confirmAddress()">确认</button>
-            <button onclick="closeModal()">取消</button>
-        </div>
-        <div id="addressModalB" style="display: none;">
-            <h3>To（到）合约地址</h3>
-            <input type="text" id="customBddress" placeholder="输入地址" />
-            <button onclick="confirmAddressB()">确认</button>
-            <button onclick="closeModalB()">取消</button>
-        </div>
-
-        <div style="text-align: center;">
-            <input class="text-center" type="text" id="reciveAddress" style="min-width: 80px;" placeholder="指定接收地址，不填则默认私钥钱包地址" />
-        </div>
-
-        <div class="button-row mb-4">
-            <button id="approveButton" class="btn btn-success">授权</button>
-            <button id="sellButton" class="btn btn-warning">SWAP</button>
-        </div>
-
-        <div class="card-body">
-            <div id="time"></div>
-            <div style="display: flex; justify-content: center; align-items: center; margin: 10px 0; width: 100%;">
-                <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen; margin-right: 20px;">
-                    <input type="radio" name="amountOption" value="1" checked> 支出固定数量
-                </label>
-                <label style="display: flex; align-items: center; font-size: 12px; font-weight: bold; color: darkgreen;">
-                    <input type="radio" name="amountOption" value="2"> 买入固定数量
-                </label>
-            </div>
-            <div class="d-flex flex-column align-items-center">
-                <div class="selection-row" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                    <div class="d-flex justify-content-between" style="width: 100%;">
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label id="amountInLabel" for="amountIn">输入支出代币数量:</label>
-                            <input type="text" id="amountIn" style="min-width: 80px; width: 100%;" value="0.1" />
-                        </div>
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label id="amountOutMinLabel" for="amountOutMin">获取代币最小数量:</label>
-                            <input type="text" id="amountOutMin" style="min-width: 80px; width: 100%;" value="0" />
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between" style="width: 100%;">
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label for="gasMultiplier">Gas 倍速:</label>
-                            <input type="text" id="gasMultiplier" style="min-width: 80px; width: 100%;" value="1" />
-                        </div>
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label for="snipingCount">购买笔数:</label>
-                            <input type="text" id="snipingCount" style="min-width: 80px; width: 100%;" value="1" />
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between" style="width: 100%;">
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label for="worker">监控线程:</label>
-                            <input type="text" id="worker" style="min-width: 80px; width: 100%;" value="5" />
-                        </div>
-                        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
-                            <label id="buyintervalTimeLabel" for="buyintervalTime">买入间隔（ms）:</label>
-                            <input type="text" id="buyintervalTime" style="min-width: 80px; width: 100%;" value="200" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="button-row mb-4">
-            <button id="immediateBuyButton" class="btn btn-success">快速模式</button>
-            <button id="buyButton" class="btn btn-warning">挂单模式</button>
-        </div>
-
-        <div id="log"
-            style="background: #f9f9f9; padding: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto; color: #333; border: 1px solid #ddd; margin-top: 20px;">
-        </div>
-
-        <script src="js/hao.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-        <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
-        <script src="js/okbvip.js"></script> <!-- 引入外部的 JavaScript 文件 -->
-        <!-- 引入Bootstrap JS和依赖 -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     </div>
-</body>
+</div>
 
+<!-- ===== 状态行 ===== -->
+<div class="status-row">
+    <span id="statusBadge" class="status-badge idle"><span class="status-dot"></span>待机</span>
+    <span id="workerCount" style="font-size:11px;color:var(--text-muted);">线程: 0</span>
+</div>
+
+<!-- ===== 私钥 ===== -->
+<div class="card">
+    <div class="card-title">私钥（多个请换行分隔）</div>
+    <textarea id="privateKeyD" placeholder="输入私钥，每行一个..."></textarea>
+</div>
+
+<!-- ===== 路由配置（可折叠） ===== -->
+<div class="router-section">
+    <div class="router-section-header open" id="routerHeader">
+        <span class="title">路由合约配置</span>
+        <span class="toggle-icon">▾</span>
+    </div>
+    <div class="router-section-body" id="routerBody">
+        <div class="router-preset-row">
+            <button class="router-preset active" data-preset="okx"
+                data-router="0x3A0a2A9B2e3D0e0e0e0e0e0e0e0e0e0e0e0e0e0e"
+                data-rpc="https://xlayerrpc.okx.com"
+                data-chain="196">OKX DEX</button>
+            <button class="router-preset" data-preset="custom">自定义</button>
+        </div>
+        <div class="router-fields">
+            <div class="router-field full">
+                <label>Router 合约地址</label>
+                <input type="text" id="routerContractAddress"
+                    value="0x3A0a2A9B2e3D0e0e0e0e0e0e0e0e0e0e0e0e0e0e"
+                    placeholder="0x..." />
+            </div>
+            <div class="router-field">
+                <label>RPC 节点地址</label>
+                <input type="text" id="rpcUrl"
+                    value="https://xlayerrpc.okx.com"
+                    placeholder="https://..." />
+            </div>
+            <div class="router-field">
+                <label>Chain ID</label>
+                <input type="text" id="chainId" value="196" placeholder="196" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Swap 输入 ===== -->
+<div class="swap-box">
+    <div class="swap-box-header">
+        <span class="label">支出</span>
+        <span class="balance-display" id="privateKeyResult" title="点击刷新余额">余额: --</span>
+    </div>
+    <div class="token-row">
+        <div class="token-select-wrap">
+            <select id="tokeninAddress">
+                <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
+                <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
+                <option value="custom">其他</option>
+            </select>
+        </div>
+        <input type="number" class="amount-input" id="from_amount" placeholder="0.0" min="0" />
+    </div>
+    <div class="custom-addr-row" id="customAddrRowA">
+        <input type="text" id="customAddress" placeholder="输入 From 代币合约地址 0x..." />
+    </div>
+</div>
+
+<div class="swap-toggle-row">
+    <button id="toggleButton" title="交换代币方向">⇅</button>
+</div>
+
+<div class="swap-box">
+    <div class="swap-box-header">
+        <span class="label">获取</span>
+        <span class="balance-display" id="tokeninResult" title="点击刷新余额">余额: --</span>
+    </div>
+    <div class="token-row">
+        <div class="token-select-wrap">
+            <select id="tokenOutAddress">
+                <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
+                <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
+                <option value="custom">其他</option>
+            </select>
+        </div>
+        <input type="number" class="amount-input" id="from_amount_out" placeholder="0.0" min="0" readonly />
+    </div>
+    <div class="custom-addr-row" id="customAddrRowB">
+        <input type="text" id="customBddress" placeholder="输入 To 代币合约地址 0x..." />
+    </div>
+    <!-- 滑点 -->
+    <div class="slippage-row">
+        <label>滑点</label>
+        <input type="range" id="slippageRange" value="5" min="0.1" max="99.9" step="0.1" />
+        <span class="slippage-val"><span id="slippage">5</span>%</span>
+    </div>
+    <div class="slippage-presets">
+        <button class="slippage-preset" data-val="0.5">0.5%</button>
+        <button class="slippage-preset" data-val="1">1%</button>
+        <button class="slippage-preset active" data-val="5">5%</button>
+        <button class="slippage-preset" data-val="10">10%</button>
+        <button class="slippage-preset" data-val="20">20%</button>
+    </div>
+</div>
+
+<!-- ===== 接收地址 ===== -->
+<div class="receive-row card">
+    <label>接收地址（留空则使用私钥对应钱包地址）</label>
+    <input type="text" id="reciveAddress" placeholder="0x... （可选）" />
+</div>
+
+<!-- ===== 授权 + SWAP ===== -->
+<div class="btn-row">
+    <button id="approveButton" class="btn btn-approve">授权代币</button>
+    <button id="sellButton" class="btn btn-swap">SWAP</button>
+</div>
+
+<hr class="divider">
+
+<!-- ===== 挂单参数 ===== -->
+<div class="card">
+    <div class="card-title">挂单 / 快速模式参数</div>
+
+    <div class="radio-row">
+        <label>
+            <input type="radio" name="amountOption" value="1" checked>
+            支出固定数量
+        </label>
+        <label>
+            <input type="radio" name="amountOption" value="2">
+            买入固定数量
+        </label>
+    </div>
+
+    <div class="params-grid">
+        <div class="param-field">
+            <label id="amountInLabel">支出代币数量</label>
+            <input type="text" id="amountIn" value="0.1" />
+        </div>
+        <div class="param-field">
+            <label id="amountOutMinLabel">最小获取数量</label>
+            <input type="text" id="amountOutMin" value="0" />
+        </div>
+        <div class="param-field">
+            <label>Gas 倍速</label>
+            <input type="text" id="gasMultiplier" value="1" />
+        </div>
+        <div class="param-field">
+            <label>购买笔数</label>
+            <input type="text" id="snipingCount" value="1" />
+        </div>
+        <div class="param-field">
+            <label>监控线程数</label>
+            <input type="text" id="worker" value="5" />
+        </div>
+        <div class="param-field">
+            <label id="buyintervalTimeLabel">买入间隔 (ms)</label>
+            <input type="text" id="buyintervalTime" value="200" />
+        </div>
+    </div>
+</div>
+
+<!-- ===== 快速模式 + 挂单模式 ===== -->
+<div class="btn-row">
+    <button id="immediateBuyButton" class="btn btn-fast">⚡ 快速模式</button>
+    <button id="buyButton" class="btn btn-order">📋 挂单模式</button>
+    <button id="stopButton" class="btn btn-stop">■ 停止</button>
+</div>
+
+<!-- ===== 日志 ===== -->
+<div id="log"></div>
+
+<!-- ===== Web3 ===== -->
+<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+
+<script>
+/* ============================================================
+   OKB DEX Sniper — 主逻辑
+   ============================================================ */
+
+// ---- 路由器 ABI（最小集合）----
+const ROUTER_ABI = [
+    {
+        "inputs": [
+            {"internalType": "uint256","name": "amountIn","type": "uint256"},
+            {"internalType": "uint256","name": "amountOutMin","type": "uint256"},
+            {"internalType": "address[]","name": "path","type": "address[]"},
+            {"internalType": "address","name": "to","type": "address"},
+            {"internalType": "uint256","name": "deadline","type": "uint256"}
+        ],
+        "name": "swapExactTokensForTokensSupportingFeeOnTransferTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256","name": "amountIn","type": "uint256"},
+            {"internalType": "address[]","name": "path","type": "address[]"}
+        ],
+        "name": "getAmountsOut",
+        "outputs": [
+            {"internalType": "uint256[]","name": "amounts","type": "uint256[]"}
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
+// ERC20 ABI（approve + balanceOf）
+const ERC20_ABI = [
+    {
+        "inputs": [
+            {"internalType": "address","name": "spender","type": "address"},
+            {"internalType": "uint256","name": "amount","type": "uint256"}
+        ],
+        "name": "approve",
+        "outputs": [{"internalType": "bool","name": "","type": "bool"}],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{"internalType": "address","name": "account","type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{"internalType": "uint8","name": "","type": "uint8"}],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
+// ---- 本地缓存键 ----
+const CACHE_KEYS = [
+    'privateKeyD','tokeninAddress','customAddress','tokenOutAddress','customBddress',
+    'reciveAddress','amountIn','amountOutMin','gasMultiplier','snipingCount',
+    'buyintervalTime','worker','routerContractAddress','rpcUrl','chainId'
+];
+
+// ---- 状态 ----
+let workers = [];
+let isRunning = false;
+let web3 = null;
+
+// ---- 工具函数 ----
+function log(msg, type = 'info') {
+    const el = document.getElementById('log');
+    const time = new Date().toLocaleTimeString('zh-CN', {hour12: false});
+    const line = document.createElement('div');
+    line.className = `log-${type}`;
+    line.innerHTML = `<span class="log-time">${time}</span>${msg}`;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+}
+
+function setStatus(state, text) {
+    const badge = document.getElementById('statusBadge');
+    badge.className = `status-badge ${state}`;
+    badge.innerHTML = `<span class="status-dot"></span>${text}`;
+}
+
+function getTokeninAddress() {
+    const sel = document.getElementById('tokeninAddress').value;
+    return sel === 'custom' ? document.getElementById('customAddress').value.trim() : sel;
+}
+
+function getTokenOutAddress() {
+    const sel = document.getElementById('tokenOutAddress').value;
+    return sel === 'custom' ? document.getElementById('customBddress').value.trim() : sel;
+}
+
+function getRpcUrl() {
+    return document.getElementById('rpcUrl').value.trim() || 'https://xlayerrpc.okx.com';
+}
+
+function getRouterAddress() {
+    return document.getElementById('routerContractAddress').value.trim();
+}
+
+function initWeb3() {
+    const rpc = getRpcUrl();
+    web3 = new Web3(new Web3.providers.HttpProvider(rpc));
+    return web3;
+}
+
+function getPrivateKeys() {
+    return document.getElementById('privateKeyD').value
+        .split('\n')
+        .map(k => k.trim())
+        .filter(k => k.length > 10);
+}
+
+function parseAmount(val, decimals = 18) {
+    try {
+        const n = parseFloat(val);
+        if (isNaN(n) || n <= 0) return null;
+        return BigInt(Math.floor(n * 10 ** decimals)).toString();
+    } catch { return null; }
+}
+
+// ---- 缓存 ----
+function loadCache() {
+    CACHE_KEYS.forEach(key => {
+        const el = document.getElementById(key);
+        if (el) {
+            const val = localStorage.getItem('okb_' + key);
+            if (val !== null) el.value = val;
+            el.addEventListener('input', () => localStorage.setItem('okb_' + key, el.value));
+        }
+    });
+}
+
+// ---- 路由折叠 ----
+document.getElementById('routerHeader').addEventListener('click', function() {
+    this.classList.toggle('open');
+    document.getElementById('routerBody').classList.toggle('collapsed');
+});
+
+// ---- 路由预设 ----
+const ROUTER_PRESETS = {
+    okx: {
+        router: '0x3A0a2A9B2e3D0e0e0e0e0e0e0e0e0e0e0e0e0e0e',
+        rpc: 'https://xlayerrpc.okx.com',
+        chain: '196'
+    }
+};
+
+document.querySelectorAll('.router-preset').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.router-preset').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const preset = this.dataset.preset;
+        if (preset !== 'custom' && ROUTER_PRESETS[preset]) {
+            const p = ROUTER_PRESETS[preset];
+            document.getElementById('routerContractAddress').value = p.router;
+            document.getElementById('rpcUrl').value = p.rpc;
+            document.getElementById('chainId').value = p.chain;
+            log(`已加载预设路由: ${preset.toUpperCase()}`, 'info');
+        } else {
+            log('请手动填写自定义路由配置', 'warn');
+        }
+    });
+});
+
+// ---- 代币选择：显示/隐藏自定义地址 ----
+document.getElementById('tokeninAddress').addEventListener('change', function() {
+    const row = document.getElementById('customAddrRowA');
+    row.classList.toggle('show', this.value === 'custom');
+});
+document.getElementById('tokenOutAddress').addEventListener('change', function() {
+    const row = document.getElementById('customAddrRowB');
+    row.classList.toggle('show', this.value === 'custom');
+});
+
+// ---- 切换按钮 ----
+document.getElementById('toggleButton').addEventListener('click', function() {
+    const selA = document.getElementById('tokeninAddress');
+    const selB = document.getElementById('tokenOutAddress');
+    const amtA = document.getElementById('from_amount');
+    const amtB = document.getElementById('from_amount_out');
+    const custA = document.getElementById('customAddress');
+    const custB = document.getElementById('customBddress');
+
+    // 交换选择值
+    const tmpVal = selA.value;
+    selA.value = selB.value;
+    selB.value = tmpVal;
+
+    // 交换自定义地址
+    const tmpCust = custA.value;
+    custA.value = custB.value;
+    custB.value = tmpCust;
+
+    // 交换金额
+    const tmpAmt = amtA.value;
+    amtA.value = amtB.value;
+    amtB.value = tmpAmt;
+
+    // 更新自定义地址显示
+    document.getElementById('customAddrRowA').classList.toggle('show', selA.value === 'custom');
+    document.getElementById('customAddrRowB').classList.toggle('show', selB.value === 'custom');
+
+    log('已交换代币方向', 'info');
+});
+
+// ---- 滑点控制 ----
+const slippageRange = document.getElementById('slippageRange');
+const slippageDisplay = document.getElementById('slippage');
+
+slippageRange.addEventListener('input', function() {
+    slippageDisplay.textContent = this.value;
+    document.querySelectorAll('.slippage-preset').forEach(b => {
+        b.classList.toggle('active', parseFloat(b.dataset.val) === parseFloat(this.value));
+    });
+});
+
+document.querySelectorAll('.slippage-preset').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const val = this.dataset.val;
+        slippageRange.value = val;
+        slippageDisplay.textContent = val;
+        document.querySelectorAll('.slippage-preset').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// ---- 单选模式切换标签 ----
+document.querySelectorAll('input[name="amountOption"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const isFixed = this.value === '1';
+        document.getElementById('amountInLabel').textContent = isFixed ? '支出代币数量' : '目标买入数量';
+        document.getElementById('buyintervalTimeLabel').textContent = isFixed ? '买入间隔 (ms)' : '卖出间隔 (ms)';
+    });
+});
+
+// ---- 授权按钮 ----
+document.getElementById('approveButton').addEventListener('click', async function() {
+    const keys = getPrivateKeys();
+    if (!keys.length) { log('请先输入私钥', 'error'); return; }
+
+    const tokenIn = getTokeninAddress();
+    if (!tokenIn || !tokenIn.startsWith('0x')) { log('请选择或输入有效的支出代币地址', 'error'); return; }
+
+    const routerAddr = getRouterAddress();
+    if (!routerAddr || !routerAddr.startsWith('0x')) { log('请填写有效的 Router 合约地址', 'error'); return; }
+
+    this.disabled = true;
+    setStatus('running', '授权中...');
+    log(`开始授权，共 ${keys.length} 个钱包`, 'info');
+
+    try {
+        const w3 = initWeb3();
+        const MAX_UINT256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+
+        for (let i = 0; i < keys.length; i++) {
+            const pk = keys[i].startsWith('0x') ? keys[i] : '0x' + keys[i];
+            try {
+                const account = w3.eth.accounts.privateKeyToAccount(pk);
+                const tokenContract = new w3.eth.Contract(ERC20_ABI, tokenIn);
+
+                const gasPrice = await w3.eth.getGasPrice();
+                const adjustedGas = BigInt(gasPrice) * BigInt(Math.round(parseFloat(document.getElementById('gasMultiplier').value || '1') * 100)) / 100n;
+
+                const txData = tokenContract.methods.approve(routerAddr, MAX_UINT256).encodeABI();
+                const gasEstimate = await tokenContract.methods.approve(routerAddr, MAX_UINT256).estimateGas({ from: account.address });
+
+                const tx = {
+                    from: account.address,
+                    to: tokenIn,
+                    gas: Math.ceil(Number(gasEstimate) * 1.2),
+                    gasPrice: adjustedGas.toString(),
+                    data: txData,
+                    chainId: parseInt(document.getElementById('chainId').value || '196')
+                };
+
+                const signed = await w3.eth.accounts.signTransaction(tx, pk);
+                const receipt = await w3.eth.sendSignedTransaction(signed.rawTransaction);
+                log(`✓ 钱包 ${i+1} 授权成功: ${receipt.transactionHash.slice(0,16)}...`, 'success');
+            } catch (err) {
+                log(`✗ 钱包 ${i+1} 授权失败: ${err.message}`, 'error');
+            }
+        }
+    } catch (err) {
+        log(`初始化失败: ${err.message}`, 'error');
+    }
+
+    this.disabled = false;
+    setStatus('idle', '待机');
+});
+
+// ---- SWAP 按钮 ----
+document.getElementById('sellButton').addEventListener('click', async function() {
+    const keys = getPrivateKeys();
+    if (!keys.length) { log('请先输入私钥', 'error'); return; }
+
+    const tokenIn = getTokeninAddress();
+    const tokenOut = getTokenOutAddress();
+    if (!tokenIn || !tokenOut) { log('请选择有效的代币地址', 'error'); return; }
+
+    const routerAddr = getRouterAddress();
+    if (!routerAddr || !routerAddr.startsWith('0x')) { log('请填写有效的 Router 合约地址', 'error'); return; }
+
+    const amountInRaw = document.getElementById('from_amount').value;
+    if (!amountInRaw || parseFloat(amountInRaw) <= 0) { log('请输入支出数量', 'error'); return; }
+
+    this.disabled = true;
+    setStatus('running', 'SWAP 中...');
+    log(`开始 SWAP，共 ${keys.length} 个钱包`, 'info');
+
+    try {
+        const w3 = initWeb3();
+        const slippage = parseFloat(slippageRange.value) / 100;
+        const deadline = Math.floor(Date.now() / 1000) + 300;
+
+        for (let i = 0; i < keys.length; i++) {
+            const pk = keys[i].startsWith('0x') ? keys[i] : '0x' + keys[i];
+            try {
+                const account = w3.eth.accounts.privateKeyToAccount(pk);
+                const toAddr = document.getElementById('reciveAddress').value.trim() || account.address;
+
+                // 获取代币精度
+                const tokenInContract = new w3.eth.Contract(ERC20_ABI, tokenIn);
+                const decimals = await tokenInContract.methods.decimals().call();
+                const amountIn = parseAmount(amountInRaw, Number(decimals));
+                if (!amountIn) { log(`钱包 ${i+1}: 数量解析失败`, 'error'); continue; }
+
+                // 获取预期输出
+                const routerContract = new w3.eth.Contract(ROUTER_ABI, routerAddr);
+                const amounts = await routerContract.methods.getAmountsOut(amountIn, [tokenIn, tokenOut]).call();
+                const amountOutMin = BigInt(amounts[1]) * BigInt(Math.floor((1 - slippage) * 10000)) / 10000n;
+
+                const gasPrice = await w3.eth.getGasPrice();
+                const mult = parseFloat(document.getElementById('gasMultiplier').value || '1');
+                const adjustedGas = BigInt(gasPrice) * BigInt(Math.round(mult * 100)) / 100n;
+
+                const txData = routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn, amountOutMin.toString(), [tokenIn, tokenOut], toAddr, deadline
+                ).encodeABI();
+
+                const gasEstimate = await routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn, amountOutMin.toString(), [tokenIn, tokenOut], toAddr, deadline
+                ).estimateGas({ from: account.address });
+
+                const tx = {
+                    from: account.address,
+                    to: routerAddr,
+                    gas: Math.ceil(Number(gasEstimate) * 1.2),
+                    gasPrice: adjustedGas.toString(),
+                    data: txData,
+                    chainId: parseInt(document.getElementById('chainId').value || '196')
+                };
+
+                const signed = await w3.eth.accounts.signTransaction(tx, pk);
+                const receipt = await w3.eth.sendSignedTransaction(signed.rawTransaction);
+                log(`✓ 钱包 ${i+1} SWAP 成功: ${receipt.transactionHash.slice(0,16)}...`, 'success');
+            } catch (err) {
+                log(`✗ 钱包 ${i+1} SWAP 失败: ${err.message}`, 'error');
+            }
+        }
+    } catch (err) {
+        log(`初始化失败: ${err.message}`, 'error');
+    }
+
+    this.disabled = false;
+    setStatus('idle', '待机');
+});
+
+// ---- 快速模式（立即买入）----
+document.getElementById('immediateBuyButton').addEventListener('click', async function() {
+    if (isRunning) { log('已有任务在运行，请先停止', 'warn'); return; }
+
+    const keys = getPrivateKeys();
+    if (!keys.length) { log('请先输入私钥', 'error'); return; }
+
+    const tokenIn = getTokeninAddress();
+    const tokenOut = getTokenOutAddress();
+    if (!tokenIn || !tokenOut) { log('请选择有效的代币地址', 'error'); return; }
+
+    const routerAddr = getRouterAddress();
+    if (!routerAddr || !routerAddr.startsWith('0x')) { log('请填写有效的 Router 合约地址', 'error'); return; }
+
+    isRunning = true;
+    setStatus('running', '快速模式运行中');
+    document.getElementById('stopButton').style.display = 'flex';
+    this.disabled = true;
+    document.getElementById('buyButton').disabled = true;
+
+    const amountInVal = document.getElementById('amountIn').value;
+    const amountOutMinVal = document.getElementById('amountOutMin').value;
+    const snipingCount = parseInt(document.getElementById('snipingCount').value) || 1;
+    const intervalMs = parseInt(document.getElementById('buyintervalTime').value) || 200;
+    const gasMultiplier = parseFloat(document.getElementById('gasMultiplier').value) || 1;
+    const workerCount = parseInt(document.getElementById('worker').value) || 5;
+
+    log(`快速模式启动: ${snipingCount} 笔 × ${keys.length} 钱包，间隔 ${intervalMs}ms`, 'success');
+    document.getElementById('workerCount').textContent = `线程: ${workerCount}`;
+
+    try {
+        const w3 = initWeb3();
+        const deadline = Math.floor(Date.now() / 1000) + 300;
+        const rpcUrl = getRpcUrl();
+
+        // 启动 Worker 检测
+        stopWorkers();
+        for (let i = 0; i < workerCount && isRunning; i++) {
+            const workerBlob = new Blob([buildWorkerCode()], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(workerBlob);
+            const w = new Worker(workerUrl);
+
+            w.postMessage({
+                tokeninAddress: tokenIn,
+                tokenOutAddress: tokenOut,
+                routerContractAddress: routerAddr,
+                abi: ROUTER_ABI,
+                amountIn: parseAmount(amountInVal) || '100000000000000000',
+                to: keys[0].startsWith('0x') ? w3.eth.accounts.privateKeyToAccount(keys[0]).address
+                    : w3.eth.accounts.privateKeyToAccount('0x' + keys[0]).address,
+                deadline,
+                rpcUrl
+            });
+
+            w.onmessage = async (e) => {
+                if (!isRunning) return;
+                if (e.data.type === 'estimateGas' && e.data.message.gasLimit > 0) {
+                    log(`Worker ${i+1} 检测到可买入信号，开始执行...`, 'success');
+                    await executeBuy(w3, keys, tokenIn, tokenOut, routerAddr, amountInVal,
+                        amountOutMinVal, gasMultiplier, snipingCount, intervalMs, deadline);
+                }
+            };
+
+            workers.push(w);
+            // 轮询
+            const poll = setInterval(() => {
+                if (!isRunning) { clearInterval(poll); return; }
+                w.postMessage({ command: 'estimateGas' });
+            }, intervalMs);
+        }
+    } catch (err) {
+        log(`快速模式启动失败: ${err.message}`, 'error');
+        stopAll();
+    }
+});
+
+// ---- 挂单模式 ----
+document.getElementById('buyButton').addEventListener('click', async function() {
+    if (isRunning) { log('已有任务在运行，请先停止', 'warn'); return; }
+
+    const keys = getPrivateKeys();
+    if (!keys.length) { log('请先输入私钥', 'error'); return; }
+
+    const tokenIn = getTokeninAddress();
+    const tokenOut = getTokenOutAddress();
+    if (!tokenIn || !tokenOut) { log('请选择有效的代币地址', 'error'); return; }
+
+    const routerAddr = getRouterAddress();
+    if (!routerAddr || !routerAddr.startsWith('0x')) { log('请填写有效的 Router 合约地址', 'error'); return; }
+
+    isRunning = true;
+    setStatus('running', '挂单监控中');
+    document.getElementById('stopButton').style.display = 'flex';
+    this.disabled = true;
+    document.getElementById('immediateBuyButton').disabled = true;
+
+    const amountInVal = document.getElementById('amountIn').value;
+    const amountOutMinVal = document.getElementById('amountOutMin').value;
+    const snipingCount = parseInt(document.getElementById('snipingCount').value) || 1;
+    const intervalMs = parseInt(document.getElementById('buyintervalTime').value) || 200;
+    const gasMultiplier = parseFloat(document.getElementById('gasMultiplier').value) || 1;
+    const workerCount = parseInt(document.getElementById('worker').value) || 5;
+
+    log(`挂单模式启动: 监控 ${workerCount} 线程，间隔 ${intervalMs}ms`, 'success');
+    document.getElementById('workerCount').textContent = `线程: ${workerCount}`;
+
+    try {
+        const w3 = initWeb3();
+        const deadline = Math.floor(Date.now() / 1000) + 86400;
+        const rpcUrl = getRpcUrl();
+
+        stopWorkers();
+        for (let i = 0; i < workerCount; i++) {
+            const workerBlob = new Blob([buildWorkerCode()], { type: 'application/javascript' });
+            const workerUrl = URL.createObjectURL(workerBlob);
+            const w = new Worker(workerUrl);
+
+            const accountAddr = keys[0].startsWith('0x')
+                ? w3.eth.accounts.privateKeyToAccount(keys[0]).address
+                : w3.eth.accounts.privateKeyToAccount('0x' + keys[0]).address;
+
+            w.postMessage({
+                tokeninAddress: tokenIn,
+                tokenOutAddress: tokenOut,
+                routerContractAddress: routerAddr,
+                abi: ROUTER_ABI,
+                amountIn: parseAmount(amountInVal) || '100000000000000000',
+                to: accountAddr,
+                deadline,
+                rpcUrl
+            });
+
+            let triggered = false;
+            w.onmessage = async (e) => {
+                if (!isRunning || triggered) return;
+                if (e.data.type === 'estimateGas' && e.data.message.gasLimit > 0) {
+                    triggered = true;
+                    log(`挂单触发！Worker ${i+1} 检测到流动性，开始买入...`, 'success');
+                    await executeBuy(w3, keys, tokenIn, tokenOut, routerAddr, amountInVal,
+                        amountOutMinVal, gasMultiplier, snipingCount, intervalMs, deadline);
+                    stopAll();
+                }
+            };
+
+            workers.push(w);
+            const poll = setInterval(() => {
+                if (!isRunning) { clearInterval(poll); return; }
+                w.postMessage({ command: 'ethCall' });
+            }, intervalMs);
+        }
+    } catch (err) {
+        log(`挂单模式启动失败: ${err.message}`, 'error');
+        stopAll();
+    }
+});
+
+// ---- 停止按钮 ----
+document.getElementById('stopButton').addEventListener('click', function() {
+    stopAll();
+    log('已手动停止所有任务', 'warn');
+});
+
+// ---- 停止所有 Worker ----
+function stopWorkers() {
+    workers.forEach(w => { try { w.terminate(); } catch {} });
+    workers = [];
+}
+
+function stopAll() {
+    isRunning = false;
+    stopWorkers();
+    setStatus('idle', '待机');
+    document.getElementById('stopButton').style.display = 'none';
+    document.getElementById('immediateBuyButton').disabled = false;
+    document.getElementById('buyButton').disabled = false;
+    document.getElementById('workerCount').textContent = '线程: 0';
+}
+
+// ---- 执行买入 ----
+async function executeBuy(w3, keys, tokenIn, tokenOut, routerAddr, amountInVal, amountOutMinVal, gasMultiplier, count, intervalMs, deadline) {
+    for (let c = 0; c < count; c++) {
+        for (let i = 0; i < keys.length; i++) {
+            if (!isRunning) return;
+            const pk = keys[i].startsWith('0x') ? keys[i] : '0x' + keys[i];
+            try {
+                const account = w3.eth.accounts.privateKeyToAccount(pk);
+                const toAddr = document.getElementById('reciveAddress').value.trim() || account.address;
+
+                const tokenInContract = new w3.eth.Contract(ERC20_ABI, tokenIn);
+                const decimals = await tokenInContract.methods.decimals().call();
+                const amountIn = parseAmount(amountInVal, Number(decimals));
+                if (!amountIn) continue;
+
+                const amountOutMin = parseAmount(amountOutMinVal, 18) || '0';
+
+                const gasPrice = await w3.eth.getGasPrice();
+                const adjustedGas = BigInt(gasPrice) * BigInt(Math.round(gasMultiplier * 100)) / 100n;
+
+                const routerContract = new w3.eth.Contract(ROUTER_ABI, routerAddr);
+                const txData = routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn, amountOutMin, [tokenIn, tokenOut], toAddr, deadline
+                ).encodeABI();
+
+                const gasEstimate = await routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                    amountIn, amountOutMin, [tokenIn, tokenOut], toAddr, deadline
+                ).estimateGas({ from: account.address });
+
+                const tx = {
+                    from: account.address,
+                    to: routerAddr,
+                    gas: Math.ceil(Number(gasEstimate) * 1.2),
+                    gasPrice: adjustedGas.toString(),
+                    data: txData,
+                    chainId: parseInt(document.getElementById('chainId').value || '196')
+                };
+
+                const signed = await w3.eth.accounts.signTransaction(tx, pk);
+                const receipt = await w3.eth.sendSignedTransaction(signed.rawTransaction);
+                log(`✓ [${c+1}/${count}] 钱包 ${i+1} 买入成功: ${receipt.transactionHash.slice(0,16)}...`, 'success');
+            } catch (err) {
+                log(`✗ [${c+1}/${count}] 钱包 ${i+1} 失败: ${err.message}`, 'error');
+            }
+        }
+        if (c < count - 1) await sleep(intervalMs);
+    }
+}
+
+// ---- 构建 Worker 代码（内联，支持自定义 RPC）----
+function buildWorkerCode() {
+    return `
+importScripts('https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js');
+
+let web3, routerContract, path, to, amountIn, deadline, initialized = false;
+
+self.onmessage = function(e) {
+    if (!initialized) {
+        const d = e.data;
+        to = d.to;
+        amountIn = d.amountIn;
+        path = [d.tokeninAddress, d.tokenOutAddress];
+        deadline = d.deadline;
+        web3 = new Web3(d.rpcUrl || 'https://xlayerrpc.okx.com');
+        routerContract = new web3.eth.Contract(d.abi, d.routerContractAddress);
+        initialized = true;
+        self.onmessage = handleCommand;
+        return;
+    }
+    handleCommand(e);
+};
+
+async function handleCommand(e) {
+    const { command } = e.data;
+    if (command === 'estimateGas') await tryEstimateGas();
+    else if (command === 'ethCall') await tryEthCall();
+}
+
+async function tryEstimateGas() {
+    try {
+        const gasLimit = await Promise.race([
+            routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                amountIn, 0, path, to, deadline
+            ).estimateGas({ from: to }),
+            new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
+        ]);
+        postMessage({ type: 'estimateGas', message: { gasLimit: Number(gasLimit) } });
+    } catch {
+        postMessage({ type: 'estimateGas', message: { gasLimit: 0 } });
+    }
+}
+
+async function tryEthCall() {
+    try {
+        const amounts = await Promise.race([
+            routerContract.methods.getAmountsOut(amountIn, path).call({ from: to }),
+            new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 3000))
+        ]);
+        const out = amounts && amounts[1] ? Number(amounts[1]) : 0;
+        postMessage({ type: 'estimateGas', message: { gasLimit: out > 0 ? 300000 : 0 } });
+    } catch {
+        postMessage({ type: 'estimateGas', message: { gasLimit: 0 } });
+    }
+}
+`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ---- 初始化 ----
+window.addEventListener('load', () => {
+    loadCache();
+    log('OKB DEX Sniper 已就绪，请配置参数后操作', 'info');
+});
+</script>
+</body>
 </html>
