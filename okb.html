@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PotatoSwap Sniper</title>
+<style>
+:root{
+  --bg:#090c11;
+  --nav:#0d1117;
+  --s1:#111820;
+  --s2:#161f2c;
+  --s3:#1c2840;
+  --border:#1e2d42;
+  --border2:#263650;
+  --accent:#00d4a0;
+  --accent-d:rgba(0,212,160,.1);
+  --accent-g:rgba(0,212,160,.22);
+  --warn:#f5a623;
+  --warn-d:rgba(245,166,35,.1);
+  --danger:#e84040;
+  --danger-d:rgba(232,64,64,.1);
+  --blue:#3d8ef0;
+  --blue-d:rgba(61,142,240,.1);
+  --purple:#8b5cf6;
+  --purple-d:rgba(139,92,246,.1);
+  --text:#c8d6e8;
+  --text2:#6b84a0;
+  --text3:#334d66;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --sans:'DM Sans','PingFang SC','Microsoft YaHei',sans-serif;
+  --nav-w:220px;
+  --nav-w-c:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--nav-w);flex-shrink:0;
+  background:var(--nav);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;
+  transition:width .22s cubic-bezier(.4,0,.2,1);
+  position:relative;z-index:50;overflow:hidden;
+}
+.sidebar.collapsed{width:var(--nav-w-c)}
+
+.sb-top{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;min-height:60px}
+.sb-logo{width:34px;height:34px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:900;color:#090c11;flex-shrink:0;letter-spacing:-.04em}
+.sb-brand{overflow:hidden;white-space:nowrap}
+.sb-brand-name{font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.sb-brand-name em{color:var(--accent);font-style:normal}
+.sb-brand-ver{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;margin-top:2px}
+
+.sb-collapse{
+  position:absolute;top:14px;right:-1px;
+  width:20px;height:20px;border-radius:4px 0 0 4px;
+  background:var(--s2);border:1px solid var(--border);border-right:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);font-size:10px;
+  transition:all .15s;
+}
+.sb-collapse:hover{color:var(--accent);background:var(--accent-d)}
+
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;overflow-x:hidden}
+.sb-nav::-webkit-scrollbar{width:3px}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--border)}
+
+.nav-section{margin-bottom:4px}
+.nav-section-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:8px 8px 4px;white-space:nowrap;overflow:hidden}
+.sidebar.collapsed .nav-section-label{opacity:0}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:6px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;overflow:hidden;
+  position:relative;margin-bottom:2px;
+  border:1px solid transparent;
+}
+.nav-item:hover{background:var(--s2);color:var(--text)}
+.nav-item.active{background:var(--accent-d);border-color:rgba(0,212,160,.2);color:var(--accent)}
+.nav-item.active .nav-icon{color:var(--accent)}
+.nav-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px}
+.nav-label{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.nav-badge{
+  margin-left:auto;font-size:9px;font-family:var(--mono);font-weight:700;
+  padding:1px 5px;border-radius:3px;flex-shrink:0;
+}
+.nav-badge.green{background:var(--accent-d);color:var(--accent);border:1px solid rgba(0,212,160,.25)}
+.nav-badge.warn{background:var(--warn-d);color:var(--warn);border:1px solid rgba(245,166,35,.25)}
+.nav-badge.run{background:var(--danger-d);color:var(--danger);border:1px solid rgba(232,64,64,.25);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.sb-bottom{padding:10px 8px 14px;border-top:1px solid var(--border)}
+.status-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;background:var(--s2);border:1px solid var(--border)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.status-row.running .sdot{background:var(--accent);animation:blink 1s infinite}
+.status-row.error .sdot{background:var(--danger)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.status-text{font-size:11px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.status-row.running .status-text{color:var(--accent)}
+.status-row.error .status-text{color:var(--danger)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+
+.topbar{
+  height:52px;background:var(--nav);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;flex-shrink:0;
+}
+.tb-left{display:flex;align-items:center;gap:8px}
+.tb-page-title{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.tb-page-sub{font-size:11px;color:var(--text2);margin-left:4px}
+.tb-right{display:flex;align-items:center;gap:8px}
+.chip{font-size:10px;font-weight:700;font-family:var(--mono);padding:3px 8px;border-radius:3px;letter-spacing:.05em}
+.chip-green{background:var(--accent-d);color:var(--accent);border:1px solid rgba(0,212,160,.3)}
+.chip-blue{background:var(--blue-d);color:var(--blue);border:1px solid rgba(61,142,240,.3)}
+.thr-chip{background:var(--s2);border:1px solid var(--border);color:var(--text2)}
+
+.content{flex:1;overflow-y:auto;padding:20px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ── PAGE ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--border)}
+.card-head-icon{width:22px;height:22px;border-radius:5px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.card-head-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2)}
+.card-head-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.card-body{padding:16px}
+
+/* ── FORM ── */
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:5px}
+.field-hint{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px}
+input[type=text],input[type=number],select,textarea{
+  background:var(--s2);border:1px solid var(--border);border-radius:5px;
+  color:var(--text);padding:8px 11px;font-size:12px;font-family:var(--sans);
+  outline:none;transition:border-color .18s;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--s1)}
+.mono-input{font-family:var(--mono);font-size:11px}
+textarea.pk-area{min-height:80px;resize:vertical;font-family:var(--mono);font-size:11px;line-height:1.8}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.span2{grid-column:1/-1}
+
+/* ── PRESET PILLS ── */
+.preset-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.preset-btn{padding:4px 12px;border-radius:4px;background:var(--s2);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .15s;font-weight:700}
+.preset-btn:hover,.preset-btn.active{background:var(--accent-d);border-color:rgba(0,212,160,.4);color:var(--accent)}
+
+/* ── SWAP PANEL ── */
+.swap-panel{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.swap-box{padding:16px}
+.swap-box+.swap-box{border-top:1px solid var(--border)}
+.swap-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.swap-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2)}
+.bal-btn{font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--mono);padding:2px 8px;border-radius:3px;border:1px solid transparent;transition:all .15s}
+.bal-btn:hover{color:var(--accent);border-color:rgba(0,212,160,.3)}
+.bal-btn.loaded{color:var(--accent)}
+.token-row{display:flex;align-items:center;gap:10px}
+.tok-sel{position:relative;flex-shrink:0}
+.tok-sel select{width:108px;padding:8px 28px 8px 10px;appearance:none;cursor:pointer;font-weight:700;font-size:12px}
+.tok-sel::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none;font-size:10px}
+.amt-big{flex:1;text-align:right;font-size:26px;font-weight:800;font-family:var(--mono);background:transparent;border:none;color:var(--text);padding:4px 0;outline:none;min-width:0}
+.amt-big::placeholder{color:var(--text3);font-size:20px}
+.custom-addr{margin-top:8px;display:none}
+.custom-addr.show{display:block}
+
+.swap-mid{display:flex;justify-content:center;padding:4px;background:var(--s1)}
+#toggleButton{width:32px;height:32px;border-radius:50%;background:var(--s2);border:2px solid var(--border);color:var(--accent);font-size:16px;cursor:pointer;transition:all .22s;display:flex;align-items:center;justify-content:center}
+#toggleButton:hover{border-color:var(--accent);background:var(--accent-d);transform:rotate(180deg)}
+
+.slip-bar{padding:12px 16px;border-top:1px solid var(--border);background:var(--s2)}
+.slip-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.slip-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);white-space:nowrap}
+input[type=range]{flex:1;padding:0;border:none;background:transparent;accent-color:var(--accent);cursor:pointer;height:4px}
+input[type=range]:focus{border:none;outline:none}
+.slip-val{font-size:13px;font-weight:800;color:var(--accent);font-family:var(--mono);min-width:44px;text-align:right}
+.slip-presets{display:flex;gap:4px}
+.slip-pre{flex:1;padding:4px 0;border-radius:3px;background:var(--s3);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:var(--mono);cursor:pointer;transition:all .15s;text-align:center;font-weight:600}
+.slip-pre:hover,.slip-pre.active{background:var(--accent-d);border-color:rgba(0,212,160,.4);color:var(--accent)}
+.recv-row{padding:10px 16px;border-top:1px solid var(--border)}
+
+/* ── BUTTONS ── */
+.btn{padding:11px 0;border:1px solid;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:7px;font-family:var(--sans);width:100%}
+.btn:disabled{opacity:.38;cursor:not-allowed}
+.btn-approve{background:var(--blue-d);border-color:rgba(61,142,240,.4);color:var(--blue)}
+.btn-approve:hover:not(:disabled){background:var(--blue);color:#090c11;border-color:var(--blue)}
+.btn-swap{background:var(--accent-d);border-color:rgba(0,212,160,.4);color:var(--accent)}
+.btn-swap:hover:not(:disabled){background:var(--accent);color:#090c11;border-color:var(--accent)}
+.btn-fast{background:var(--accent-d);border-color:rgba(0,212,160,.4);color:var(--accent)}
+.btn-fast:hover:not(:disabled){background:var(--accent);color:#090c11;border-color:var(--accent)}
+.btn-order{background:var(--warn-d);border-color:rgba(245,166,35,.4);color:var(--warn)}
+.btn-order:hover:not(:disabled){background:var(--warn);color:#090c11;border-color:var(--warn)}
+.btn-stop{background:var(--danger-d);border-color:rgba(232,64,64,.4);color:var(--danger)}
+.btn-stop:hover:not(:disabled){background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--text2)}
+.btn-ghost:hover:not(:disabled){border-color:var(--border2);color:var(--text)}
+.btn-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.btn-row1{margin-bottom:12px}
+
+/* ── RADIO ── */
+.radio-group{display:flex;gap:16px;margin-bottom:12px}
+.radio-opt{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
+.radio-opt input[type=radio]{accent-color:var(--accent)}
+.radio-opt:has(input:checked){color:var(--accent)}
+
+/* ── INFO ROWS ── */
+.info-grid{display:flex;flex-direction:column;gap:2px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-lbl{font-size:11px;color:var(--text2)}
+.info-val{font-size:11px;font-family:var(--mono);font-weight:600;color:var(--text)}
+.info-val.green{color:var(--accent)}
+.info-val.warn{color:var(--warn)}
+.info-val.danger{color:var(--danger)}
+
+/* ── LOG ── */
+.log-wrap{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.log-head{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)}
+.log-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text2)}
+.log-actions{display:flex;gap:6px}
+.log-btn{font-size:10px;color:var(--text3);cursor:pointer;padding:2px 7px;border-radius:3px;border:1px solid transparent;background:none;transition:all .15s;font-family:var(--sans)}
+.log-btn:hover{color:var(--danger);border-color:rgba(232,64,64,.3)}
+#log{padding:10px 14px;height:220px;overflow-y:auto;font-size:11px;font-family:var(--mono);line-height:1.9}
+#log:empty::before{content:'> 等待操作...';color:var(--text3)}
+.log-info{color:var(--text2)}
+.log-success{color:var(--accent)}
+.log-warn{color:var(--warn)}
+.log-error{color:var(--danger)}
+.log-time{color:var(--text3);margin-right:8px}
+#log::-webkit-scrollbar{width:3px}
+#log::-webkit-scrollbar-thumb{background:var(--border)}
+
+/* ── PAGE LAYOUTS ── */
+.two-col{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.two-col-eq{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.page-title{font-size:13px;font-weight:700;letter-spacing:-.01em;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.page-title span{font-size:11px;color:var(--text2);font-weight:500}
+
+/* ── WALLET PAGE ── */
+.wallet-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:border-color .15s}
+.wallet-card:hover{border-color:var(--border2)}
+.wallet-idx{width:24px;height:24px;border-radius:5px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;font-family:var(--mono);color:var(--text2);flex-shrink:0}
+.wallet-info{flex:1;min-width:0}
+.wallet-addr{font-size:11px;font-family:var(--mono);color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wallet-bals{display:flex;gap:10px;margin-top:3px}
+.wallet-bal{font-size:10px;color:var(--text2);font-family:var(--mono)}
+.wallet-bal.loaded{color:var(--accent)}
+.wallet-status{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:3px}
+.wallet-status.ok{background:var(--accent-d);color:var(--accent);border:1px solid rgba(0,212,160,.25)}
+.wallet-status.warn{background:var(--warn-d);color:var(--warn);border:1px solid rgba(245,166,35,.25)}
+.wallet-status.none{background:var(--s2);color:var(--text3);border:1px solid var(--border)}
+.wallet-empty{text-align:center;padding:32px 0;color:var(--text3);font-size:12px}
+
+/* ── BOTTOM NAV (mobile) ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:58px;background:var(--nav);border-top:1px solid var(--border);z-index:100;justify-content:space-around;align-items:center;padding:0 4px}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:all .15s;flex:1;min-width:0}
+.bn-item:hover,.bn-item.active{background:var(--accent-d)}
+.bn-item.active .bn-icon,.bn-item.active .bn-lbl{color:var(--accent)}
+.bn-icon{font-size:18px;color:var(--text2)}
+.bn-lbl{font-size:9px;font-weight:700;color:var(--text2);letter-spacing:.03em;white-space:nowrap}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .two-col{grid-template-columns:1fr}
+  .two-col .col-side{order:-1}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .bottom-nav{display:flex}
+  .content{padding:14px 12px 72px}
+  .topbar{padding:0 14px}
+  .grid3{grid-template-columns:1fr 1fr}
+  .two-col-eq{grid-template-columns:1fr}
+  #log{height:160px}
+}
+@media(max-width:480px){
+  .grid2{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr}
+  .btn-row2{grid-template-columns:1fr}
+  .slip-presets{flex-wrap:wrap}
+  .slip-pre{flex:1 1 auto;min-width:40px}
+  .amt-big{font-size:20px}
+}
+
+/* ── MISC ── */
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+.tag{display:inline-flex;align-items:center;font-size:10px;font-family:var(--mono);font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.04em}
+.tag-green{background:var(--accent-d);color:var(--accent);border:1px solid rgba(0,212,160,.25)}
+.tag-warn{background:var(--warn-d);color:var(--warn);border:1px solid rgba(245,166,35,.25)}
+.tag-blue{background:var(--blue-d);color:var(--blue);border:1px solid rgba(61,142,240,.25)}
+.tag-purple{background:var(--purple-d);color:var(--purple);border:1px solid rgba(139,92,246,.25)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text2)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <div class="sb-logo">PS</div>
+    <div class="sb-brand">
+      <div class="sb-brand-name">Potato<em>Swap</em></div>
+      <div class="sb-brand-ver">SNIPER v2.2</div>
+    </div>
+  </div>
+  <div class="sb-collapse" id="sbCollapse" title="收起/展开">&#9664;</div>
+
+  <nav class="sb-nav">
+    <div class="nav-section">
+      <div class="nav-section-label">账户</div>
+      <div class="nav-item active" data-page="wallet">
+        <div class="nav-icon">&#128273;</div>
+        <span class="nav-label">钱包</span>
+        <span class="nav-badge green" id="walletBadge">0</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">设置</div>
+      <div class="nav-item" data-page="config">
+        <div class="nav-icon">&#9881;</div>
+        <span class="nav-label">配置</span>
+        <span class="nav-badge blue" id="configBadge">X Layer</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">交易</div>
+      <div class="nav-item" data-page="swap">
+        <div class="nav-icon">&#8644;</div>
+        <span class="nav-label">Swap</span>
+      </div>
+      <div class="nav-item" data-page="fast">
+        <div class="nav-icon">&#9889;</div>
+        <span class="nav-label">快速买入</span>
+      </div>
+      <div class="nav-item" data-page="order">
+        <div class="nav-icon">&#128203;</div>
+        <span class="nav-label">挂单模式</span>
+        <span class="nav-badge warn" id="orderBadge" style="display:none">运行中</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="status-row" id="sidebarStatus">
+      <div class="sdot"></div>
+      <span class="status-text" id="sidebarStatusText">待机</span>
+      <span class="tag tag-green" id="workerTag" style="margin-left:auto;display:none" id="workerTag">0线程</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="tb-left">
+      <span class="tb-page-title" id="topbarTitle">钱包</span>
+      <span class="tb-page-sub" id="topbarSub">管理私钥与余额</span>
+    </div>
+    <div class="tb-right">
+      <span class="chip chip-green">X Layer</span>
+      <span class="chip chip-blue" id="chainChip">Chain 196</span>
+      <span class="chip thr-chip" id="workerCount">线程: 0</span>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+
+    <!-- ═══ PAGE: 钱包 ═══ -->
+    <div class="page active" id="page-wallet">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128273;</div>
+              <span class="card-head-title">私钥配置</span>
+              <div class="card-head-right">
+                <span class="tag tag-green" id="keyCountTag">0 个钱包</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label class="field-label">私钥列表（每行一个）</label>
+                <textarea id="privateKeyD" class="pk-area" placeholder="输入私钥，每行一个...&#10;支持多钱包批量并行操作"></textarea>
+                <div class="field-hint">// 私钥仅本地运算，不会上传至任何服务器</div>
+              </div>
+              <button class="btn btn-ghost" id="refreshWalletsBtn" style="margin-top:4px">&#8635; 刷新余额</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128196;</div>
+              <span class="card-head-title">钱包列表</span>
+            </div>
+            <div class="card-body" id="walletList">
+              <div class="wallet-empty">输入私钥后自动解析</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: 配置 ═══ -->
+    <div class="page" id="page-config">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#9881;</div>
+              <span class="card-head-title">路由合约</span>
+            </div>
+            <div class="card-body">
+              <div class="preset-row">
+                <button class="preset-btn active" data-preset="potato">PotatoSwap</button>
+                <button class="preset-btn" data-preset="custom">自定义</button>
+              </div>
+              <div class="field">
+                <label class="field-label">Router 合约地址</label>
+                <input type="text" id="routerContractAddress" class="mono-input" value="0x881fB2f98c13d521009464e7D1CBf16E1b394e8E" placeholder="0x..." />
+              </div>
+              <div class="grid2">
+                <div class="field">
+                  <label class="field-label">RPC 节点（支持 CORS）</label>
+                  <input type="text" id="rpcUrl" class="mono-input" value="https://xlayer.drpc.org" placeholder="https://..." />
+                </div>
+                <div class="field">
+                  <label class="field-label">Chain ID</label>
+                  <input type="text" id="chainId" value="196" placeholder="196" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#9881;</div>
+              <span class="card-head-title">Gas 设置</span>
+            </div>
+            <div class="card-body">
+              <div class="grid2">
+                <div class="field">
+                  <label class="field-label">Gas 倍速</label>
+                  <input type="text" id="gasMultiplier" value="1" placeholder="1.0" />
+                </div>
+                <div class="field">
+                  <label class="field-label">购买笔数</label>
+                  <input type="text" id="snipingCount" value="1" placeholder="1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128202;</div>
+              <span class="card-head-title">节点状态</span>
+            </div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-row"><span class="info-lbl">协议</span><span class="info-val green">PotatoSwap</span></div>
+                <div class="info-row"><span class="info-lbl">网络</span><span class="info-val">X Layer Mainnet</span></div>
+                <div class="info-row"><span class="info-lbl">Chain ID</span><span class="info-val" id="cfgChainVal">196</span></div>
+                <div class="info-row"><span class="info-lbl">Router</span><span class="info-val" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="cfgRouterVal">0x881fB2f9...394e8E</span></div>
+                <div class="info-row"><span class="info-lbl">RPC</span><span class="info-val" style="font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="cfgRpcVal">xlayer.drpc.org</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: Swap ═══ -->
+    <div class="page" id="page-swap">
+      <div class="two-col">
+        <div>
+          <div class="swap-panel">
+            <div class="swap-box">
+              <div class="swap-top">
+                <span class="swap-lbl">支出</span>
+                <span class="bal-btn" id="privateKeyResult" title="点击刷新余额">余额: --</span>
+              </div>
+              <div class="token-row">
+                <div class="tok-sel">
+                  <select id="tokeninAddress">
+                    <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
+                    <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
+                    <option value="custom">其他</option>
+                  </select>
+                </div>
+                <input type="number" class="amt-big" id="from_amount" placeholder="0.0" min="0" />
+              </div>
+              <div class="custom-addr" id="customAddrRowA">
+                <input type="text" id="customAddress" class="mono-input" placeholder="From 代币合约地址 0x..." style="margin-top:8px" />
+              </div>
+            </div>
+
+            <div class="swap-mid">
+              <button id="toggleButton" title="交换方向">&#8645;</button>
+            </div>
+
+            <div class="swap-box">
+              <div class="swap-top">
+                <span class="swap-lbl">获取（预估）</span>
+                <span class="bal-btn" id="tokeninResult" title="点击刷新余额">余额: --</span>
+              </div>
+              <div class="token-row">
+                <div class="tok-sel">
+                  <select id="tokenOutAddress">
+                    <option value="0xe538905cf8410324e03a5a23c1c177a474d59b2b">WOKB</option>
+                    <option value="0x1E4a5963aBFD975d8c9021ce480b42188849D41d">USDT</option>
+                    <option value="custom">其他</option>
+                  </select>
+                </div>
+                <input type="number" class="amt-big" id="from_amount_out" placeholder="0.0" min="0" readonly />
+              </div>
+              <div class="custom-addr" id="customAddrRowB">
+                <input type="text" id="customBddress" class="mono-input" placeholder="To 代币合约地址 0x..." style="margin-top:8px" />
+              </div>
+            </div>
+
+            <div class="slip-bar">
+              <div class="slip-row">
+                <span class="slip-lbl">滑点</span>
+                <input type="range" id="slippageRange" value="5" min="0.1" max="99.9" step="0.1" />
+                <span class="slip-val"><span id="slippage">5</span>%</span>
+              </div>
+              <div class="slip-presets">
+                <button class="slip-pre" data-val="0.5">0.5%</button>
+                <button class="slip-pre" data-val="1">1%</button>
+                <button class="slip-pre active" data-val="5">5%</button>
+                <button class="slip-pre" data-val="10">10%</button>
+                <button class="slip-pre" data-val="20">20%</button>
+              </div>
+            </div>
+            <div class="recv-row">
+              <label class="field-label">接收地址（留空则使用私钥对应地址）</label>
+              <input type="text" id="reciveAddress" class="mono-input" placeholder="0x... （可选）" style="margin-top:5px" />
+            </div>
+          </div>
+
+          <div class="btn-row2">
+            <button id="approveButton" class="btn btn-approve">&#128274; 授权代币</button>
+            <button id="sellButton" class="btn btn-swap">&#8644; 执行 Swap</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="log-wrap">
+            <div class="log-head">
+              <span class="log-title">运行日志</span>
+              <div class="log-actions"><button class="log-btn" id="clearLog">清空</button></div>
+            </div>
+            <div id="log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: 快速买入 ═══ -->
+    <div class="page" id="page-fast">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#9889;</div>
+              <span class="card-head-title">快速买入参数</span>
+              <div class="card-head-right"><span class="tag tag-green">立即执行</span></div>
+            </div>
+            <div class="card-body">
+              <div class="radio-group">
+                <label class="radio-opt"><input type="radio" name="amountOption" value="1" checked> 支出固定数量</label>
+                <label class="radio-opt"><input type="radio" name="amountOption" value="2"> 买入固定数量</label>
+              </div>
+              <div class="grid2">
+                <div class="field">
+                  <label class="field-label" id="amountInLabel">支出代币数量</label>
+                  <input type="text" id="amountIn" value="0.1" />
+                </div>
+                <div class="field">
+                  <label class="field-label" id="amountOutMinLabel">最小获取数量</label>
+                  <input type="text" id="amountOutMin" value="0" />
+                </div>
+                <div class="field">
+                  <label class="field-label">监控线程数</label>
+                  <input type="text" id="worker" value="5" />
+                </div>
+                <div class="field">
+                  <label class="field-label" id="buyintervalTimeLabel">检测间隔 (ms)</label>
+                  <input type="text" id="buyintervalTime" value="200" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row1">
+            <button id="immediateBuyButton" class="btn btn-fast">&#9889; 启动快速买入</button>
+          </div>
+          <div class="btn-row1" style="display:none" id="fastStopRow">
+            <button id="fastStopButton" class="btn btn-stop">&#9632; 停止</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128202;</div>
+              <span class="card-head-title">运行状态</span>
+            </div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-row"><span class="info-lbl">状态</span><span class="info-val green" id="fastStatus">待机</span></div>
+                <div class="info-row"><span class="info-lbl">活跃线程</span><span class="info-val warn" id="fastWorkers">0</span></div>
+                <div class="info-row"><span class="info-lbl">买入代币</span><span class="info-val" id="fastTokenOut">--</span></div>
+                <div class="info-row"><span class="info-lbl">支出数量</span><span class="info-val" id="fastAmtIn">--</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="log-wrap">
+            <div class="log-head">
+              <span class="log-title">执行日志</span>
+              <div class="log-actions"><button class="log-btn" id="clearLogFast">清空</button></div>
+            </div>
+            <div id="logFast" style="padding:10px 14px;height:180px;overflow-y:auto;font-size:11px;font-family:var(--mono);line-height:1.9"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: 挂单模式 ═══ -->
+    <div class="page" id="page-order">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128203;</div>
+              <span class="card-head-title">挂单参数</span>
+              <div class="card-head-right"><span class="tag tag-warn">监控流动性</span></div>
+            </div>
+            <div class="card-body">
+              <div class="grid2">
+                <div class="field">
+                  <label class="field-label">支出数量</label>
+                  <input type="text" id="orderAmountIn" value="0.1" />
+                </div>
+                <div class="field">
+                  <label class="field-label">最小获取数量</label>
+                  <input type="text" id="orderAmountOutMin" value="0" />
+                </div>
+                <div class="field">
+                  <label class="field-label">监控线程数</label>
+                  <input type="text" id="orderWorker" value="5" />
+                </div>
+                <div class="field">
+                  <label class="field-label">监控间隔 (ms)</label>
+                  <input type="text" id="orderInterval" value="200" />
+                </div>
+              </div>
+              <div class="field" style="margin-top:4px">
+                <label class="field-label">自动预授权</label>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                  <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer">
+                    <input type="checkbox" id="autoApprove" checked style="accent-color:var(--accent)"> 启动前自动检测并授权代币
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row1">
+            <button id="buyButton" class="btn btn-order">&#128203; 启动挂单监控</button>
+          </div>
+          <div class="btn-row1" style="display:none" id="orderStopRow">
+            <button id="stopButton" class="btn btn-stop">&#9632; 停止挂单</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="card-head-icon">&#128202;</div>
+              <span class="card-head-title">监控状态</span>
+            </div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-row"><span class="info-lbl">状态</span><span class="info-val green" id="orderStatus">待机</span></div>
+                <div class="info-row"><span class="info-lbl">活跃线程</span><span class="info-val warn" id="orderWorkers">0</span></div>
+                <div class="info-row"><span class="info-lbl">授权状态</span><span class="info-val" id="orderApproveStatus">未检测</span></div>
+                <div class="info-row"><span class="info-lbl">触发次数</span><span class="info-val" id="orderTriggerCount">0</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="log-wrap">
+            <div class="log-head">
+              <span class="log-title">挂单日志</span>
+              <div class="log-actions"><button class="log-btn" id="clearLogOrder">清空</button></div>
+            </div>
+            <div id="logOrder" style="padding:10px 14px;height:180px;overflow-y:auto;font-size:11px;font-family:var(--mono);line-height:1.9"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="bn-item active" data-page="wallet"><div class="bn-icon">&#128273;</div><div class="bn-lbl">钱包</div></div>
+  <div class="bn-item" data-page="config"><div class="bn-icon">&#9881;</div><div class="bn-lbl">配置</div></div>
+  <div class="bn-item" data-page="swap"><div class="bn-icon">&#8644;</div><div class="bn-lbl">Swap</div></div>
+  <div class="bn-item" data-page="fast"><div class="bn-icon">&#9889;</div><div class="bn-lbl">快速</div></div>
+  <div class="bn-item" data-page="order"><div class="bn-icon">&#128203;</div><div class="bn-lbl">挂单</div></div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+<script>
+/* PotatoSwap Sniper v2.2 — 多页面导航版 */
+
+const ROUTER_ABI=[{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"uint256","name":"amountOutMin","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"deadline","type":"uint256"}],"name":"swapExactTokensForTokensSupportingFeeOnTransferTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}];
+const ERC20_ABI=[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
+const CACHE_KEYS=['privateKeyD','tokeninAddress','customAddress','tokenOutAddress','customBddress','reciveAddress','amountIn','amountOutMin','gasMultiplier','snipingCount','buyintervalTime','worker','routerContractAddress','rpcUrl','chainId','orderAmountIn','orderAmountOutMin','orderWorker','orderInterval'];
+const MAX_UINT256='115792089237316195423570985008687907853269984665640564039457584007913129639935';
+
+let workers=[],isRunning=false,globalTriggered=false,web3=null,orderTriggerCount=0;
+const CORS_RPC_LIST=['https://xlayer.drpc.org','https://rpc.xlayer.tech','https://xlayer-mainnet.rpc.sentio.xyz','https://xlayer.rpc.blxrbdn.com'];
+let activeRpcIndex=0;
+
+/* ── 日志 ── */
+function logTo(elId,msg,type='info'){
+  const el=document.getElementById(elId);if(!el)return;
+  const time=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+  const line=document.createElement('div');line.className=`log-${type}`;
+  line.innerHTML=`<span class="log-time">${time}</span>${msg}`;
+  el.appendChild(line);el.scrollTop=el.scrollHeight;
+}
+function log(msg,type='info'){logTo('log',msg,type);}
+function logFast(msg,type='info'){logTo('logFast',msg,type);}
+function logOrder(msg,type='info'){logTo('logOrder',msg,type);}
+
+/* ── 状态 ── */
+function setGlobalStatus(state,text,threads=0){
+  const row=document.getElementById('sidebarStatus');
+  row.className=`status-row ${state}`;
+  document.getElementById('sidebarStatusText').textContent=text;
+  const wt=document.getElementById('workerTag');
+  if(threads>0){wt.style.display='inline-flex';wt.textContent=threads+'线程';}
+  else{wt.style.display='none';}
+  document.getElementById('workerCount').textContent=`线程: ${threads}`;
+}
+
+/* ── 导航 ── */
+const PAGE_META={
+  wallet:{title:'钱包',sub:'管理私钥与余额'},
+  config:{title:'配置',sub:'路由合约与 RPC 设置'},
+  swap:{title:'Swap',sub:'代币兑换'},
+  fast:{title:'快速买入',sub:'立即执行多钱包并行买入'},
+  order:{title:'挂单模式',sub:'监控流动性自动触发买入'},
+};
+function navTo(page){
+  document.querySelectorAll('.nav-item,.bn-item').forEach(el=>{
+    el.classList.toggle('active',el.dataset.page===page);
+  });
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  const pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
+  const meta=PAGE_META[page]||{title:page,sub:''};
+  document.getElementById('topbarTitle').textContent=meta.title;
+  document.getElementById('topbarSub').textContent=meta.sub;
+}
+document.querySelectorAll('.nav-item,.bn-item').forEach(el=>{
+  el.addEventListener('click',()=>navTo(el.dataset.page));
+});
+
+/* ── 侧边栏折叠 ── */
+const sidebar=document.getElementById('sidebar');
+const sbCollapse=document.getElementById('sbCollapse');
+sbCollapse.addEventListener('click',()=>{
+  sidebar.classList.toggle('collapsed');
+  sbCollapse.innerHTML=sidebar.classList.contains('collapsed')?'&#9654;':'&#9664;';
+});
+
+/* ── 工具函数 ── */
+function getTokeninAddress(){const v=document.getElementById('tokeninAddress').value;return v==='custom'?document.getElementById('customAddress').value.trim():v;}
+function getTokenOutAddress(){const v=document.getElementById('tokenOutAddress').value;return v==='custom'?document.getElementById('customBddress').value.trim():v;}
+function getRpcUrl(){return document.getElementById('rpcUrl').value.trim()||CORS_RPC_LIST[activeRpcIndex];}
+function getRouterAddress(){return document.getElementById('routerContractAddress').value.trim();}
+function getPrivateKeys(){return document.getElementById('privateKeyD').value.split('\n').map(k=>k.trim()).filter(k=>k.length>10);}
+function parseAmount(val,decimals=18){try{const n=parseFloat(val);if(isNaN(n)||n<=0)return null;return BigInt(Math.floor(n*10**decimals)).toString();}catch{return null;}}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function initWeb3WithFallback(){
+  const primary=getRpcUrl();
+  try{const w3=new Web3(new Web3.providers.HttpProvider(primary));await w3.eth.getBlockNumber();web3=w3;return w3;}catch{}
+  for(let i=0;i<CORS_RPC_LIST.length;i++){
+    const rpc=CORS_RPC_LIST[(activeRpcIndex+i)%CORS_RPC_LIST.length];
+    try{const w3=new Web3(new Web3.providers.HttpProvider(rpc));await w3.eth.getBlockNumber();activeRpcIndex=(activeRpcIndex+i)%CORS_RPC_LIST.length;document.getElementById('rpcUrl').value=rpc;web3=w3;return w3;}catch{}
+  }
+  throw new Error('所有 RPC 节点均不可用');
+}
+
+/* ── 缓存 ── */
+function loadCache(){CACHE_KEYS.forEach(key=>{const el=document.getElementById(key);if(!el)return;const val=localStorage.getItem('ps_'+key);if(val!==null)el.value=val;el.addEventListener('input',()=>localStorage.setItem('ps_'+key,el.value));});}
+
+/* ── 钱包列表渲染 ── */
+function renderWallets(){
+  const keys=getPrivateKeys();
+  const list=document.getElementById('walletList');
+  const badge=document.getElementById('walletBadge');
+  const keyTag=document.getElementById('keyCountTag');
+  badge.textContent=keys.length;
+  keyTag.textContent=keys.length+' 个钱包';
+  if(!keys.length){list.innerHTML='<div class="wallet-empty">输入私钥后自动解析</div>';return;}
+  const w3=new Web3();
+  list.innerHTML=keys.map((k,i)=>{
+    try{
+      const pk=k.startsWith('0x')?k:'0x'+k;
+      const addr=w3.eth.accounts.privateKeyToAccount(pk).address;
+      return `<div class="wallet-card">
+        <div class="wallet-idx">${i+1}</div>
+        <div class="wallet-info">
+          <div class="wallet-addr">${addr}</div>
+          <div class="wallet-bals">
+            <span class="wallet-bal" id="wb_${i}_a">USDT: --</span>
+            <span class="wallet-bal" id="wb_${i}_b">WOKB: --</span>
+          </div>
+        </div>
+        <span class="wallet-status none" id="ws_${i}">未检测</span>
+      </div>`;
+    }catch{return `<div class="wallet-card"><div class="wallet-idx">${i+1}</div><div class="wallet-info"><div class="wallet-addr" style="color:var(--danger)">私钥格式错误</div></div></div>`;}
+  }).join('');
+}
+
+async function refreshWalletBalances(){
+  const keys=getPrivateKeys();if(!keys.length)return;
+  const rpc=getRpcUrl();const tokenIn=getTokeninAddress();const tokenOut=getTokenOutAddress();
+  const routerAddr=getRouterAddress();
+  const w3=new Web3();
+  for(let i=0;i<keys.length;i++){
+    const pk=keys[i].startsWith('0x')?keys[i]:'0x'+keys[i];
+    try{
+      const addr=w3.eth.accounts.privateKeyToAccount(pk).address;
+      const USDT='0x1E4a5963aBFD975d8c9021ce480b42188849D41d';
+      const WOKB='0xe538905cf8410324e03a5a23c1c177a474d59b2b';
+      const[uBal,wBal]=await Promise.all([
+        jsonRpcCall(rpc,'eth_call',[{to:USDT,data:'0x70a08231'+addr.replace('0x','').padStart(64,'0')},'latest']).catch(()=>'0x0'),
+        jsonRpcCall(rpc,'eth_call',[{to:WOKB,data:'0x70a08231'+addr.replace('0x','').padStart(64,'0')},'latest']).catch(()=>'0x0'),
+      ]);
+      const fmt=(hex,dec=6)=>{try{const n=Number(BigInt(hex))/(10**dec);return n>=1000?n.toFixed(2):n.toPrecision(5).replace(/\.?0+$/,'');}catch{return '0';}};
+      const ua=document.getElementById(`wb_${i}_a`);const wb=document.getElementById(`wb_${i}_b`);
+      const ws=document.getElementById(`ws_${i}`);
+      if(ua){ua.textContent=`USDT: ${fmt(uBal,6)}`;ua.classList.add('loaded');}
+      if(wb){wb.textContent=`WOKB: ${fmt(wBal,18)}`;wb.classList.add('loaded');}
+      // 检查授权
+      if(routerAddr&&routerAddr.startsWith('0x')&&tokenIn&&tokenIn.startsWith('0x')){
+        const allowHex=await jsonRpcCall(rpc,'eth_call',[{to:tokenIn,data:'0xdd62ed3e'+addr.replace('0x','').padStart(64,'0')+routerAddr.replace('0x','').padStart(64,'0')},'latest']).catch(()=>'0x0');
+        const allow=BigInt(allowHex);
+        if(ws){
+          if(allow>BigInt('1000000000000000000000')){ws.textContent='已授权';ws.className='wallet-status ok';}
+          else{ws.textContent='未授权';ws.className='wallet-status warn';}
+        }
+      }
+    }catch{}
+  }
+}
+
+/* ── 配置同步 ── */
+function syncConfig(){
+  const r=getRouterAddress();
+  const rpc=getRpcUrl();
+  const chain=document.getElementById('chainId').value||'196';
+  document.getElementById('cfgRouterVal').textContent=r?r.slice(0,10)+'...'+r.slice(-6):'--';
+  document.getElementById('cfgRpcVal').textContent=rpc.replace('https://','').split('/')[0];
+  document.getElementById('cfgChainVal').textContent=chain;
+  document.getElementById('chainChip').textContent='Chain '+chain;
+}
+
+/* ── 路由预设 ── */
+const ROUTER_PRESETS={potato:{router:'0x881fB2f98c13d521009464e7D1CBf16E1b394e8E',rpc:'https://xlayer.drpc.org',chain:'196'}};
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    const preset=this.dataset.preset;
+    if(preset!=='custom'&&ROUTER_PRESETS[preset]){
+      const p=ROUTER_PRESETS[preset];
+      document.getElementById('routerContractAddress').value=p.router;
+      document.getElementById('rpcUrl').value=p.rpc;
+      document.getElementById('chainId').value=p.chain;
+      syncConfig();log(`已加载预设路由: ${preset.toUpperCase()}`,'info');
+    }else{log('请手动填写自定义路由配置','warn');}
+  });
+});
+document.getElementById('routerContractAddress').addEventListener('input',syncConfig);
+document.getElementById('chainId').addEventListener('input',syncConfig);
+document.getElementById('rpcUrl').addEventListener('input',syncConfig);
+
+/* ── 代币选择 ── */
+document.getElementById('tokeninAddress').addEventListener('change',function(){document.getElementById('customAddrRowA').classList.toggle('show',this.value==='custom');});
+document.getElementById('tokenOutAddress').addEventListener('change',function(){document.getElementById('customAddrRowB').classList.toggle('show',this.value==='custom');});
+
+/* ── 切换方向 ── */
+document.getElementById('toggleButton').addEventListener('click',function(){
+  const selA=document.getElementById('tokeninAddress'),selB=document.getElementById('tokenOutAddress');
+  const amtA=document.getElementById('from_amount'),amtB=document.getElementById('from_amount_out');
+  const cA=document.getElementById('customAddress'),cB=document.getElementById('customBddress');
+  [selA.value,selB.value]=[selB.value,selA.value];[cA.value,cB.value]=[cB.value,cA.value];[amtA.value,amtB.value]=[amtB.value,amtA.value];
+  document.getElementById('customAddrRowA').classList.toggle('show',selA.value==='custom');
+  document.getElementById('customAddrRowB').classList.toggle('show',selB.value==='custom');
+  triggerEstimate();
+});
+
+/* ── 滑点 ── */
+const slippageRange=document.getElementById('slippageRange'),slippageDisplay=document.getElementById('slippage');
+slippageRange.addEventListener('input',function(){slippageDisplay.textContent=this.value;document.querySelectorAll('.slip-pre').forEach(b=>b.classList.toggle('active',parseFloat(b.dataset.val)===parseFloat(this.value)));});
+document.querySelectorAll('.slip-pre').forEach(btn=>{btn.addEventListener('click',function(){const val=this.dataset.val;slippageRange.value=val;slippageDisplay.textContent=val;document.querySelectorAll('.slip-pre').forEach(b=>b.classList.remove('active'));this.classList.add('active');});});
+
+/* ── 单选 ── */
+document.querySelectorAll('input[name="amountOption"]').forEach(r=>{r.addEventListener('change',function(){const isFixed=this.value==='1';document.getElementById('amountInLabel').textContent=isFixed?'支出代币数量':'目标买入数量';document.getElementById('buyintervalTimeLabel').textContent=isFixed?'检测间隔 (ms)':'卖出间隔 (ms)';});});
+
+/* ── 清空日志 ── */
+document.getElementById('clearLog').addEventListener('click',()=>{document.getElementById('log').innerHTML='';});
+document.getElementById('clearLogFast').addEventListener('click',()=>{document.getElementById('logFast').innerHTML='';});
+document.getElementById('clearLogOrder').addEventListener('click',()=>{document.getElementById('logOrder').innerHTML='';});
+
+/* ── 授权按钮 ── */
+document.getElementById('approveButton').addEventListener('click',async function(){
+  const keys=getPrivateKeys();if(!keys.length){log('请先输入私钥','error');return;}
+  const tokenIn=getTokeninAddress();if(!tokenIn||!tokenIn.startsWith('0x')){log('请选择有效的支出代币地址','error');return;}
+  const routerAddr=getRouterAddress();if(!routerAddr||!routerAddr.startsWith('0x')){log('请填写有效的 Router 地址','error');return;}
+  this.disabled=true;log(`开始授权，共 ${keys.length} 个钱包`,'info');
+  try{
+    const w3=await initWeb3WithFallback();
+    for(let i=0;i<keys.length;i++){
+      const pk=keys[i].startsWith('0x')?keys[i]:'0x'+keys[i];
+      try{
+        const account=w3.eth.accounts.privateKeyToAccount(pk);
+        const tc=new w3.eth.Contract(ERC20_ABI,tokenIn);
+        const gasPrice=await w3.eth.getGasPrice();
+        const adjGas=BigInt(gasPrice)*BigInt(Math.round(parseFloat(document.getElementById('gasMultiplier').value||'1')*100))/100n;
+        const txData=tc.methods.approve(routerAddr,MAX_UINT256).encodeABI();
+        const gasEst=await tc.methods.approve(routerAddr,MAX_UINT256).estimateGas({from:account.address});
+        const tx={from:account.address,to:tokenIn,gas:Math.ceil(Number(gasEst)*1.2),gasPrice:adjGas.toString(),data:txData,chainId:parseInt(document.getElementById('chainId').value||'196')};
+        const signed=await w3.eth.accounts.signTransaction(tx,pk);
+        const receipt=await w3.eth.sendSignedTransaction(signed.rawTransaction);
+        log(`✓ 钱包 ${i+1} 授权成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+      }catch(err){log(`✗ 钱包 ${i+1} 授权失败: ${err.message}`,'error');}
+    }
+  }catch(err){log(`初始化失败: ${err.message}`,'error');}
+  this.disabled=false;
+});
+
+/* ── SWAP 按钮 ── */
+document.getElementById('sellButton').addEventListener('click',async function(){
+  const keys=getPrivateKeys();if(!keys.length){log('请先输入私钥','error');return;}
+  const tokenIn=getTokeninAddress(),tokenOut=getTokenOutAddress();if(!tokenIn||!tokenOut){log('请选择有效的代币地址','error');return;}
+  const routerAddr=getRouterAddress();if(!routerAddr||!routerAddr.startsWith('0x')){log('请填写有效的 Router 地址','error');return;}
+  const amountInRaw=document.getElementById('from_amount').value;if(!amountInRaw||parseFloat(amountInRaw)<=0){log('请输入支出数量','error');return;}
+  this.disabled=true;log(`开始 Swap，共 ${keys.length} 个钱包`,'info');
+  try{
+    const w3=await initWeb3WithFallback();
+    const slippage=parseFloat(slippageRange.value)/100;
+    const deadline=Math.floor(Date.now()/1000)+300;
+    for(let i=0;i<keys.length;i++){
+      const pk=keys[i].startsWith('0x')?keys[i]:'0x'+keys[i];
+      try{
+        const account=w3.eth.accounts.privateKeyToAccount(pk);
+        const toAddr=document.getElementById('reciveAddress').value.trim()||account.address;
+        const tc=new w3.eth.Contract(ERC20_ABI,tokenIn);
+        const decimals=await tc.methods.decimals().call();
+        const amountIn=parseAmount(amountInRaw,Number(decimals));if(!amountIn)continue;
+        const rc=new w3.eth.Contract(ROUTER_ABI,routerAddr);
+        const amounts=await rc.methods.getAmountsOut(amountIn,[tokenIn,tokenOut]).call();
+        const amountOutMin=BigInt(amounts[1])*BigInt(Math.floor((1-slippage)*10000))/10000n;
+        const gasPrice=await w3.eth.getGasPrice();
+        const adjGas=BigInt(gasPrice)*BigInt(Math.round(parseFloat(document.getElementById('gasMultiplier').value||'1')*100))/100n;
+        const txData=rc.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin.toString(),[tokenIn,tokenOut],toAddr,deadline).encodeABI();
+        const gasEst=await rc.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin.toString(),[tokenIn,tokenOut],toAddr,deadline).estimateGas({from:account.address});
+        const tx={from:account.address,to:routerAddr,gas:Math.ceil(Number(gasEst)*1.2),gasPrice:adjGas.toString(),data:txData,chainId:parseInt(document.getElementById('chainId').value||'196')};
+        const signed=await w3.eth.accounts.signTransaction(tx,pk);
+        const receipt=await w3.eth.sendSignedTransaction(signed.rawTransaction);
+        log(`✓ 钱包 ${i+1} Swap 成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+      }catch(err){log(`✗ 钱包 ${i+1} Swap 失败: ${err.message}`,'error');}
+    }
+  }catch(err){log(`初始化失败: ${err.message}`,'error');}
+  this.disabled=false;
+});
+
+/* ── 快速买入 ── */
+document.getElementById('immediateBuyButton').addEventListener('click',async function(){
+  if(isRunning){logFast('已有任务在运行，请先停止','warn');return;}
+  const keys=getPrivateKeys();if(!keys.length){logFast('请先输入私钥','error');return;}
+  const tokenIn=getTokeninAddress(),tokenOut=getTokenOutAddress();if(!tokenIn||!tokenOut){logFast('请选择有效的代币地址','error');return;}
+  const routerAddr=getRouterAddress();if(!routerAddr||!routerAddr.startsWith('0x')){logFast('请填写有效的 Router 地址','error');return;}
+  isRunning=true;globalTriggered=false;
+  this.disabled=true;
+  document.getElementById('fastStopRow').style.display='block';
+  document.getElementById('fastStatus').textContent='运行中';
+  document.getElementById('fastStatus').className='info-val green';
+  const amountInVal=document.getElementById('amountIn').value;
+  const amountOutMinVal=document.getElementById('amountOutMin').value;
+  const snipingCount=parseInt(document.getElementById('snipingCount').value)||1;
+  const intervalMs=parseInt(document.getElementById('buyintervalTime').value)||200;
+  const gasMultiplier=parseFloat(document.getElementById('gasMultiplier').value)||1;
+  const workerCount=parseInt(document.getElementById('worker').value)||5;
+  document.getElementById('fastWorkers').textContent=workerCount;
+  document.getElementById('fastTokenOut').textContent=tokenOut.slice(0,8)+'...';
+  document.getElementById('fastAmtIn').textContent=amountInVal;
+  setGlobalStatus('running','快速模式',workerCount);
+  logFast(`快速模式启动: ${workerCount} 线程，间隔 ${intervalMs}ms`,'success');
+  try{
+    const w3=await initWeb3WithFallback();
+    const deadline=Math.floor(Date.now()/1000)+300;
+    const rpcUrl=getRpcUrl();
+    const pk0=keys[0].startsWith('0x')?keys[0]:'0x'+keys[0];
+    const toAddr=w3.eth.accounts.privateKeyToAccount(pk0).address;
+    stopWorkers();
+    for(let i=0;i<workerCount&&isRunning;i++){
+      const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
+      const w=new Worker(URL.createObjectURL(wb));
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:toAddr,deadline,rpcUrl});
+      w.onmessage=async(e)=>{
+        if(!isRunning||globalTriggered)return;
+        if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
+          globalTriggered=true;stopWorkers();
+          logFast(`Worker ${i+1} 检测到信号，开始并行买入...`,'success');
+          await executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,snipingCount,intervalMs,deadline,'logFast');
+          stopAll();
+        }
+      };
+      workers.push(w);
+      const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'estimateGas'});},intervalMs);
+    }
+  }catch(err){logFast(`启动失败: ${err.message}`,'error');stopAll();}
+});
+
+document.getElementById('fastStopButton').addEventListener('click',function(){stopAll();logFast('已手动停止','warn');});
+
+/* ── 挂单模式 ── */
+document.getElementById('buyButton').addEventListener('click',async function(){
+  if(isRunning){logOrder('已有任务在运行，请先停止','warn');return;}
+  const keys=getPrivateKeys();if(!keys.length){logOrder('请先输入私钥','error');return;}
+  const tokenIn=getTokeninAddress(),tokenOut=getTokenOutAddress();if(!tokenIn||!tokenOut){logOrder('请选择有效的代币地址','error');return;}
+  const routerAddr=getRouterAddress();if(!routerAddr||!routerAddr.startsWith('0x')){logOrder('请填写有效的 Router 地址','error');return;}
+  this.disabled=true;
+  document.getElementById('orderStatus').textContent='检测授权中...';
+  logOrder('挂单模式：检测代币授权状态...','info');
+  let w3;
+  try{w3=await initWeb3WithFallback();}
+  catch(err){logOrder(`连接失败: ${err.message}`,'error');document.getElementById('orderStatus').textContent='连接失败';this.disabled=false;return;}
+
+  const autoApprove=document.getElementById('autoApprove').checked;
+  if(autoApprove){
+    const ok=await ensureApproved(w3,keys,tokenIn,routerAddr);
+    if(!ok){logOrder('授权未完成，挂单已取消','error');document.getElementById('orderStatus').textContent='授权失败';this.disabled=false;return;}
+    document.getElementById('orderApproveStatus').textContent='已授权';
+    document.getElementById('orderApproveStatus').className='info-val green';
+  }
+
+  isRunning=true;globalTriggered=false;orderTriggerCount=0;
+  document.getElementById('orderStopRow').style.display='block';
+  document.getElementById('orderStatus').textContent='监控中';
+  document.getElementById('orderStatus').className='info-val warn';
+
+  const amountInVal=document.getElementById('orderAmountIn').value;
+  const amountOutMinVal=document.getElementById('orderAmountOutMin').value;
+  const snipingCount=parseInt(document.getElementById('snipingCount').value)||1;
+  const intervalMs=parseInt(document.getElementById('orderInterval').value)||200;
+  const gasMultiplier=parseFloat(document.getElementById('gasMultiplier').value)||1;
+  const workerCount=parseInt(document.getElementById('orderWorker').value)||5;
+  document.getElementById('orderWorkers').textContent=workerCount;
+  setGlobalStatus('running','挂单监控',workerCount);
+  document.getElementById('orderBadge').style.display='inline-flex';
+  logOrder(`挂单模式启动: 监控 ${workerCount} 线程，间隔 ${intervalMs}ms`,'success');
+  try{
+    const deadline=Math.floor(Date.now()/1000)+86400;
+    const rpcUrl=getRpcUrl();
+    const pk0=keys[0].startsWith('0x')?keys[0]:'0x'+keys[0];
+    const accountAddr=w3.eth.accounts.privateKeyToAccount(pk0).address;
+    stopWorkers();
+    for(let i=0;i<workerCount;i++){
+      const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
+      const w=new Worker(URL.createObjectURL(wb));
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:accountAddr,deadline,rpcUrl});
+      w.onmessage=async(e)=>{
+        if(!isRunning||globalTriggered)return;
+        if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
+          globalTriggered=true;stopWorkers();
+          orderTriggerCount++;
+          document.getElementById('orderTriggerCount').textContent=orderTriggerCount;
+          logOrder(`挂单触发！Worker ${i+1} 检测到流动性，开始并行买入...`,'success');
+          await executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,snipingCount,intervalMs,deadline,'logOrder');
+          stopAll();
+        }
+      };
+      workers.push(w);
+      const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'ethCall'});},intervalMs);
+    }
+  }catch(err){logOrder(`挂单启动失败: ${err.message}`,'error');stopAll();this.disabled=false;}
+});
+
+document.getElementById('stopButton').addEventListener('click',function(){stopAll();logOrder('已手动停止挂单','warn');});
+
+/* ── 停止 ── */
+function stopWorkers(){workers.forEach(w=>{try{w.terminate();}catch{}});workers=[];}
+function stopAll(){
+  isRunning=false;globalTriggered=false;stopWorkers();
+  setGlobalStatus('idle','待机',0);
+  document.getElementById('fastStopRow').style.display='none';
+  document.getElementById('orderStopRow').style.display='none';
+  document.getElementById('immediateBuyButton').disabled=false;
+  document.getElementById('buyButton').disabled=false;
+  document.getElementById('fastStatus').textContent='待机';
+  document.getElementById('fastStatus').className='info-val green';
+  document.getElementById('fastWorkers').textContent='0';
+  document.getElementById('orderStatus').textContent='待机';
+  document.getElementById('orderStatus').className='info-val green';
+  document.getElementById('orderWorkers').textContent='0';
+  document.getElementById('orderBadge').style.display='none';
+}
+
+/* ── 并行买入 ── */
+async function executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,count,intervalMs,deadline,logId='log'){
+  const chainId=parseInt(document.getElementById('chainId').value||'196');
+  const recvAddrGlobal=document.getElementById('reciveAddress').value.trim();
+  const tokenInContract=new w3.eth.Contract(ERC20_ABI,tokenIn);
+  const routerContract=new w3.eth.Contract(ROUTER_ABI,routerAddr);
+  let decimals,amountIn,amountOutMin,adjustedGas;
+  try{
+    [decimals,adjustedGas]=await Promise.all([
+      tokenInContract.methods.decimals().call(),
+      w3.eth.getGasPrice().then(p=>BigInt(p)*BigInt(Math.round(gasMultiplier*100))/100n)
+    ]);
+    amountIn=parseAmount(amountInVal,Number(decimals));
+    if(!amountIn){logTo(logId,'数量解析失败','error');return;}
+    amountOutMin=parseAmount(amountOutMinVal,18)||'0';
+  }catch(err){logTo(logId,`预取参数失败: ${err.message}`,'error');return;}
+
+  for(let c=0;c<count;c++){
+    if(!isRunning)return;
+    logTo(logId,`第 ${c+1}/${count} 轮：${keys.length} 个钱包并行买入...`,'info');
+    const signedTxs=await Promise.all(keys.map(async(key,i)=>{
+      const pk=key.startsWith('0x')?key:'0x'+key;
+      const account=w3.eth.accounts.privateKeyToAccount(pk);
+      const toAddr=recvAddrGlobal||account.address;
+      const walletTxData=routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin,[tokenIn,tokenOut],toAddr,deadline).encodeABI();
+      try{
+        const[nonce,gasEstimate]=await Promise.all([
+          w3.eth.getTransactionCount(account.address,'pending'),
+          routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,amountOutMin,[tokenIn,tokenOut],toAddr,deadline).estimateGas({from:account.address}).catch(()=>300000)
+        ]);
+        const tx={from:account.address,to:routerAddr,gas:Math.ceil(Number(gasEstimate)*1.2),gasPrice:adjustedGas.toString(),data:walletTxData,nonce,chainId};
+        const signed=await w3.eth.accounts.signTransaction(tx,pk);
+        return{idx:i,raw:signed.rawTransaction};
+      }catch(err){logTo(logId,`✗ [${c+1}/${count}] 钱包 ${i+1} 签名失败: ${err.message}`,'error');return{idx:i,raw:null};}
+    }));
+    await Promise.all(signedTxs.map(async({idx,raw})=>{
+      if(!raw)return;
+      try{
+        const receipt=await w3.eth.sendSignedTransaction(raw);
+        logTo(logId,`✓ [${c+1}/${count}] 钱包 ${idx+1} 买入成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+      }catch(err){logTo(logId,`✗ [${c+1}/${count}] 钱包 ${idx+1} 广播失败: ${err.message}`,'error');}
+    }));
+    if(c<count-1)await sleep(intervalMs);
+  }
+}
+
+/* ── 自动授权 ── */
+async function ensureApproved(w3,keys,tokenIn,routerAddr){
+  const gasMultiplier=parseFloat(document.getElementById('gasMultiplier').value||'1');
+  const chainId=parseInt(document.getElementById('chainId').value||'196');
+  let symbol='TOKEN';
+  try{symbol=await new w3.eth.Contract(ERC20_ABI,tokenIn).methods.symbol().call();}catch{}
+  const threshold=BigInt('1000000000000000000000');
+  for(let i=0;i<keys.length;i++){
+    const pk=keys[i].startsWith('0x')?keys[i]:'0x'+keys[i];
+    const acct=w3.eth.accounts.privateKeyToAccount(pk);
+    let allowance=BigInt(0);
+    try{allowance=BigInt(await new w3.eth.Contract(ERC20_ABI,tokenIn).methods.allowance(acct.address,routerAddr).call());}catch{}
+    if(allowance>=threshold){logOrder(`钱包 ${i+1} ${symbol} 已授权`,'info');continue;}
+    logOrder(`钱包 ${i+1} (${acct.address.slice(0,8)}...) ${symbol} 未授权，开始预授权...`,'warn');
+    try{
+      const tc=new w3.eth.Contract(ERC20_ABI,tokenIn);
+      const gasPrice=await w3.eth.getGasPrice();
+      const adjGas=BigInt(gasPrice)*BigInt(Math.round(gasMultiplier*100))/100n;
+      const txData=tc.methods.approve(routerAddr,MAX_UINT256).encodeABI();
+      const gasEst=await tc.methods.approve(routerAddr,MAX_UINT256).estimateGas({from:acct.address});
+      const tx={from:acct.address,to:tokenIn,gas:Math.ceil(Number(gasEst)*1.2),gasPrice:adjGas.toString(),data:txData,chainId};
+      const signed=await w3.eth.accounts.signTransaction(tx,pk);
+      const receipt=await w3.eth.sendSignedTransaction(signed.rawTransaction);
+      logOrder(`✓ 钱包 ${i+1} ${symbol} 预授权成功: ${receipt.transactionHash.slice(0,16)}...`,'success');
+    }catch(err){logOrder(`✗ 钱包 ${i+1} ${symbol} 预授权失败: ${err.message}`,'error');return false;}
+  }
+  return true;
+}
+
+/* ── Worker 代码 ── */
+function buildWorkerCode(){return `
+importScripts('https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js');
+const FALLBACK_RPCS=['https://xlayer.drpc.org','https://rpc.xlayer.tech','https://xlayer-mainnet.rpc.sentio.xyz','https://xlayer.rpc.blxrbdn.com'];
+let web3,routerContract,path,to,amountIn,deadline,initialized=false;
+self.onmessage=function(e){if(!initialized){const d=e.data;to=d.to;amountIn=d.amountIn;path=[d.tokeninAddress,d.tokenOutAddress];deadline=d.deadline;const rpc=d.rpcUrl||FALLBACK_RPCS[0];web3=new Web3(rpc);routerContract=new web3.eth.Contract(d.abi,d.routerContractAddress);initialized=true;self.onmessage=handleCommand;return;}handleCommand(e);};
+async function handleCommand(e){const{command}=e.data;if(command==='estimateGas')await tryEstimateGas();else if(command==='ethCall')await tryEthCall();}
+async function tryEstimateGas(){try{const gasLimit=await Promise.race([routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,0,path,to,deadline).estimateGas({from:to}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);postMessage({type:'estimateGas',message:{gasLimit:Number(gasLimit)}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
+async function tryEthCall(){try{const amounts=await Promise.race([routerContract.methods.getAmountsOut(amountIn,path).call({from:to}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);const out=amounts&&amounts[1]?Number(amounts[1]):0;postMessage({type:'estimateGas',message:{gasLimit:out>0?300000:0}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
+`;}
+
+/* ── 实时估算 ── */
+let estimateTimer=null,isEstimating=false;
+async function jsonRpcCall(rpcUrl,method,params){const resp=await fetch(rpcUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});if(!resp.ok)throw new Error(`HTTP ${resp.status}`);const data=await resp.json();if(data.error)throw new Error(data.error.message);return data.result;}
+function encodeDecimalsCall(addr){return{to:addr,data:'0x313ce567'};}
+function encodeGetAmountsOut(routerAddr,amountInWei,tokenIn,tokenOut){const sel='0xd06ca61f',pad32=hex=>hex.replace('0x','').padStart(64,'0'),amtHex=BigInt(amountInWei).toString(16);return{to:routerAddr,data:sel+pad32(amtHex)+pad32('40')+pad32('2')+pad32(tokenIn)+pad32(tokenOut)};}
+function decodeDecimals(hex){return parseInt(hex,16);}
+function decodeAmountsOut(hex){const raw=hex.replace('0x','');if(raw.length<256)return BigInt(0);return BigInt('0x'+raw.slice(192,256));}
+
+async function estimateOutput(){
+  if(isEstimating)return;
+  const amountInRaw=document.getElementById('from_amount').value;
+  const outEl=document.getElementById('from_amount_out');
+  if(!amountInRaw||parseFloat(amountInRaw)<=0){outEl.value='';outEl.placeholder='0.0';return;}
+  const tokenIn=getTokeninAddress(),tokenOut=getTokenOutAddress(),routerAddr=getRouterAddress();
+  if(!tokenIn?.startsWith('0x')||!tokenOut?.startsWith('0x')||!routerAddr?.startsWith('0x'))return;
+  isEstimating=true;outEl.value='';outEl.placeholder='查询中...';
+  const rpcs=[getRpcUrl(),...CORS_RPC_LIST];
+  for(const rpc of rpcs){
+    try{
+      const decInHex=await jsonRpcCall(rpc,'eth_call',[encodeDecimalsCall(tokenIn),'latest']);
+      const decimalsIn=decodeDecimals(decInHex);
+      const amountInWei=parseAmount(amountInRaw,decimalsIn);if(!amountInWei){outEl.placeholder='数量无效';isEstimating=false;return;}
+      const decOutHex=await jsonRpcCall(rpc,'eth_call',[encodeDecimalsCall(tokenOut),'latest']);
+      const decimalsOut=decodeDecimals(decOutHex);
+      const amountsHex=await jsonRpcCall(rpc,'eth_call',[encodeGetAmountsOut(routerAddr,amountInWei,tokenIn,tokenOut),'latest']);
+      const outWei=decodeAmountsOut(amountsHex);
+      if(outWei===BigInt(0)){outEl.value='';outEl.placeholder='无流动性';isEstimating=false;return;}
+      const outNum=Number(outWei)/(10**decimalsOut);
+      outEl.value=outNum<0.00000001?outNum.toExponential(4):outNum>=1000?outNum.toFixed(4):outNum.toPrecision(8).replace(/\.?0+$/,'');
+      outEl.placeholder='0.0';isEstimating=false;return;
+    }catch{}
+  }
+  outEl.value='';outEl.placeholder='查询失败';isEstimating=false;
+}
+function triggerEstimate(){clearTimeout(estimateTimer);estimateTimer=setTimeout(estimateOutput,600);}
+
+/* ── 余额 ── */
+async function fetchBalance(tokenAddr,displayEl){
+  const keys=getPrivateKeys();
+  if(!keys.length||!tokenAddr?.startsWith('0x')){displayEl.textContent='余额: --';displayEl.classList.remove('loaded');return;}
+  displayEl.textContent='查询中...';
+  try{
+    const w3=new Web3();
+    const pk=keys[0].startsWith('0x')?keys[0]:'0x'+keys[0];
+    const addr=w3.eth.accounts.privateKeyToAccount(pk).address;
+    const rpc=getRpcUrl()||CORS_RPC_LIST[activeRpcIndex];
+    const[balHex,decHex]=await Promise.all([
+      jsonRpcCall(rpc,'eth_call',[{to:tokenAddr,data:'0x70a08231'+addr.replace('0x','').padStart(64,'0')},'latest']),
+      jsonRpcCall(rpc,'eth_call',[encodeDecimalsCall(tokenAddr),'latest'])
+    ]);
+    const bal=BigInt(balHex),dec=parseInt(decHex,16);
+    const num=Number(bal)/(10**dec);
+    const fmt=num>=1000?num.toFixed(2):num.toPrecision(6).replace(/\.?0+$/,'');
+    displayEl.textContent=`余额: ${fmt}`;displayEl.classList.add('loaded');
+  }catch{displayEl.textContent='余额: 失败';displayEl.classList.remove('loaded');}
+}
+
+/* ── 初始化 ── */
+window.addEventListener('load',()=>{
+  loadCache();syncConfig();
+  log('PotatoSwap Sniper 已就绪，Router: 0x881fB2f9...394e8E','info');
+
+  // 私钥变化 → 渲染钱包列表
+  document.getElementById('privateKeyD').addEventListener('input',()=>{
+    clearTimeout(window._pkTimer);
+    window._pkTimer=setTimeout(renderWallets,400);
+  });
+  renderWallets();
+
+  // 刷新余额
+  document.getElementById('refreshWalletsBtn').addEventListener('click',async()=>{
+    renderWallets();
+    await refreshWalletBalances();
+  });
+
+  // Swap 估算
+  document.getElementById('from_amount').addEventListener('input',triggerEstimate);
+  document.getElementById('tokeninAddress').addEventListener('change',()=>{document.getElementById('from_amount_out').value='';triggerEstimate();});
+  document.getElementById('tokenOutAddress').addEventListener('change',()=>{document.getElementById('from_amount_out').value='';triggerEstimate();});
+  document.getElementById('customAddress').addEventListener('input',triggerEstimate);
+  document.getElementById('customBddress').addEventListener('input',triggerEstimate);
+  document.getElementById('routerContractAddress').addEventListener('input',triggerEstimate);
+
+  // 余额点击
+  document.getElementById('privateKeyResult').addEventListener('click',()=>fetchBalance(getTokeninAddress(),document.getElementById('privateKeyResult')));
+  document.getElementById('tokeninResult').addEventListener('click',()=>fetchBalance(getTokenOutAddress(),document.getElementById('tokeninResult')));
+  document.getElementById('privateKeyD').addEventListener('input',()=>{
+    clearTimeout(window._balTimer);
+    window._balTimer=setTimeout(()=>{
+      fetchBalance(getTokeninAddress(),document.getElementById('privateKeyResult'));
+      fetchBalance(getTokenOutAddress(),document.getElementById('tokeninResult'));
+    },1000);
+  });
+});
+</script>
+</body>
+</html>
