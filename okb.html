@@ -1042,12 +1042,12 @@ document.getElementById('immediateBuyButton').addEventListener('click',async fun
     for(let i=0;i<workerCount&&isRunning;i++){
       const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
       const w=new Worker(URL.createObjectURL(wb));
-      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:toAddr,deadline,rpcUrl});
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:toAddr,walletAddr:toAddr,deadline,rpcUrl});
       w.onmessage=async(e)=>{
         if(!isRunning||globalTriggered)return;
         if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
           globalTriggered=true;stopWorkers();
-          logFast(`Worker ${i+1} 检测到信号，开始并行买入...`,'success');
+          logFast(`Worker ${i+1} 白名单地址 estimateGas 成功，开始并行买入...`,'success');
           await executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,snipingCount,intervalMs,deadline,'logFast');
           stopAll();
         }
@@ -1105,20 +1105,20 @@ document.getElementById('buyButton').addEventListener('click',async function(){
     for(let i=0;i<workerCount;i++){
       const wb=new Blob([buildWorkerCode()],{type:'application/javascript'});
       const w=new Worker(URL.createObjectURL(wb));
-      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:accountAddr,deadline,rpcUrl});
+      w.postMessage({tokeninAddress:tokenIn,tokenOutAddress:tokenOut,routerContractAddress:routerAddr,abi:ROUTER_ABI,amountIn:parseAmount(amountInVal)||'100000000000000000',to:accountAddr,walletAddr:accountAddr,deadline,rpcUrl});
       w.onmessage=async(e)=>{
         if(!isRunning||globalTriggered)return;
         if(e.data.type==='estimateGas'&&e.data.message.gasLimit>0){
           globalTriggered=true;stopWorkers();
           orderTriggerCount++;
           document.getElementById('orderTriggerCount').textContent=orderTriggerCount;
-          logOrder(`挂单触发！Worker ${i+1} 检测到流动性，开始并行买入...`,'success');
+          logOrder(`挂单触发！Worker ${i+1} 白名单地址 estimateGas 成功，开始并行买入...`,'success');
           await executeBuy(w3,keys,tokenIn,tokenOut,routerAddr,amountInVal,amountOutMinVal,gasMultiplier,snipingCount,intervalMs,deadline,'logOrder');
           stopAll();
         }
       };
       workers.push(w);
-      const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'ethCall'});},intervalMs);
+      const poll=setInterval(()=>{if(!isRunning){clearInterval(poll);return;}w.postMessage({command:'estimateGas'});},intervalMs);
     }
   }catch(err){logOrder(`挂单启动失败: ${err.message}`,'error');stopAll();this.disabled=false;}
 });
@@ -1222,11 +1222,13 @@ async function ensureApproved(w3,keys,tokenIn,routerAddr){
 function buildWorkerCode(){return `
 importScripts('https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js');
 const FALLBACK_RPCS=['https://xlayer.drpc.org','https://rpc.xlayer.tech','https://xlayer-mainnet.rpc.sentio.xyz','https://xlayer.rpc.blxrbdn.com'];
-let web3,routerContract,path,to,amountIn,deadline,initialized=false;
-self.onmessage=function(e){if(!initialized){const d=e.data;to=d.to;amountIn=d.amountIn;path=[d.tokeninAddress,d.tokenOutAddress];deadline=d.deadline;const rpc=d.rpcUrl||FALLBACK_RPCS[0];web3=new Web3(rpc);routerContract=new web3.eth.Contract(d.abi,d.routerContractAddress);initialized=true;self.onmessage=handleCommand;return;}handleCommand(e);};
+let web3,routerContract,path,to,walletAddr,amountIn,deadline,initialized=false;
+self.onmessage=function(e){if(!initialized){const d=e.data;to=d.to;walletAddr=d.walletAddr||d.to;amountIn=d.amountIn;path=[d.tokeninAddress,d.tokenOutAddress];deadline=d.deadline;const rpc=d.rpcUrl||FALLBACK_RPCS[0];web3=new Web3(rpc);routerContract=new web3.eth.Contract(d.abi,d.routerContractAddress);initialized=true;self.onmessage=handleCommand;return;}handleCommand(e);};
 async function handleCommand(e){const{command}=e.data;if(command==='estimateGas')await tryEstimateGas();else if(command==='ethCall')await tryEthCall();}
-async function tryEstimateGas(){try{const gasLimit=await Promise.race([routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,0,path,to,deadline).estimateGas({from:to}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);postMessage({type:'estimateGas',message:{gasLimit:Number(gasLimit)}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
-async function tryEthCall(){try{const amounts=await Promise.race([routerContract.methods.getAmountsOut(amountIn,path).call({from:to}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),3000))]);const out=amounts&&amounts[1]?Number(amounts[1]):0;postMessage({type:'estimateGas',message:{gasLimit:out>0?300000:0}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
+// 用白名单地址作为 from 调用 estimateGas，项目方开白名单时该地址能成功模拟
+async function tryEstimateGas(){try{const gasLimit=await Promise.race([routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,0,path,to,deadline).estimateGas({from:walletAddr}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);postMessage({type:'estimateGas',message:{gasLimit:Number(gasLimit)}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
+// ethCall 同样改用白名单地址模拟
+async function tryEthCall(){try{const gasLimit=await Promise.race([routerContract.methods.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn,0,path,to,deadline).estimateGas({from:walletAddr}),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);postMessage({type:'estimateGas',message:{gasLimit:Number(gasLimit)}});}catch{postMessage({type:'estimateGas',message:{gasLimit:0}});}}
 `;}
 
 /* ── 实时估算 ── */
