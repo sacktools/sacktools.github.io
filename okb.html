@@ -929,6 +929,9 @@ document.getElementById('toggleButton').addEventListener('click',function(){
   document.getElementById('customAddrRowA').classList.toggle('show',selA.value==='custom');
   document.getElementById('customAddrRowB').classList.toggle('show',selB.value==='custom');
   triggerEstimate();
+  // 切换后立即刷新两侧余额
+  fetchBalance(getTokeninAddress(),document.getElementById('privateKeyResult'));
+  fetchBalance(getTokenOutAddress(),document.getElementById('tokeninResult'));
 });
 
 /* ── 滑点 ── */
